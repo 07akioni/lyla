@@ -39,6 +39,7 @@ export type CeekError =
   | CeekNetworkError
   | CeekInvalidJSONError
   | CeekAbortedError
+  | CeekHttpError
 
 class _CeekError extends Error {}
 

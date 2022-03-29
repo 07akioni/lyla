@@ -155,28 +155,44 @@ function createCeek(ceekOptions: CeekOptions = {}) {
     xhr.upload.addEventListener('progress', onUploadProgress)
     xhr.addEventListener('progress', onDownloadProgress)
     xhr.addEventListener('loadend', () => {
-      if (!isOkStatus(xhr.status)) {
-      }
       let response: CeekResponse = {
         status: xhr.status,
         statusText: xhr.statusText,
         headers: createHeaders(xhr.getAllResponseHeaders()),
         body: ''
       }
+
+      let body: any = ''
+      let jsonParseError: TypeError
+
       try {
-        response.body =
-          responseType === 'json' ? JSON.parse(xhr.response) : xhr.response
+        body = responseType === 'json' ? JSON.parse(xhr.response) : xhr.response
       } catch (e) {
+        body = xhr.response
+        jsonParseError = e
+      }
+
+      if (!isOkStatus(xhr.status)) {
+        const reason = `${xhr.status} ${xhr.statusText}`
         _reject(
           defineCeekError({
-            type: CEEK_ERROR.INVALID_JSON,
-            message: e.message,
+            type: CEEK_ERROR.HTTP,
+            message: `Request Failed with ${reason}`,
             event: undefined,
-            error: e,
+            error: undefined,
             response
           })
         )
-        return
+      } else if (jsonParseError) {
+        _reject(
+          defineCeekError({
+            type: CEEK_ERROR.INVALID_JSON,
+            message: jsonParseError.message,
+            event: undefined,
+            error: jsonParseError,
+            response
+          })
+        )
       }
       _resolve(response)
     })
