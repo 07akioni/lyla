@@ -172,8 +172,8 @@ const handlers: Handler[] = [
           url: 'res-json-content-type-json',
           responseType: 'text'
         })
-        .then(({ body }) => {
-          console.log(body)
+        .then(({ json }) => {
+          console.log(json)
         })
       axios
         .get('/api/res-json-content-type-json', { responseType: 'text' })

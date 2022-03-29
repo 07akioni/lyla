@@ -4,7 +4,15 @@ export enum CEEK_ERROR {
   NETWORK = 'NETWORK',
   ABORTED = 'ABORTED',
   INVALID_JSON = 'INVALID_JSON',
+  INVALID_BODY = 'INVALID_BODY',
   HTTP = 'HTTP'
+}
+
+export interface CeekInvalidBodyError extends Error {
+  type: CEEK_ERROR.INVALID_BODY
+  error: undefined
+  event: undefined
+  response: CeekResponse
 }
 
 export interface CeekHttpError extends Error {
@@ -40,6 +48,7 @@ export type CeekError =
   | CeekInvalidJSONError
   | CeekAbortedError
   | CeekHttpError
+  | CeekInvalidBodyError
 
 class _CeekError extends Error {}
 

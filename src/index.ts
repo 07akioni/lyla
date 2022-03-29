@@ -3,6 +3,7 @@ import {
   CeekAbortedError,
   CeekError,
   CeekHttpError,
+  CeekInvalidBodyError,
   CeekInvalidJSONError,
   CeekNetworkError,
   CEEK_ERROR,
@@ -30,7 +31,7 @@ interface CeekRequestOptions {
   url: string
   withCredentials?: boolean
   headers?: Record<string, string>
-  responseType?: Exclude<XMLHttpRequestResponseType, 'document'>
+  responseType?: Exclude<XMLHttpRequestResponseType, 'document' | 'json'>
   body?: XMLHttpRequestBodyInit
   json?: any
   query?: Record<string, string>
@@ -47,7 +48,8 @@ export interface CeekResponse<T = any> {
   status: number
   statusText: string
   headers: Record<string, string>
-  body: T
+  body: Exclude<XMLHttpRequestResponseType, 'document' | 'json'>
+  json: T
 }
 
 function isOkStatus(status: number): boolean {
@@ -87,7 +89,7 @@ function createCeek(ceekOptions: CeekOptions = {}) {
 
     validateBaseUrl(_options.baseUrl)
 
-    _options.responseType = options.responseType || 'json'
+    _options.responseType = options.responseType || 'text'
 
     if (_options.baseUrl) {
       if (_options.url.startsWith('/')) {
@@ -156,7 +158,7 @@ function createCeek(ceekOptions: CeekOptions = {}) {
       _reject = reject
     })
 
-    xhr.responseType = responseType === 'json' ? 'text' : responseType
+    xhr.responseType = responseType
     xhr.addEventListener('error', (e) => {
       _reject(
         defineCeekError<CeekNetworkError>({
@@ -171,21 +173,47 @@ function createCeek(ceekOptions: CeekOptions = {}) {
     xhr.upload.addEventListener('progress', onUploadProgress)
     xhr.addEventListener('progress', onDownloadProgress)
     xhr.addEventListener('loadend', (e) => {
+      let json: any
+      let jsonParseError: TypeError
+
       let response: CeekResponse = {
         status: xhr.status,
         statusText: xhr.statusText,
         headers: createHeaders(xhr.getAllResponseHeaders()),
-        body: ''
-      }
-
-      let body: any = ''
-      let jsonParseError: TypeError
-
-      try {
-        body = responseType === 'json' ? JSON.parse(xhr.response) : xhr.response
-      } catch (e) {
-        body = xhr.response
-        jsonParseError = e
+        body: xhr.response,
+        get json() {
+          if (json === undefined) {
+            try {
+              if (typeof xhr.response === 'string') {
+                json = JSON.parse(xhr.response)
+              } else {
+                _reject(
+                  defineCeekError<CeekInvalidBodyError>({
+                    type: CEEK_ERROR.INVALID_BODY,
+                    message: `Can not convert ${body} to JSON`,
+                    event: undefined,
+                    error: undefined,
+                    response
+                  })
+                )
+              }
+            } catch (e) {
+              jsonParseError = e
+            }
+          }
+          if (jsonParseError) {
+            _reject(
+              defineCeekError<CeekInvalidJSONError>({
+                type: CEEK_ERROR.INVALID_JSON,
+                message: jsonParseError.message,
+                event: undefined,
+                error: jsonParseError,
+                response
+              })
+            )
+          }
+          return json
+        }
       }
 
       if (!isOkStatus(xhr.status)) {
@@ -199,19 +227,8 @@ function createCeek(ceekOptions: CeekOptions = {}) {
             response
           })
         )
-      } else if (jsonParseError) {
-        _reject(
-          defineCeekError<CeekInvalidJSONError>({
-            type: CEEK_ERROR.INVALID_JSON,
-            message: jsonParseError.message,
-            event: undefined,
-            error: jsonParseError,
-            response
-          })
-        )
       }
 
-      response.body = body
       _resolve(response)
     })
     xhr.addEventListener('abort', (e) => {
