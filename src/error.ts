@@ -43,8 +43,8 @@ export type CeekError =
 
 class _CeekError extends Error {}
 
-export function defineCeekError<T extends Omit<CeekError, 'name'>>(
-  error: T
+export function defineCeekError<T extends CeekError>(
+  error: Omit<T, 'name'>
 ): CeekError {
   const ceekError = new _CeekError()
   ceekError.name = `CeekError[${error.type}]`

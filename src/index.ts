@@ -1,6 +1,10 @@
 import { responseTypes } from './constants'
 import {
+  CeekAbortedError,
   CeekError,
+  CeekHttpError,
+  CeekInvalidJSONError,
+  CeekNetworkError,
   CEEK_ERROR,
   defineCeekError,
   handleCeekError
@@ -143,7 +147,7 @@ function createCeek(ceekOptions: CeekOptions = {}) {
     xhr.responseType = responseType === 'json' ? 'text' : responseType
     xhr.addEventListener('error', (e) => {
       _reject(
-        defineCeekError({
+        defineCeekError<CeekNetworkError>({
           type: CEEK_ERROR.NETWORK,
           message: 'Network Error',
           event: e,
@@ -154,7 +158,7 @@ function createCeek(ceekOptions: CeekOptions = {}) {
     })
     xhr.upload.addEventListener('progress', onUploadProgress)
     xhr.addEventListener('progress', onDownloadProgress)
-    xhr.addEventListener('loadend', () => {
+    xhr.addEventListener('loadend', (e) => {
       let response: CeekResponse = {
         status: xhr.status,
         statusText: xhr.statusText,
@@ -175,17 +179,17 @@ function createCeek(ceekOptions: CeekOptions = {}) {
       if (!isOkStatus(xhr.status)) {
         const reason = `${xhr.status} ${xhr.statusText}`
         _reject(
-          defineCeekError({
+          defineCeekError<CeekHttpError>({
             type: CEEK_ERROR.HTTP,
             message: `Request Failed with ${reason}`,
-            event: undefined,
+            event: e,
             error: undefined,
             response
           })
         )
       } else if (jsonParseError) {
         _reject(
-          defineCeekError({
+          defineCeekError<CeekInvalidJSONError>({
             type: CEEK_ERROR.INVALID_JSON,
             message: jsonParseError.message,
             event: undefined,
@@ -198,7 +202,7 @@ function createCeek(ceekOptions: CeekOptions = {}) {
     })
     xhr.addEventListener('abort', (e) => {
       _reject(
-        defineCeekError({
+        defineCeekError<CeekAbortedError>({
           type: CEEK_ERROR.ABORTED,
           message: 'JSON Syntax Error',
           event: e,
