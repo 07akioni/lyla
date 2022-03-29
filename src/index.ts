@@ -189,7 +189,7 @@ function createCeek(ceekOptions: CeekOptions = {}) {
               } else {
                 _reject(
                   defineCeekError<CeekInvalidBodyError>({
-                    type: CEEK_ERROR.INVALID_BODY,
+                    type: CEEK_ERROR.INVALID_TRANSFORMATION,
                     message: `Can not convert ${body} to JSON`,
                     event: undefined,
                     error: undefined,
