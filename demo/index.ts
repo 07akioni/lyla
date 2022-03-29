@@ -1,7 +1,7 @@
 import axios from 'axios'
-import { createCeek, handleCeekError } from '../src'
+import { ceek, handleCeekError } from '../src'
 
-const ceek = createCeek({ baseUrl: '/api/' })
+const request = ceek.extend({ baseUrl: '/api/' })
 
 type Handler = [string, () => void]
 
@@ -9,7 +9,7 @@ const handlers: Handler[] = [
   [
     'res-text (responseType text)',
     () => {
-      ceek
+      request
         .get('res-text', {
           responseType: 'text'
         })
@@ -21,14 +21,12 @@ const handlers: Handler[] = [
   [
     'req-text-res-text (responseType json)',
     () => {
-      ceek
-        .request({
-          method: 'GET',
-          url: 'res-text'
-        })
-        .then(({ body }) => {
-          console.log(body)
-        })
+      request({
+        method: 'GET',
+        url: 'res-text'
+      }).then(({ body }) => {
+        console.log(body)
+      })
       axios
         .get('/api/res-text', {
           responseType: 'json'
@@ -50,61 +48,53 @@ const handlers: Handler[] = [
   [
     'res-text (responseType blob)',
     () => {
-      ceek
-        .request({
-          method: 'GET',
-          url: 'res-text',
-          responseType: 'blob'
-        })
-        .then(({ body }) => {
-          console.log(body)
-        })
+      request({
+        method: 'GET',
+        url: 'res-text',
+        responseType: 'blob'
+      }).then(({ body }) => {
+        console.log(body)
+      })
     }
   ],
   [
     'res-text (responseType array buffer)',
     () => {
-      ceek
-        .request({
-          method: 'GET',
-          url: 'res-text',
-          responseType: 'arraybuffer'
-        })
-        .then(({ body }) => {
-          console.log(body)
-        })
+      request({
+        method: 'GET',
+        url: 'res-text',
+        responseType: 'arraybuffer'
+      }).then(({ body }) => {
+        console.log(body)
+      })
     }
   ],
   [
     'req-json-res-text (responseType json)',
     () => {
-      ceek
-        .request({
-          method: 'GET',
-          url: 'res-text',
-          json: {
-            jsonKey: 'jsonValue'
-          }
-        })
-        .then(({ body }) => {
-          console.log(body)
-        })
+      request({
+        method: 'GET',
+        url: 'res-text',
+        json: {
+          jsonKey: 'jsonValue'
+        }
+      }).then(({ body }) => {
+        console.log(body)
+      })
     }
   ],
   [
     'req-json-res-json (responseType json)',
     () => {
-      ceek
-        .request({
-          method: 'GET',
-          url: 'res-json',
-          json: {
-            jsonKey: 'jsonValue'
-          }
-        })
-        .then(({ body }) => {
-          console.log(body)
-        })
+      request({
+        method: 'GET',
+        url: 'res-json',
+        json: {
+          jsonKey: 'jsonValue'
+        }
+      }).then(({ body }) => {
+        console.log(body)
+      })
       // axios.get("/api/res-json").then((resp) => {
       //   console.log("axios", resp.data);
       // });
@@ -122,17 +112,15 @@ const handlers: Handler[] = [
   [
     'post-req-json-res-json (responseType json)',
     () => {
-      ceek
-        .request({
-          method: 'POST',
-          url: 'res-json',
-          json: {
-            jsonKey: 'jsonValue'
-          }
-        })
-        .then(({ body }) => {
-          console.log(body)
-        })
+      request({
+        method: 'POST',
+        url: 'res-json',
+        json: {
+          jsonKey: 'jsonValue'
+        }
+      }).then(({ body }) => {
+        console.log(body)
+      })
       // axios.get("/api/res-json").then((resp) => {
       //   console.log("axios", resp.data);
       // });
@@ -150,14 +138,12 @@ const handlers: Handler[] = [
   [
     'req-text-res-json-content-type-json (responseType json)',
     () => {
-      ceek
-        .request({
-          method: 'GET',
-          url: 'res-json-content-type-json'
-        })
-        .then(({ body }) => {
-          console.log(body)
-        })
+      request({
+        method: 'GET',
+        url: 'res-json-content-type-json'
+      }).then(({ body }) => {
+        console.log(body)
+      })
       axios.get('/api/res-json-content-type-json').then((resp) => {
         console.log('axios', resp.data)
       })
@@ -166,15 +152,13 @@ const handlers: Handler[] = [
   [
     'req-text-res-json-content-type-json (responseType text)',
     () => {
-      ceek
-        .request({
-          method: 'GET',
-          url: 'res-json-content-type-json',
-          responseType: 'text'
-        })
-        .then(({ json }) => {
-          console.log(json)
-        })
+      request({
+        method: 'GET',
+        url: 'res-json-content-type-json',
+        responseType: 'text'
+      }).then(({ json }) => {
+        console.log(json)
+      })
       axios
         .get('/api/res-json-content-type-json', { responseType: 'text' })
         .then((resp) => {
@@ -185,11 +169,10 @@ const handlers: Handler[] = [
   [
     '404',
     () => {
-      ceek
-        .request({
-          method: 'GET',
-          url: 'not-found'
-        })
+      request({
+        method: 'GET',
+        url: 'not-found'
+      })
         .then(({ body }) => {
           console.log(body)
         })
