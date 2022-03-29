@@ -1,4 +1,8 @@
-export function validateBaseUrl(baseUrl: string | undefined): void {
-  if (!baseUrl) return
-  if (!baseUrl.endsWith('/')) throw new TypeError("baseUrl should end with '/'")
+export function mergeUrl(
+  baseUrl: string | undefined,
+  relativeUrl: string
+): string {
+  return relativeUrl
+    ? baseUrl.replace(/\/+$/, '') + '/' + relativeUrl.replace(/^\/+/, '')
+    : baseUrl
 }

@@ -10,7 +10,7 @@ import {
   defineCeekError,
   handleCeekError
 } from './error'
-import { validateBaseUrl } from './utils'
+import { mergeUrl } from './utils'
 
 export type CeekOptions = {
   baseUrl?: string
@@ -126,8 +126,6 @@ function createHeaders(headers: string): Record<string, string> {
 }
 
 function createCeek(ceekOptions: CeekOptions = {}): Ceek {
-  validateBaseUrl(ceekOptions.baseUrl)
-
   const {
     hooks: { onBeforeOptionsNormalized, onBeforeRequest, onAfterResponse } = {}
   } = ceekOptions
@@ -147,17 +145,10 @@ function createCeek(ceekOptions: CeekOptions = {}): Ceek {
       method: options.method.toUpperCase() as any
     }
 
-    validateBaseUrl(_options.baseUrl)
-
     _options.responseType = options.responseType || 'text'
 
     if (_options.baseUrl) {
-      if (_options.url.startsWith('/')) {
-        throw new TypeError(
-          '`input` must not begin with a slash when using `baseUrl`'
-        )
-      }
-      _options.url = _options.baseUrl + _options.url
+      _options.url = mergeUrl(_options.baseUrl, _options.url)
     }
 
     // Move json data to body as string
