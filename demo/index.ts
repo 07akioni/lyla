@@ -10,9 +10,7 @@ const handlers: Handler[] = [
     'res-text (responseType text)',
     () => {
       ceek
-        .request({
-          method: 'GET',
-          url: 'res-text',
+        .get('res-text', {
           responseType: 'text'
         })
         .then(({ body }) => {

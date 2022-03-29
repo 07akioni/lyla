@@ -16,7 +16,17 @@ interface CeekOptions {
 }
 
 interface CeekRequestOptions {
-  method: 'get' | 'GET' | 'post' | 'POST'
+  method:
+    | 'get'
+    | 'GET'
+    | 'post'
+    | 'POST'
+    | 'put'
+    | 'PUT'
+    | 'patch'
+    | 'PATCH'
+    | 'head'
+    | 'delete'
   url: string
   withCredentials?: boolean
   headers?: Record<string, string>
@@ -66,7 +76,9 @@ function createHeaders(headers: string): Record<string, string> {
 function createCeek(ceekOptions: CeekOptions = {}) {
   validateBaseUrl(ceekOptions.baseUrl)
 
-  function request<T = any>(options: CeekRequestOptions) {
+  function request<T = any>(
+    options: CeekRequestOptions
+  ): Promise<CeekResponse<T>> {
     const _options: CeekRequestOptions = {
       ...options,
       baseUrl: options.baseUrl ?? ceekOptions.baseUrl,
@@ -198,6 +210,8 @@ function createCeek(ceekOptions: CeekOptions = {}) {
           })
         )
       }
+
+      response.body = body
       _resolve(response)
     })
     xhr.addEventListener('abort', (e) => {
@@ -217,8 +231,28 @@ function createCeek(ceekOptions: CeekOptions = {}) {
     xhr.send(body)
     return requestPromise
   }
+
+  function createRequestShortcut(method: CeekRequestOptions['method']) {
+    return <T>(
+      url: string,
+      options: Omit<CeekRequestOptions, 'url' | 'method'>
+    ): Promise<CeekResponse<T>> => {
+      return request<T>({
+        ...options,
+        method,
+        url
+      })
+    }
+  }
+
   return {
-    request
+    request,
+    get: createRequestShortcut('get'),
+    post: createRequestShortcut('post'),
+    put: createRequestShortcut('put'),
+    patch: createRequestShortcut('patch'),
+    head: createRequestShortcut('head'),
+    delete: createRequestShortcut('delete')
   }
 }
 
