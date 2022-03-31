@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { ceek, onError } from '../src'
+import { ceek, createErrorHandler } from '../src'
 
 const request = ceek.extend({ baseUrl: '/api/' })
 
@@ -177,7 +177,7 @@ const handlers: Handler[] = [
           console.log(body)
         })
         .catch(
-          onError((e) => {
+          createErrorHandler((e) => {
             if (e.ceekError) {
               console.log(e.ceekError)
             } else {

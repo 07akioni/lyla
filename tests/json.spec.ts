@@ -16,7 +16,7 @@ test('throws error if response is not json serializable', async ({ page }) => {
       return [false, '']
     } catch (e) {
       catched = true
-      window.onError(({ ceekError }) => {
+      window.createErrorHandler(({ ceekError }) => {
         ceekErrorType = ceekError.type
       })(e)
     }
@@ -51,7 +51,7 @@ test('throws error if try getting json when `responseType` is not `text`', async
         return [false, body instanceof Blob, ceekErrorType]
       } catch (e) {
         catched = true
-        window.onError(({ ceekError }) => {
+        window.createErrorHandler(({ ceekError }) => {
           ceekErrorType = ceekError.type
         })(e)
       }
@@ -75,7 +75,7 @@ test('throws error if try getting json when `responseType` is not `text`', async
         return [false, body instanceof ArrayBuffer, ceekErrorType]
       } catch (e) {
         catched = true
-        window.onError(({ ceekError }) => {
+        window.createErrorHandler(({ ceekError }) => {
           ceekErrorType = ceekError.type
         })(e)
       }

@@ -65,3 +65,50 @@ export type CeekResponse<T = any> = {
   json: T
 }
 ```
+
+## Error handling
+
+```ts
+import { createErrorHandler, CEEK_ERROR } from 'ceek'
+
+// promise style
+ceek
+  .get('https://example.com')
+  .then((resp) => {
+    console.log(resp.json)
+  })
+  .catch(createErrorHandler(({ ceekError, error }) => {
+    if (ceekError) {
+      switch ceekError.type {
+        CEEK_ERROR.INVALID_JSON:
+          console.log('json parse error')
+          break
+        default:
+          console.log('some error')
+      }
+    }
+  }))
+
+// async style
+try {
+  const { json } = await ceek.get('https://example.com')
+} catch (e) {
+  createErrorHandler(({ ceekError, error }) => {
+    // ...
+  })(e)
+}
+```
+
+TODO global error handler
+
+```ts
+import type { CeekError } from 'ceek'
+
+const request = ceek.extend({
+  onError(error: CeekError) {
+    switch error.type {
+      // ...
+    }
+  }
+})
+```
