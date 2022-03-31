@@ -69,7 +69,7 @@ export type CeekResponse<T = any> = {
 ## Error handling
 
 ```ts
-import { createErrorHandler, CEEK_ERROR } from 'ceek'
+import { catchError, matchError, CEEK_ERROR } from 'ceek'
 
 // promise style
 ceek
@@ -77,7 +77,7 @@ ceek
   .then((resp) => {
     console.log(resp.json)
   })
-  .catch(createErrorHandler(({ ceekError, error }) => {
+  .catch(catchError(({ ceekError, error }) => {
     if (ceekError) {
       switch ceekError.type {
         CEEK_ERROR.INVALID_JSON:
@@ -93,9 +93,9 @@ ceek
 try {
   const { json } = await ceek.get('https://example.com')
 } catch (e) {
-  createErrorHandler(({ ceekError, error }) => {
+  matchError(e, ({ ceekError, error }) => {
     // ...
-  })(e)
+  })
 }
 ```
 

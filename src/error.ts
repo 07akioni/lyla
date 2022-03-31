@@ -64,7 +64,7 @@ function isCeekError(error: unknown): error is CeekError {
   return error instanceof _CeekError
 }
 
-export function createErrorHandler<T, E = Error>(
+export function catchError<T, E = Error>(
   handler: (
     mergedError:
       | { ceekError: CeekError; error: undefined }
@@ -80,4 +80,19 @@ export function createErrorHandler<T, E = Error>(
   }
 }
 
-export type OnError = typeof createErrorHandler
+export function matchError<T, E = Error>(
+  error: any,
+  matcher: <T>(
+    mergedError:
+      | { ceekError: CeekError; error: undefined }
+      | { ceekError: undefined; error: E }
+  ) => T
+): T {
+  if (isCeekError(error)) {
+    return matcher({ ceekError: error, error: undefined })
+  } else {
+    return matcher({ ceekError: undefined, error })
+  }
+}
+
+export type OnError = typeof catchError
