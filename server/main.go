@@ -22,6 +22,55 @@ func PostTestRoutes(r *gin.Engine) {
 	r.POST("/api/post-text", func(c *gin.Context) {
 		c.String(200, "hello world")
 	})
+	r.POST("/api/post-json", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"key": "value",
+		})
+	})
+}
+
+func PutTestRoutes(r *gin.Engine) {
+	r.PUT("/api/put-text", func(c *gin.Context) {
+		c.String(200, "hello world")
+	})
+	r.PUT("/api/put-json", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"key": "value",
+		})
+	})
+}
+
+func DeleteTestRoutes(r *gin.Engine) {
+	r.DELETE("/api/delete-text", func(c *gin.Context) {
+		c.String(200, "hello world")
+	})
+	r.DELETE("/api/delete-json", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"key": "value",
+		})
+	})
+}
+
+func PatchTestRoutes(r *gin.Engine) {
+	r.PATCH("/api/patch-text", func(c *gin.Context) {
+		c.String(200, "hello world")
+	})
+	r.PATCH("/api/patch-json", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"key": "value",
+		})
+	})
+}
+
+func HeadTestRoutes(r *gin.Engine) {
+	r.HEAD("/api/head-text", func(c *gin.Context) {
+		// c.String(200, "hello world")
+	})
+	r.HEAD("/api/head-json", func(c *gin.Context) {
+		// c.JSON(200, gin.H{
+		// 	"key": "value",
+		// })
+	})
 }
 
 func main() {
@@ -30,6 +79,10 @@ func main() {
 
 	GetTestRoutes(r)
 	PostTestRoutes(r)
+	DeleteTestRoutes(r)
+	PatchTestRoutes(r)
+	HeadTestRoutes(r)
+	PutTestRoutes(r)
 
 	r.Use(func(c *gin.Context) {
 		fmt.Println("[request.url]", c.Request.URL)
