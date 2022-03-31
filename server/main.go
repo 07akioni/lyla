@@ -16,6 +16,13 @@ func GetTestRoutes(r *gin.Engine) {
 			"key": "value",
 		})
 	})
+	r.GET("/api/get-return-headers", func(c *gin.Context) {
+		for key, vals := range c.Request.Header {
+			for _, val := range vals {
+				c.Header(key, val)
+			}
+		}
+	})
 }
 
 func PostTestRoutes(r *gin.Engine) {
@@ -26,6 +33,13 @@ func PostTestRoutes(r *gin.Engine) {
 		c.JSON(200, gin.H{
 			"key": "value",
 		})
+	})
+	r.POST("/api/post-return-headers", func(c *gin.Context) {
+		for key, vals := range c.Request.Header {
+			for _, val := range vals {
+				c.Header(key, val)
+			}
+		}
 	})
 }
 
@@ -38,6 +52,13 @@ func PutTestRoutes(r *gin.Engine) {
 			"key": "value",
 		})
 	})
+	r.PUT("/api/put-return-headers", func(c *gin.Context) {
+		for key, vals := range c.Request.Header {
+			for _, val := range vals {
+				c.Header(key, val)
+			}
+		}
+	})
 }
 
 func DeleteTestRoutes(r *gin.Engine) {
@@ -49,6 +70,13 @@ func DeleteTestRoutes(r *gin.Engine) {
 			"key": "value",
 		})
 	})
+	r.DELETE("/api/delete-return-headers", func(c *gin.Context) {
+		for key, vals := range c.Request.Header {
+			for _, val := range vals {
+				c.Header(key, val)
+			}
+		}
+	})
 }
 
 func PatchTestRoutes(r *gin.Engine) {
@@ -59,6 +87,13 @@ func PatchTestRoutes(r *gin.Engine) {
 		c.JSON(200, gin.H{
 			"key": "value",
 		})
+	})
+	r.PATCH("/api/patch-return-headers", func(c *gin.Context) {
+		for key, vals := range c.Request.Header {
+			for _, val := range vals {
+				c.Header(key, val)
+			}
+		}
 	})
 }
 

@@ -40,4 +40,16 @@ beforeEach(test)
     }, method)
     expect(isArrayBuffer).toEqual(true)
   })
+
+  test(`${method}, request & response \`headers\` works`, async ({ page }) => {
+    const respHeaders = await page.evaluate(async (method) => {
+      const resp = await window.ceek[method](`/api/${method}-return-headers`, {
+        headers: {
+          headerKey: 'headerValue'
+        }
+      })
+      return resp.headers
+    }, method)
+    expect(respHeaders.headerkey).toEqual('headerValue')
+  })
 })
