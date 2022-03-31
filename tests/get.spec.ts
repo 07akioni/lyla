@@ -123,3 +123,13 @@ test('get, throws error if try getting json when `responseType` is not `text`', 
   expect(bodyIsArryBuffer).toEqual(true)
   expect(ceekErrorType1).toEqual(CEEK_ERROR.INVALID_TRANSFORMATION)
 })
+
+test('json can be set', async ({ page }) => {
+  expect(await page.evaluate(async () => {
+    const resp = await window.ceek.get('/api/get-text', {
+      responseType: 'arraybuffer'
+    })
+    resp.json = 'resp json'
+    return resp.json
+  })).toEqual('resp json')
+})
