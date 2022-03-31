@@ -1,14 +1,14 @@
 import { responseTypes } from './constants'
 import {
+  CEEK_ERROR,
   CeekAbortedError,
   CeekError,
   CeekHttpError,
   CeekInvalidBodyError,
   CeekInvalidJSONError,
   CeekNetworkError,
-  CEEK_ERROR,
   defineCeekError,
-  handleCeekError
+  onError
 } from './error'
 import { mergeUrl } from './utils'
 
@@ -352,4 +352,4 @@ function createCeek(ceekOptions: CeekOptions = {}): Ceek {
   })
 }
 
-export { createCeek, handleCeekError }
+export { createCeek }

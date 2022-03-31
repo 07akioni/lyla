@@ -64,7 +64,7 @@ function isCeekError(error: unknown): error is CeekError {
   return error instanceof _CeekError
 }
 
-export function handleCeekError<T, E = Error>(
+export function onError<T, E = Error>(
   handler: (
     mergedError:
       | { ceekError: CeekError; error: undefined }
