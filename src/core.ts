@@ -243,20 +243,19 @@ function createCeek(ceekOptions: CeekOptions = {}): Ceek {
           json = value
         },
         get json() {
-          if (jsonFieldSet) return true
+          if (jsonFieldSet) return json
+          if (typeof xhr.response !== 'string') {
+            throw defineCeekError<CeekInvalidBodyError>({
+              type: CEEK_ERROR.INVALID_TRANSFORMATION,
+              message: `Can not convert ${responseType} to JSON`,
+              event: undefined,
+              error: undefined,
+              response
+            })
+          }
           if (json === undefined) {
             try {
-              if (typeof xhr.response === 'string') {
-                json = JSON.parse(xhr.response)
-              } else {
-                throw defineCeekError<CeekInvalidBodyError>({
-                  type: CEEK_ERROR.INVALID_TRANSFORMATION,
-                  message: `Can not convert ${body} to JSON`,
-                  event: undefined,
-                  error: undefined,
-                  response
-                })
-              }
+              json = JSON.parse(xhr.response)
             } catch (e) {
               jsonParseError = e
             }

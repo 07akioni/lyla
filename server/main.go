@@ -11,6 +11,11 @@ func GetTestRoutes(r *gin.Engine) {
 	r.GET("/api/get-text", func(c *gin.Context) {
 		c.String(200, "hello world")
 	})
+	r.GET("/api/get-json", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"key": "value",
+		})
+	})
 }
 
 func PostTestRoutes(r *gin.Engine) {

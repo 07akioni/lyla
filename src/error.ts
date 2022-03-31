@@ -79,3 +79,5 @@ export function onError<T, E = Error>(
     }
   }
 }
+
+export type OnError = typeof onError

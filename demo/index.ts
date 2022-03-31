@@ -190,7 +190,7 @@ const handlers: Handler[] = [
   [
     'test',
     () => {
-      request.get('/get-text').then((resp) => {
+      request.get('/get-text', { responseType: 'blob' }).then((resp) => {
         console.log('resp.body', resp.body)
         console.log('resp.json', resp.json)
       })
