@@ -1,5 +1,5 @@
 export const responseTypes = {
   text: 'text/*',
-  arrayBuffer: '*/*',
+  arraybuffer: '*/*',
   blob: '*/*'
 } as const

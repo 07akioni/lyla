@@ -1,3 +1,3 @@
-export type { CeekResponse, CeekOptions } from './core'
-export { ceek } from './instance'
-export { onError, CEEK_ERROR } from './error'
+export type { CeekResponse, CeekOptions, Ceek } from './core.js'
+export { ceek } from './instance.js'
+export { onError, CEEK_ERROR } from './error.js'

@@ -1,4 +1,4 @@
-import { responseTypes } from './constants'
+import { responseTypes } from './constants.js'
 import {
   CEEK_ERROR,
   CeekAbortedError,
@@ -7,10 +7,9 @@ import {
   CeekInvalidBodyError,
   CeekInvalidJSONError,
   CeekNetworkError,
-  defineCeekError,
-  onError
-} from './error'
-import { mergeUrl } from './utils'
+  defineCeekError
+} from './error.js'
+import { mergeUrl } from './utils.js'
 
 export type CeekOptions = {
   baseUrl?: string
@@ -50,7 +49,7 @@ type CeekRequestOptions = {
   url: string
   withCredentials?: boolean
   headers?: Record<string, string>
-  responseType?: Exclude<XMLHttpRequestResponseType, 'document' | 'json'>
+  responseType?: Exclude<XMLHttpRequestResponseType, 'document' | 'json' | ''>
   body?: XMLHttpRequestBodyInit
   json?: any
   query?: Record<string, string>
@@ -67,7 +66,7 @@ export type CeekResponse<T = any> = {
   status: number
   statusText: string
   headers: Record<string, string>
-  body: Exclude<XMLHttpRequestResponseType, 'document' | 'json'>
+  body: string | ArrayBuffer | Blob
   json: T
 }
 
@@ -76,29 +75,29 @@ export interface Ceek {
   extend: (
     options: CeekOptions | ((options: CeekOptions) => CeekOptions)
   ) => Ceek
-  get: <T>(
+  get: <T = any>(
     url: string,
-    options: Omit<CeekRequestOptions, 'url' | 'method'>
+    options?: Omit<CeekRequestOptions, 'url' | 'method'>
   ) => Promise<CeekResponse<T>>
-  post: <T>(
+  post: <T = any>(
     url: string,
-    options: Omit<CeekRequestOptions, 'url' | 'method'>
+    options?: Omit<CeekRequestOptions, 'url' | 'method'>
   ) => Promise<CeekResponse<T>>
-  put: <T>(
+  put: <T = any>(
     url: string,
-    options: Omit<CeekRequestOptions, 'url' | 'method'>
+    options?: Omit<CeekRequestOptions, 'url' | 'method'>
   ) => Promise<CeekResponse<T>>
-  patch: <T>(
+  patch: <T = any>(
     url: string,
-    options: Omit<CeekRequestOptions, 'url' | 'method'>
+    options?: Omit<CeekRequestOptions, 'url' | 'method'>
   ) => Promise<CeekResponse<T>>
-  head: <T>(
+  head: <T = any>(
     url: string,
-    options: Omit<CeekRequestOptions, 'url' | 'method'>
+    options?: Omit<CeekRequestOptions, 'url' | 'method'>
   ) => Promise<CeekResponse<T>>
-  delete: <T>(
+  delete: <T = any>(
     url: string,
-    options: Omit<CeekRequestOptions, 'url' | 'method'>
+    options?: Omit<CeekRequestOptions, 'url' | 'method'>
   ) => Promise<CeekResponse<T>>
 }
 
@@ -250,30 +249,26 @@ function createCeek(ceekOptions: CeekOptions = {}): Ceek {
               if (typeof xhr.response === 'string') {
                 json = JSON.parse(xhr.response)
               } else {
-                _reject(
-                  defineCeekError<CeekInvalidBodyError>({
-                    type: CEEK_ERROR.INVALID_TRANSFORMATION,
-                    message: `Can not convert ${body} to JSON`,
-                    event: undefined,
-                    error: undefined,
-                    response
-                  })
-                )
+                throw defineCeekError<CeekInvalidBodyError>({
+                  type: CEEK_ERROR.INVALID_TRANSFORMATION,
+                  message: `Can not convert ${body} to JSON`,
+                  event: undefined,
+                  error: undefined,
+                  response
+                })
               }
             } catch (e) {
               jsonParseError = e
             }
           }
           if (jsonParseError) {
-            _reject(
-              defineCeekError<CeekInvalidJSONError>({
-                type: CEEK_ERROR.INVALID_JSON,
-                message: jsonParseError.message,
-                event: undefined,
-                error: jsonParseError,
-                response
-              })
-            )
+            throw defineCeekError<CeekInvalidJSONError>({
+              type: CEEK_ERROR.INVALID_JSON,
+              message: jsonParseError.message,
+              event: undefined,
+              error: jsonParseError,
+              response
+            })
           }
           return json
         }

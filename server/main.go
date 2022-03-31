@@ -7,9 +7,24 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+func GetTestRoutes(r *gin.Engine) {
+	r.GET("/api/get-text", func(c *gin.Context) {
+		c.String(200, "hello world")
+	})
+}
+
+func PostTestRoutes(r *gin.Engine) {
+	r.POST("/api/post-text", func(c *gin.Context) {
+		c.String(200, "hello world")
+	})
+}
+
 func main() {
 	fmt.Println("hello")
 	r := gin.Default()
+
+	GetTestRoutes(r)
+	PostTestRoutes(r)
 
 	r.Use(func(c *gin.Context) {
 		fmt.Println("[request.url]", c.Request.URL)
@@ -24,6 +39,9 @@ func main() {
 		body, _ := ioutil.ReadAll(c.Request.Body)
 		fmt.Println("[request.body]", string(body))
 	})
+
+	r.Static("/es", "../es")
+	r.StaticFile("/", "./index.html")
 
 	r.GET("/api/res-json", func(c *gin.Context) {
 		c.JSON(200, gin.H{
