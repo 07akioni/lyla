@@ -1,4 +1,4 @@
-import type { CeekResponse } from './core.js'
+import type { CeekResponse } from './types.js'
 
 export enum CEEK_ERROR {
   NETWORK = 'NETWORK',
