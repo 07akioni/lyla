@@ -1,16 +1,15 @@
 import { responseTypes } from './constants.js'
-import {
-  CEEK_ERROR,
+import { defineCeekError, CEEK_ERROR } from './error.js'
+import { mergeUrl } from './utils.js'
+import type {
   CeekAbortedError,
   CeekError,
   CeekHttpError,
   CeekInvalidTransformationError,
   CeekInvalidJSONError,
   CeekNetworkError,
-  defineCeekError,
   CeekTimeoutError
 } from './error.js'
-import { mergeUrl } from './utils.js'
 import type { CeekRequestOptions, CeekResponse, CeekOptions } from './types.js'
 
 export interface Ceek {
