@@ -52,4 +52,21 @@ beforeEach(test)
     }, method)
     expect(respHeaders.headerkey).toEqual('headerValue')
   })
+
+  if (method !== 'get') {
+    test(`${method}, \`request.json\` works`, async ({ page }) => {
+      const [body, json] = await page.evaluate(async (method) => {
+        const resp = await window.ceek[method](`/api/${method}-return-body`, {
+          json: {
+            jsonKey: 'jsonValue'
+          }
+        })
+        return [resp.body, resp.json]
+      }, method)
+      expect((body as string).replace(/\s|\n/g, '')).toEqual(
+        `{"jsonKey":"jsonValue"}`
+      )
+      expect(json).toEqual({ jsonKey: 'jsonValue' })
+    })
+  }
 })

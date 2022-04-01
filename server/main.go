@@ -23,6 +23,10 @@ func GetTestRoutes(r *gin.Engine) {
 			}
 		}
 	})
+	r.GET("/api/get-return-body", func(c *gin.Context) {
+		data, _ := ioutil.ReadAll(c.Request.Body)
+		c.String(200, string(data[:]))
+	})
 }
 
 func PostTestRoutes(r *gin.Engine) {
@@ -40,6 +44,10 @@ func PostTestRoutes(r *gin.Engine) {
 				c.Header(key, val)
 			}
 		}
+	})
+	r.POST("/api/post-return-body", func(c *gin.Context) {
+		data, _ := ioutil.ReadAll(c.Request.Body)
+		c.String(200, string(data[:]))
 	})
 }
 
@@ -59,6 +67,10 @@ func PutTestRoutes(r *gin.Engine) {
 			}
 		}
 	})
+	r.PUT("/api/put-return-body", func(c *gin.Context) {
+		data, _ := ioutil.ReadAll(c.Request.Body)
+		c.String(200, string(data[:]))
+	})
 }
 
 func DeleteTestRoutes(r *gin.Engine) {
@@ -77,6 +89,10 @@ func DeleteTestRoutes(r *gin.Engine) {
 			}
 		}
 	})
+	r.DELETE("/api/delete-return-body", func(c *gin.Context) {
+		data, _ := ioutil.ReadAll(c.Request.Body)
+		c.String(200, string(data[:]))
+	})
 }
 
 func PatchTestRoutes(r *gin.Engine) {
@@ -94,6 +110,10 @@ func PatchTestRoutes(r *gin.Engine) {
 				c.Header(key, val)
 			}
 		}
+	})
+	r.PATCH("/api/patch-return-body", func(c *gin.Context) {
+		data, _ := ioutil.ReadAll(c.Request.Body)
+		c.String(200, string(data[:]))
 	})
 }
 

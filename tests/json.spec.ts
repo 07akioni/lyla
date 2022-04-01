@@ -1,6 +1,7 @@
 import test, { expect } from '@playwright/test'
 import { CEEK_ERROR } from '../src/error'
 import { beforeEach } from './utils'
+import "./types"
 
 beforeEach(test)
 
