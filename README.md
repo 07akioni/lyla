@@ -38,6 +38,7 @@ type CeekRequestOptions = {
     | 'head'
     | 'delete'
   url: string
+  timeout?: number
   withCredentials?: boolean
   headers?: Record<string, string>
   responseType?: 'arraybuffer' | 'blob' | 'text'

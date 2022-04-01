@@ -5,10 +5,18 @@ export enum CEEK_ERROR {
   ABORTED = 'ABORTED',
   INVALID_JSON = 'INVALID_JSON',
   INVALID_TRANSFORMATION = 'INVALID_TRANSFORMATION',
+  TIMEOUT = 'TIMEOUT',
   HTTP = 'HTTP'
 }
 
-export interface CeekInvalidBodyError extends Error {
+export interface CeekTimeoutError extends Error {
+  type: CEEK_ERROR.TIMEOUT
+  error: undefined
+  event: ProgressEvent<XMLHttpRequestEventTarget>
+  response: undefined
+}
+
+export interface CeekInvalidTransformationError extends Error {
   type: CEEK_ERROR.INVALID_TRANSFORMATION
   error: undefined
   event: undefined
@@ -48,7 +56,8 @@ export type CeekError =
   | CeekInvalidJSONError
   | CeekAbortedError
   | CeekHttpError
-  | CeekInvalidBodyError
+  | CeekInvalidTransformationError
+  | CeekTimeoutError
 
 class _CeekError extends Error {}
 

@@ -4,10 +4,11 @@ import {
   CeekAbortedError,
   CeekError,
   CeekHttpError,
-  CeekInvalidBodyError,
+  CeekInvalidTransformationError,
   CeekInvalidJSONError,
   CeekNetworkError,
-  defineCeekError
+  defineCeekError,
+  CeekTimeoutError
 } from './error.js'
 import { mergeUrl } from './utils.js'
 
@@ -47,6 +48,7 @@ type CeekRequestOptions = {
     | 'head'
     | 'delete'
   url: string
+  timeout?: number
   withCredentials?: boolean
   headers?: Record<string, string>
   responseType?: Exclude<XMLHttpRequestResponseType, 'document' | 'json' | ''>
@@ -174,6 +176,7 @@ function createCeek(ceekOptions: CeekOptions = {}): Ceek {
     }
 
     const {
+      timeout,
       url,
       method,
       headers,
@@ -215,6 +218,19 @@ function createCeek(ceekOptions: CeekOptions = {}): Ceek {
     })
 
     xhr.responseType = responseType
+    if (timeout) {
+      xhr.addEventListener('timeout', (e) => {
+        _reject(
+          defineCeekError<CeekTimeoutError>({
+            type: CEEK_ERROR.TIMEOUT,
+            message: 'Timeout',
+            event: e,
+            error: undefined,
+            response: undefined
+          })
+        )
+      })
+    }
     xhr.addEventListener('error', (e) => {
       _reject(
         defineCeekError<CeekNetworkError>({
@@ -245,7 +261,7 @@ function createCeek(ceekOptions: CeekOptions = {}): Ceek {
         get json() {
           if (jsonFieldSet) return json
           if (typeof xhr.response !== 'string') {
-            throw defineCeekError<CeekInvalidBodyError>({
+            throw defineCeekError<CeekInvalidTransformationError>({
               type: CEEK_ERROR.INVALID_TRANSFORMATION,
               message: `Can not convert ${responseType} to JSON`,
               event: undefined,
