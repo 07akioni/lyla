@@ -20,7 +20,7 @@ export interface LylaInvalidTransformationError extends Error {
   type: LYLA_ERROR.INVALID_TRANSFORMATION
   error: undefined
   event: undefined
-  response: LylaResponse
+  response: LylaResponse<null>
 }
 
 export interface LylaHttpError extends Error {
@@ -41,7 +41,7 @@ export interface LylaInvalidJSONError extends Error {
   type: LYLA_ERROR.INVALID_JSON
   error: SyntaxError
   event: undefined
-  response: LylaResponse<string>
+  response: LylaResponse<null>
 }
 
 export interface LylaAbortedError extends Error {

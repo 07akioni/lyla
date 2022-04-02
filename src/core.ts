@@ -210,48 +210,34 @@ function createLyla(lylaOptions: LylaRequestOptions = {}): Lyla {
       xhr.addEventListener('progress', onDownloadProgress)
     }
     xhr.addEventListener('loadend', async (e) => {
-      let json: any
-      let jsonParseError: TypeError
-      let jsonFieldSet = false
-
       let response: LylaResponse = {
         status: xhr.status,
         statusText: xhr.statusText,
         headers: createHeaders(xhr.getAllResponseHeaders()),
         body: xhr.response,
-        set json(value: any) {
-          jsonFieldSet = true
-          json = value
-        },
-        get json() {
-          if (jsonFieldSet) return json
-          if (typeof xhr.response !== 'string') {
-            throw defineLylaError<LylaInvalidTransformationError>({
-              type: LYLA_ERROR.INVALID_TRANSFORMATION,
-              message: `Can not convert ${responseType} to JSON`,
-              event: undefined,
-              error: undefined,
-              response
-            })
-          }
-          if (json === undefined) {
-            try {
-              json = JSON.parse(xhr.response)
-            } catch (e) {
-              jsonParseError = e as TypeError
-            }
-          }
-          if (jsonParseError) {
-            throw defineLylaError<LylaInvalidJSONError>({
-              type: LYLA_ERROR.INVALID_JSON,
-              message: jsonParseError.message,
-              event: undefined,
-              error: jsonParseError,
-              response
-            })
-          }
-          return json
-        }
+        json: null
+      }
+
+      if (typeof xhr.response !== 'string') {
+        throw defineLylaError<LylaInvalidTransformationError>({
+          type: LYLA_ERROR.INVALID_TRANSFORMATION,
+          message: `Can not convert ${responseType} to JSON`,
+          event: undefined,
+          error: undefined,
+          response
+        })
+      }
+
+      try {
+        response = JSON.parse(xhr.response)
+      } catch (e) {
+        throw defineLylaError<LylaInvalidJSONError>({
+          type: LYLA_ERROR.INVALID_JSON,
+          message: (e as TypeError).message,
+          event: undefined,
+          error: e as TypeError,
+          response
+        })
       }
 
       if (!isOkStatus(xhr.status)) {
