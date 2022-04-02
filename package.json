@@ -12,7 +12,7 @@
     "build": "tsc -p tsconfig.cjs.json && tsc -p tsconfig.esm.json",
     "release": "pnpm run build && pnpm publish",
     "dev": "vite",
-    "test": "pnpm run build && playwright test"
+    "test": "./before-test.sh && pnpm run build && playwright test && ./after-test.sh"
   },
   "author": "07akioni",
   "license": "MIT",
