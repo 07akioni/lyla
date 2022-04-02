@@ -15,7 +15,7 @@ import type { LylaRequestOptions, LylaResponse, LylaOptions } from './types.js'
 export interface Lyla {
   <T = any>(options: LylaRequestOptions): Promise<LylaResponse<T>>
   extend: (
-    options: LylaOptions | ((options: LylaOptions) => LylaOptions)
+    options?: LylaOptions | ((options: LylaOptions) => LylaOptions)
   ) => Lyla
   get: <T = any>(
     url: string,
@@ -92,11 +92,6 @@ function createLyla(lylaOptions: LylaOptions = {}): Lyla {
       _options.url = mergeUrl(_options.baseUrl, _options.url)
     }
 
-    // Move json data to body as string
-    if (_options.json !== undefined) {
-      _options.body = JSON.stringify(_options.json)
-    }
-
     // Resolve query string, patch it to URL
     if (_options.query) {
       const urlSearchParams = new URLSearchParams(_options.query)
@@ -113,6 +108,11 @@ function createLyla(lylaOptions: LylaOptions = {}): Lyla {
       for (const hook of onBeforeRequest) {
         _options = await hook(_options)
       }
+    }
+
+    // Move json data to body as string
+    if (_options.json !== undefined) {
+      _options.body = JSON.stringify(_options.json)
     }
 
     const {

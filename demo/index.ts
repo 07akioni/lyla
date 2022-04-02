@@ -190,9 +190,37 @@ const handlers: Handler[] = [
   [
     'test',
     () => {
-      request.get('/get-text', { responseType: 'blob' }).then((resp) => {
-        console.log('resp.body', resp.body)
-        console.log('resp.json', resp.json)
+      const _req = request.extend({
+        hooks: {
+          onBeforeOptionsNormalized: [
+            (options) => {
+              if (options.url === '/gigigi') {
+                options.url = '/post-return-body'
+              }
+              return options
+            }
+          ],
+          onBeforeRequest: [
+            (options) => {
+              options.json = { foo: 'bar' }
+              return options
+            }
+          ],
+          onAfterResponse: [
+            (resp) => {
+              debugger
+              if (
+                '{"foo":"bar"}' === (resp.body as string).replace(/\s\n/g, '')
+              ) {
+                resp.body = 'jojo'
+              }
+              return resp
+            }
+          ]
+        }
+      })
+      _req.post('/gigigi').then(resp => {
+        console.log(resp)
       })
     }
   ]
