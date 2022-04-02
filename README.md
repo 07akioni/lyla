@@ -8,6 +8,14 @@ Lyla is an explicit request library for browser.
 - Supports typescript for response data.
 - Supports upload progress.
 
+## Installation
+
+```
+npm i lyla # for npm
+pnpm i lyla # for pnpm
+yarn add lyla # for yarn
+```
+
 ## Usage
 
 ```ts
