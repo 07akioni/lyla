@@ -1,28 +1,6 @@
-export type LylaOptions = {
-  baseUrl?: string
-  withCredentials?: boolean
-  headers?: Record<string, string>
-  hooks?: {
-    onBeforeOptionsNormalized: Array<
-      (
-        options: LylaRequestOptions
-      ) => LylaRequestOptions | Promise<LylaRequestOptions>
-    >
-    onBeforeRequest: Array<
-      (
-        options: LylaRequestOptions
-      ) => LylaRequestOptions | Promise<LylaRequestOptions>
-    >
-    onAfterResponse: Array<
-      (
-        reqsponse: LylaResponse<any>
-      ) => LylaResponse<any> | Promise<LylaResponse<any>>
-    >
-  }
-}
-
 export type LylaRequestOptions = {
-  method:
+  url?: string
+  method?:
     | 'get'
     | 'GET'
     | 'post'
@@ -33,7 +11,6 @@ export type LylaRequestOptions = {
     | 'PATCH'
     | 'head'
     | 'delete'
-  url: string
   timeout?: number
   withCredentials?: boolean
   headers?: Record<string, string>
@@ -48,6 +25,23 @@ export type LylaRequestOptions = {
   onDownloadProgress?: (
     progressEvent: ProgressEvent<XMLHttpRequestEventTarget>
   ) => void
+  hooks?: {
+    onBeforeOptionsNormalized?: Array<
+      (
+        options: LylaRequestOptions
+      ) => LylaRequestOptions | Promise<LylaRequestOptions>
+    >
+    onBeforeRequest?: Array<
+      (
+        options: LylaRequestOptions
+      ) => LylaRequestOptions | Promise<LylaRequestOptions>
+    >
+    onAfterResponse?: Array<
+      (
+        reqsponse: LylaResponse<any>
+      ) => LylaResponse<any> | Promise<LylaResponse<any>>
+    >
+  }
 }
 
 export type LylaResponse<T = any> = {

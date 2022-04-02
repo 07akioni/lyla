@@ -70,7 +70,7 @@ export type LylaResponse<T = any> = {
 ## Error handling
 
 ```ts
-import { catchError, matchError, CEEK_ERROR } from 'lyla'
+import { catchError, matchError, LYLA_ERROR } from 'lyla'
 
 // promise style
 lyla
@@ -81,7 +81,7 @@ lyla
   .catch(catchError(({ lylaError, error }) => {
     if (lylaError) {
       switch lylaError.type {
-        CEEK_ERROR.INVALID_JSON:
+        LYLA_ERROR.INVALID_JSON:
           console.log('json parse error')
           break
         default:

@@ -1,5 +1,5 @@
 import test, { expect } from '@playwright/test'
-import { CEEK_ERROR } from '../src/error'
+import { LYLA_ERROR } from '../src/error'
 import { beforeEach } from './utils'
 import "./types"
 
@@ -9,7 +9,7 @@ test('throws error if response is not json serializable', async ({ page }) => {
   const [throws, body, lylaErrorType] = await page.evaluate(async () => {
     let catched = false
     let body: any
-    let lylaErrorType: CEEK_ERROR
+    let lylaErrorType: LYLA_ERROR
     try {
       const resp = await window.lyla.get('/api/get-text')
       body = resp.body
@@ -25,7 +25,7 @@ test('throws error if response is not json serializable', async ({ page }) => {
   })
   expect(throws).toEqual(true)
   expect(body).toEqual('hello world')
-  expect(lylaErrorType).toEqual(CEEK_ERROR.INVALID_JSON)
+  expect(lylaErrorType).toEqual(LYLA_ERROR.INVALID_JSON)
 })
 
 test('json', async ({ page }) => {
@@ -42,7 +42,7 @@ test('throws error if try getting json when `responseType` is not `text`', async
     async () => {
       let catched = false
       let body: any
-      let lylaErrorType: CEEK_ERROR
+      let lylaErrorType: LYLA_ERROR
       try {
         const resp = await window.lyla.get('/api/get-text', {
           responseType: 'blob'
@@ -61,12 +61,12 @@ test('throws error if try getting json when `responseType` is not `text`', async
   )
   expect(throws0).toEqual(true)
   expect(bodyIsBlob).toEqual(true)
-  expect(lylaErrorType0).toEqual(CEEK_ERROR.INVALID_TRANSFORMATION)
+  expect(lylaErrorType0).toEqual(LYLA_ERROR.INVALID_TRANSFORMATION)
   const [throws1, bodyIsArryBuffer, lylaErrorType1] = await page.evaluate(
     async () => {
       let catched = false
       let body: any
-      let lylaErrorType: CEEK_ERROR
+      let lylaErrorType: LYLA_ERROR
       try {
         const resp = await window.lyla.get('/api/get-text', {
           responseType: 'arraybuffer'
@@ -85,7 +85,7 @@ test('throws error if try getting json when `responseType` is not `text`', async
   )
   expect(throws1).toEqual(true)
   expect(bodyIsArryBuffer).toEqual(true)
-  expect(lylaErrorType1).toEqual(CEEK_ERROR.INVALID_TRANSFORMATION)
+  expect(lylaErrorType1).toEqual(LYLA_ERROR.INVALID_TRANSFORMATION)
 })
 
 test('json can be set', async ({ page }) => {

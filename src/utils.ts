@@ -1,5 +1,5 @@
 export function mergeUrl(
-  baseUrl: string | undefined,
+  baseUrl: string,
   relativeUrl: string
 ): string {
   return relativeUrl

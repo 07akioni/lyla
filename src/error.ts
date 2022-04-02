@@ -1,6 +1,6 @@
 import type { LylaResponse } from './types.js'
 
-export enum CEEK_ERROR {
+export enum LYLA_ERROR {
   NETWORK = 'NETWORK',
   ABORTED = 'ABORTED',
   INVALID_JSON = 'INVALID_JSON',
@@ -10,42 +10,42 @@ export enum CEEK_ERROR {
 }
 
 export interface LylaTimeoutError extends Error {
-  type: CEEK_ERROR.TIMEOUT
+  type: LYLA_ERROR.TIMEOUT
   error: undefined
   event: ProgressEvent<XMLHttpRequestEventTarget>
   response: undefined
 }
 
 export interface LylaInvalidTransformationError extends Error {
-  type: CEEK_ERROR.INVALID_TRANSFORMATION
+  type: LYLA_ERROR.INVALID_TRANSFORMATION
   error: undefined
   event: undefined
   response: LylaResponse
 }
 
 export interface LylaHttpError extends Error {
-  type: CEEK_ERROR.HTTP
+  type: LYLA_ERROR.HTTP
   error: undefined
   event: ProgressEvent<XMLHttpRequestEventTarget>
   response: LylaResponse
 }
 
 export interface LylaNetworkError extends Error {
-  type: CEEK_ERROR.NETWORK
+  type: LYLA_ERROR.NETWORK
   error: undefined
   event: ProgressEvent<XMLHttpRequestEventTarget>
   response: undefined
 }
 
 export interface LylaInvalidJSONError extends Error {
-  type: CEEK_ERROR.INVALID_JSON
+  type: LYLA_ERROR.INVALID_JSON
   error: SyntaxError
   event: undefined
   response: LylaResponse<string>
 }
 
 export interface LylaAbortedError extends Error {
-  type: CEEK_ERROR.ABORTED
+  type: LYLA_ERROR.ABORTED
   error: undefined
   event: ProgressEvent<XMLHttpRequestEventTarget>
   response: undefined

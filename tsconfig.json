@@ -4,7 +4,8 @@
     "lib": ["DOM", "ES2015"],
     "target": "ES6",
     "esModuleInterop": true,
-    "moduleResolution": "node"
+    "moduleResolution": "node",
+    "strict": true
   },
   "include": ["src"]
 }

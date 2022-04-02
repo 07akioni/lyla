@@ -1,5 +1,5 @@
 import { responseTypes } from './constants.js'
-import { defineLylaError, CEEK_ERROR } from './error.js'
+import { defineLylaError, LYLA_ERROR } from './error.js'
 import { mergeUrl } from './utils.js'
 import type {
   LylaAbortedError,
@@ -10,12 +10,14 @@ import type {
   LylaNetworkError,
   LylaTimeoutError
 } from './error.js'
-import type { LylaRequestOptions, LylaResponse, LylaOptions } from './types.js'
+import type { LylaRequestOptions, LylaResponse } from './types.js'
 
 export interface Lyla {
   <T = any>(options: LylaRequestOptions): Promise<LylaResponse<T>>
   extend: (
-    options?: LylaOptions | ((options: LylaOptions) => LylaOptions)
+    options?:
+      | LylaRequestOptions
+      | ((options: LylaRequestOptions) => LylaRequestOptions)
   ) => Lyla
   get: <T = any>(
     url: string,
@@ -66,27 +68,46 @@ function createHeaders(headers: string): Record<string, string> {
   return headerMap
 }
 
-function createLyla(lylaOptions: LylaOptions = {}): Lyla {
-  const {
-    hooks: { onBeforeOptionsNormalized, onBeforeRequest, onAfterResponse } = {}
-  } = lylaOptions
-
+function createLyla(lylaOptions: LylaRequestOptions = {}): Lyla {
   async function request<T = any>(
     options: LylaRequestOptions
   ): Promise<LylaResponse<T>> {
-    if (onBeforeOptionsNormalized) {
-      for (const hook of onBeforeOptionsNormalized) {
-        options = await hook(options)
+    for (const hook of [
+      ...(options?.hooks?.onBeforeOptionsNormalized || []),
+      ...(lylaOptions?.hooks?.onBeforeOptionsNormalized || [])
+    ]) {
+      options = await hook(options)
+    }
+
+    const onBeforeRequest = [
+      ...(options?.hooks?.onBeforeRequest || []),
+      ...(lylaOptions?.hooks?.onBeforeRequest || [])
+    ]
+    const onAfterResponse = [
+      ...(options?.hooks?.onAfterResponse || []),
+      ...(lylaOptions?.hooks?.onAfterResponse || [])
+    ]
+
+    let _options: LylaRequestOptions = {
+      ...lylaOptions,
+      ...options,
+      headers: {
+        ...lylaOptions.headers,
+        ...options.headers
+      },
+      query: {
+        ...lylaOptions.query,
+        ...options.query
+      },
+      hooks: {
+        onBeforeRequest,
+        onAfterResponse
       }
     }
 
-    let _options: LylaRequestOptions = {
-      ...options,
-      baseUrl: options.baseUrl ?? lylaOptions.baseUrl,
-      method: options.method.toUpperCase() as any
-    }
-
+    _options.method = _options.method?.toUpperCase() as any
     _options.responseType = options.responseType || 'text'
+    _options.url = _options.url || ''
 
     if (_options.baseUrl) {
       _options.url = mergeUrl(_options.baseUrl, _options.url)
@@ -104,10 +125,8 @@ function createLyla(lylaOptions: LylaOptions = {}): Lyla {
       }
     }
 
-    if (onBeforeRequest) {
-      for (const hook of onBeforeRequest) {
-        _options = await hook(_options)
-      }
+    for (const hook of onBeforeRequest) {
+      _options = await hook(_options)
     }
 
     // Move json data to body as string
@@ -121,20 +140,20 @@ function createLyla(lylaOptions: LylaOptions = {}): Lyla {
       method,
       headers,
       body,
-      responseType,
+      responseType = 'text',
       onUploadProgress,
       onDownloadProgress
     } = _options
 
     const xhr = new XMLHttpRequest()
-    xhr.open(method, url)
+    xhr.open(method || 'get', url || '')
 
     let _resolve: (value: LylaResponse<T>) => void
     let _reject: (value: LylaError) => void
 
     // make request headers
     const requestHeaders: Record<string, string> = {}
-    const _headers = new Headers({ ...lylaOptions.headers, ...headers })
+    const _headers = new Headers(headers)
     _headers.forEach((value, key) => {
       xhr.setRequestHeader(key, value)
       requestHeaders[key] = value
@@ -162,7 +181,7 @@ function createLyla(lylaOptions: LylaOptions = {}): Lyla {
       xhr.addEventListener('timeout', (e) => {
         _reject(
           defineLylaError<LylaTimeoutError>({
-            type: CEEK_ERROR.TIMEOUT,
+            type: LYLA_ERROR.TIMEOUT,
             message: 'Timeout',
             event: e,
             error: undefined,
@@ -174,7 +193,7 @@ function createLyla(lylaOptions: LylaOptions = {}): Lyla {
     xhr.addEventListener('error', (e) => {
       _reject(
         defineLylaError<LylaNetworkError>({
-          type: CEEK_ERROR.NETWORK,
+          type: LYLA_ERROR.NETWORK,
           message: 'Network Error',
           event: e,
           error: undefined,
@@ -182,8 +201,12 @@ function createLyla(lylaOptions: LylaOptions = {}): Lyla {
         })
       )
     })
-    xhr.upload.addEventListener('progress', onUploadProgress)
-    xhr.addEventListener('progress', onDownloadProgress)
+    if (onUploadProgress) {
+      xhr.upload.addEventListener('progress', onUploadProgress)
+    }
+    if (onDownloadProgress) {
+      xhr.addEventListener('progress', onDownloadProgress)
+    }
     xhr.addEventListener('loadend', async (e) => {
       let json: any
       let jsonParseError: TypeError
@@ -202,7 +225,7 @@ function createLyla(lylaOptions: LylaOptions = {}): Lyla {
           if (jsonFieldSet) return json
           if (typeof xhr.response !== 'string') {
             throw defineLylaError<LylaInvalidTransformationError>({
-              type: CEEK_ERROR.INVALID_TRANSFORMATION,
+              type: LYLA_ERROR.INVALID_TRANSFORMATION,
               message: `Can not convert ${responseType} to JSON`,
               event: undefined,
               error: undefined,
@@ -213,12 +236,12 @@ function createLyla(lylaOptions: LylaOptions = {}): Lyla {
             try {
               json = JSON.parse(xhr.response)
             } catch (e) {
-              jsonParseError = e
+              jsonParseError = e as TypeError
             }
           }
           if (jsonParseError) {
             throw defineLylaError<LylaInvalidJSONError>({
-              type: CEEK_ERROR.INVALID_JSON,
+              type: LYLA_ERROR.INVALID_JSON,
               message: jsonParseError.message,
               event: undefined,
               error: jsonParseError,
@@ -233,7 +256,7 @@ function createLyla(lylaOptions: LylaOptions = {}): Lyla {
         const reason = `${xhr.status} ${xhr.statusText}`
         _reject(
           defineLylaError<LylaHttpError>({
-            type: CEEK_ERROR.HTTP,
+            type: LYLA_ERROR.HTTP,
             message: `Request Failed with ${reason}`,
             event: e,
             error: undefined,
@@ -242,10 +265,8 @@ function createLyla(lylaOptions: LylaOptions = {}): Lyla {
         )
       }
 
-      if (onAfterResponse) {
-        for (const hook of onAfterResponse) {
-          response = await hook(response)
-        }
+      for (const hook of onAfterResponse) {
+        response = await hook(response)
       }
 
       _resolve(response)
@@ -253,7 +274,7 @@ function createLyla(lylaOptions: LylaOptions = {}): Lyla {
     xhr.addEventListener('abort', (e) => {
       _reject(
         defineLylaError<LylaAbortedError>({
-          type: CEEK_ERROR.ABORTED,
+          type: LYLA_ERROR.ABORTED,
           message: 'JSON Syntax Error',
           event: e,
           error: undefined,
@@ -271,7 +292,7 @@ function createLyla(lylaOptions: LylaOptions = {}): Lyla {
   function createRequestShortcut(method: LylaRequestOptions['method']) {
     return <T>(
       url: string,
-      options: Omit<LylaRequestOptions, 'url' | 'method'>
+      options?: Omit<LylaRequestOptions, 'url' | 'method'>
     ): Promise<LylaResponse<T>> => {
       return request<T>({
         ...options,
@@ -282,7 +303,9 @@ function createLyla(lylaOptions: LylaOptions = {}): Lyla {
   }
 
   function extend(
-    options: LylaOptions | ((options: LylaOptions) => LylaOptions)
+    options?:
+      | LylaRequestOptions
+      | ((options: LylaRequestOptions) => LylaRequestOptions)
   ): Lyla {
     const extendedOptions =
       typeof options === 'function'
