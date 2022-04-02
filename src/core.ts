@@ -190,7 +190,10 @@ function createLyla(lylaOptions: LylaRequestOptions = {}): Lyla {
 
     const requestPromise = new Promise<LylaResponse<T>>((resolve, reject) => {
       _resolve = resolve
-      _reject = reject
+      _reject = () => {
+        cleanup()
+        reject()
+      }
     })
 
     xhr.responseType = responseType
