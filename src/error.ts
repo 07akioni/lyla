@@ -1,4 +1,4 @@
-import type { CeekResponse } from './types.js'
+import type { LylaResponse } from './types.js'
 
 export enum CEEK_ERROR {
   NETWORK = 'NETWORK',
@@ -9,82 +9,82 @@ export enum CEEK_ERROR {
   HTTP = 'HTTP'
 }
 
-export interface CeekTimeoutError extends Error {
+export interface LylaTimeoutError extends Error {
   type: CEEK_ERROR.TIMEOUT
   error: undefined
   event: ProgressEvent<XMLHttpRequestEventTarget>
   response: undefined
 }
 
-export interface CeekInvalidTransformationError extends Error {
+export interface LylaInvalidTransformationError extends Error {
   type: CEEK_ERROR.INVALID_TRANSFORMATION
   error: undefined
   event: undefined
-  response: CeekResponse
+  response: LylaResponse
 }
 
-export interface CeekHttpError extends Error {
+export interface LylaHttpError extends Error {
   type: CEEK_ERROR.HTTP
   error: undefined
   event: ProgressEvent<XMLHttpRequestEventTarget>
-  response: CeekResponse
+  response: LylaResponse
 }
 
-export interface CeekNetworkError extends Error {
+export interface LylaNetworkError extends Error {
   type: CEEK_ERROR.NETWORK
   error: undefined
   event: ProgressEvent<XMLHttpRequestEventTarget>
   response: undefined
 }
 
-export interface CeekInvalidJSONError extends Error {
+export interface LylaInvalidJSONError extends Error {
   type: CEEK_ERROR.INVALID_JSON
   error: SyntaxError
   event: undefined
-  response: CeekResponse<string>
+  response: LylaResponse<string>
 }
 
-export interface CeekAbortedError extends Error {
+export interface LylaAbortedError extends Error {
   type: CEEK_ERROR.ABORTED
   error: undefined
   event: ProgressEvent<XMLHttpRequestEventTarget>
   response: undefined
 }
 
-export type CeekError =
-  | CeekNetworkError
-  | CeekInvalidJSONError
-  | CeekAbortedError
-  | CeekHttpError
-  | CeekInvalidTransformationError
-  | CeekTimeoutError
+export type LylaError =
+  | LylaNetworkError
+  | LylaInvalidJSONError
+  | LylaAbortedError
+  | LylaHttpError
+  | LylaInvalidTransformationError
+  | LylaTimeoutError
 
-class _CeekError extends Error {}
+class _LylaError extends Error {}
 
-export function defineCeekError<T extends CeekError>(
+export function defineLylaError<T extends LylaError>(
   error: Omit<T, 'name'>
-): CeekError {
-  const ceekError = new _CeekError()
-  ceekError.name = `CeekError[${error.type}]`
-  return Object.assign(ceekError, error) as any
+): LylaError {
+  const lylaError = new _LylaError()
+  lylaError.name = `LylaError[${error.type}]`
+  return Object.assign(lylaError, error) as any
 }
 
-function isCeekError(error: unknown): error is CeekError {
-  return error instanceof _CeekError
+function isLylaError(error: unknown): error is LylaError {
+  return error instanceof _LylaError
 }
 
 export function catchError<T, E = Error>(
   handler: (
     mergedError:
-      | { ceekError: CeekError; error: undefined }
-      | { ceekError: undefined; error: E }
+      | { lylaError: LylaError; error: undefined }
+      | { lylaError: undefined; error: E }
   ) => T
 ): (e: any) => T {
   return (e) => {
-    if (isCeekError(e)) {
-      return handler({ error: undefined, ceekError: e })
+    if (isLylaError(e)) {
+      return handler({ error: undefined, lylaError: e })
     } else {
-      return handler({ error: e, ceekError: undefined })
+      return handler({ error: e, lylaError: undefined })
     }
   }
 }
@@ -93,14 +93,14 @@ export function matchError<T, E = Error>(
   error: any,
   matcher: <T>(
     mergedError:
-      | { ceekError: CeekError; error: undefined }
-      | { ceekError: undefined; error: E }
+      | { lylaError: LylaError; error: undefined }
+      | { lylaError: undefined; error: E }
   ) => T
 ): T {
-  if (isCeekError(error)) {
-    return matcher({ ceekError: error, error: undefined })
+  if (isLylaError(error)) {
+    return matcher({ lylaError: error, error: undefined })
   } else {
-    return matcher({ ceekError: undefined, error })
+    return matcher({ lylaError: undefined, error })
   }
 }
 

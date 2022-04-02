@@ -1,46 +1,46 @@
 import { responseTypes } from './constants.js'
-import { defineCeekError, CEEK_ERROR } from './error.js'
+import { defineLylaError, CEEK_ERROR } from './error.js'
 import { mergeUrl } from './utils.js'
 import type {
-  CeekAbortedError,
-  CeekError,
-  CeekHttpError,
-  CeekInvalidTransformationError,
-  CeekInvalidJSONError,
-  CeekNetworkError,
-  CeekTimeoutError
+  LylaAbortedError,
+  LylaError,
+  LylaHttpError,
+  LylaInvalidTransformationError,
+  LylaInvalidJSONError,
+  LylaNetworkError,
+  LylaTimeoutError
 } from './error.js'
-import type { CeekRequestOptions, CeekResponse, CeekOptions } from './types.js'
+import type { LylaRequestOptions, LylaResponse, LylaOptions } from './types.js'
 
-export interface Ceek {
-  <T = any>(options: CeekRequestOptions): Promise<CeekResponse<T>>
+export interface Lyla {
+  <T = any>(options: LylaRequestOptions): Promise<LylaResponse<T>>
   extend: (
-    options: CeekOptions | ((options: CeekOptions) => CeekOptions)
-  ) => Ceek
+    options: LylaOptions | ((options: LylaOptions) => LylaOptions)
+  ) => Lyla
   get: <T = any>(
     url: string,
-    options?: Omit<CeekRequestOptions, 'url' | 'method'>
-  ) => Promise<CeekResponse<T>>
+    options?: Omit<LylaRequestOptions, 'url' | 'method'>
+  ) => Promise<LylaResponse<T>>
   post: <T = any>(
     url: string,
-    options?: Omit<CeekRequestOptions, 'url' | 'method'>
-  ) => Promise<CeekResponse<T>>
+    options?: Omit<LylaRequestOptions, 'url' | 'method'>
+  ) => Promise<LylaResponse<T>>
   put: <T = any>(
     url: string,
-    options?: Omit<CeekRequestOptions, 'url' | 'method'>
-  ) => Promise<CeekResponse<T>>
+    options?: Omit<LylaRequestOptions, 'url' | 'method'>
+  ) => Promise<LylaResponse<T>>
   patch: <T = any>(
     url: string,
-    options?: Omit<CeekRequestOptions, 'url' | 'method'>
-  ) => Promise<CeekResponse<T>>
+    options?: Omit<LylaRequestOptions, 'url' | 'method'>
+  ) => Promise<LylaResponse<T>>
   head: <T = any>(
     url: string,
-    options?: Omit<CeekRequestOptions, 'url' | 'method'>
-  ) => Promise<CeekResponse<T>>
+    options?: Omit<LylaRequestOptions, 'url' | 'method'>
+  ) => Promise<LylaResponse<T>>
   delete: <T = any>(
     url: string,
-    options?: Omit<CeekRequestOptions, 'url' | 'method'>
-  ) => Promise<CeekResponse<T>>
+    options?: Omit<LylaRequestOptions, 'url' | 'method'>
+  ) => Promise<LylaResponse<T>>
 }
 
 function isOkStatus(status: number): boolean {
@@ -66,23 +66,23 @@ function createHeaders(headers: string): Record<string, string> {
   return headerMap
 }
 
-function createCeek(ceekOptions: CeekOptions = {}): Ceek {
+function createLyla(lylaOptions: LylaOptions = {}): Lyla {
   const {
     hooks: { onBeforeOptionsNormalized, onBeforeRequest, onAfterResponse } = {}
-  } = ceekOptions
+  } = lylaOptions
 
   async function request<T = any>(
-    options: CeekRequestOptions
-  ): Promise<CeekResponse<T>> {
+    options: LylaRequestOptions
+  ): Promise<LylaResponse<T>> {
     if (onBeforeOptionsNormalized) {
       for (const hook of onBeforeOptionsNormalized) {
         options = await hook(options)
       }
     }
 
-    let _options: CeekRequestOptions = {
+    let _options: LylaRequestOptions = {
       ...options,
-      baseUrl: options.baseUrl ?? ceekOptions.baseUrl,
+      baseUrl: options.baseUrl ?? lylaOptions.baseUrl,
       method: options.method.toUpperCase() as any
     }
 
@@ -129,12 +129,12 @@ function createCeek(ceekOptions: CeekOptions = {}): Ceek {
     const xhr = new XMLHttpRequest()
     xhr.open(method, url)
 
-    let _resolve: (value: CeekResponse<T>) => void
-    let _reject: (value: CeekError) => void
+    let _resolve: (value: LylaResponse<T>) => void
+    let _reject: (value: LylaError) => void
 
     // make request headers
     const requestHeaders: Record<string, string> = {}
-    const _headers = new Headers({ ...ceekOptions.headers, ...headers })
+    const _headers = new Headers({ ...lylaOptions.headers, ...headers })
     _headers.forEach((value, key) => {
       xhr.setRequestHeader(key, value)
       requestHeaders[key] = value
@@ -152,7 +152,7 @@ function createCeek(ceekOptions: CeekOptions = {}): Ceek {
     const accept = _headers.get('accept') ?? responseTypes[responseType]
     xhr.setRequestHeader('accept', accept)
 
-    const requestPromise = new Promise<CeekResponse<T>>((resolve, reject) => {
+    const requestPromise = new Promise<LylaResponse<T>>((resolve, reject) => {
       _resolve = resolve
       _reject = reject
     })
@@ -161,7 +161,7 @@ function createCeek(ceekOptions: CeekOptions = {}): Ceek {
     if (timeout) {
       xhr.addEventListener('timeout', (e) => {
         _reject(
-          defineCeekError<CeekTimeoutError>({
+          defineLylaError<LylaTimeoutError>({
             type: CEEK_ERROR.TIMEOUT,
             message: 'Timeout',
             event: e,
@@ -173,7 +173,7 @@ function createCeek(ceekOptions: CeekOptions = {}): Ceek {
     }
     xhr.addEventListener('error', (e) => {
       _reject(
-        defineCeekError<CeekNetworkError>({
+        defineLylaError<LylaNetworkError>({
           type: CEEK_ERROR.NETWORK,
           message: 'Network Error',
           event: e,
@@ -189,7 +189,7 @@ function createCeek(ceekOptions: CeekOptions = {}): Ceek {
       let jsonParseError: TypeError
       let jsonFieldSet = false
 
-      let response: CeekResponse = {
+      let response: LylaResponse = {
         status: xhr.status,
         statusText: xhr.statusText,
         headers: createHeaders(xhr.getAllResponseHeaders()),
@@ -201,7 +201,7 @@ function createCeek(ceekOptions: CeekOptions = {}): Ceek {
         get json() {
           if (jsonFieldSet) return json
           if (typeof xhr.response !== 'string') {
-            throw defineCeekError<CeekInvalidTransformationError>({
+            throw defineLylaError<LylaInvalidTransformationError>({
               type: CEEK_ERROR.INVALID_TRANSFORMATION,
               message: `Can not convert ${responseType} to JSON`,
               event: undefined,
@@ -217,7 +217,7 @@ function createCeek(ceekOptions: CeekOptions = {}): Ceek {
             }
           }
           if (jsonParseError) {
-            throw defineCeekError<CeekInvalidJSONError>({
+            throw defineLylaError<LylaInvalidJSONError>({
               type: CEEK_ERROR.INVALID_JSON,
               message: jsonParseError.message,
               event: undefined,
@@ -232,7 +232,7 @@ function createCeek(ceekOptions: CeekOptions = {}): Ceek {
       if (!isOkStatus(xhr.status)) {
         const reason = `${xhr.status} ${xhr.statusText}`
         _reject(
-          defineCeekError<CeekHttpError>({
+          defineLylaError<LylaHttpError>({
             type: CEEK_ERROR.HTTP,
             message: `Request Failed with ${reason}`,
             event: e,
@@ -252,7 +252,7 @@ function createCeek(ceekOptions: CeekOptions = {}): Ceek {
     })
     xhr.addEventListener('abort', (e) => {
       _reject(
-        defineCeekError<CeekAbortedError>({
+        defineLylaError<LylaAbortedError>({
           type: CEEK_ERROR.ABORTED,
           message: 'JSON Syntax Error',
           event: e,
@@ -268,11 +268,11 @@ function createCeek(ceekOptions: CeekOptions = {}): Ceek {
     return requestPromise
   }
 
-  function createRequestShortcut(method: CeekRequestOptions['method']) {
+  function createRequestShortcut(method: LylaRequestOptions['method']) {
     return <T>(
       url: string,
-      options: Omit<CeekRequestOptions, 'url' | 'method'>
-    ): Promise<CeekResponse<T>> => {
+      options: Omit<LylaRequestOptions, 'url' | 'method'>
+    ): Promise<LylaResponse<T>> => {
       return request<T>({
         ...options,
         method,
@@ -282,13 +282,13 @@ function createCeek(ceekOptions: CeekOptions = {}): Ceek {
   }
 
   function extend(
-    options: CeekOptions | ((options: CeekOptions) => CeekOptions)
-  ): Ceek {
+    options: LylaOptions | ((options: LylaOptions) => LylaOptions)
+  ): Lyla {
     const extendedOptions =
       typeof options === 'function'
-        ? options(ceekOptions)
-        : { ...options, ...ceekOptions }
-    return createCeek(extendedOptions)
+        ? options(lylaOptions)
+        : { ...options, ...lylaOptions }
+    return createLyla(extendedOptions)
   }
 
   return Object.assign(request, {
@@ -302,4 +302,4 @@ function createCeek(ceekOptions: CeekOptions = {}): Ceek {
   })
 }
 
-export { createCeek }
+export { createLyla }

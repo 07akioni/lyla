@@ -6,31 +6,31 @@ import "./types"
 beforeEach(test)
 
 test('throws error if response is not json serializable', async ({ page }) => {
-  const [throws, body, ceekErrorType] = await page.evaluate(async () => {
+  const [throws, body, lylaErrorType] = await page.evaluate(async () => {
     let catched = false
     let body: any
-    let ceekErrorType: CEEK_ERROR
+    let lylaErrorType: CEEK_ERROR
     try {
-      const resp = await window.ceek.get('/api/get-text')
+      const resp = await window.lyla.get('/api/get-text')
       body = resp.body
       console.log(resp.json)
       return [false, '']
     } catch (e) {
       catched = true
-      window.catchError(({ ceekError }) => {
-        ceekErrorType = ceekError.type
+      window.catchError(({ lylaError }) => {
+        lylaErrorType = lylaError.type
       })(e)
     }
-    return [catched, body, ceekErrorType]
+    return [catched, body, lylaErrorType]
   })
   expect(throws).toEqual(true)
   expect(body).toEqual('hello world')
-  expect(ceekErrorType).toEqual(CEEK_ERROR.INVALID_JSON)
+  expect(lylaErrorType).toEqual(CEEK_ERROR.INVALID_JSON)
 })
 
 test('json', async ({ page }) => {
   const json = await page.evaluate(async () => {
-    return (await window.ceek.get('/api/get-json')).json
+    return (await window.lyla.get('/api/get-json')).json
   })
   expect(json).toEqual({ key: 'value' })
 })
@@ -38,60 +38,60 @@ test('json', async ({ page }) => {
 test('throws error if try getting json when `responseType` is not `text`', async ({
   page
 }) => {
-  const [throws0, bodyIsBlob, ceekErrorType0] = await page.evaluate(
+  const [throws0, bodyIsBlob, lylaErrorType0] = await page.evaluate(
     async () => {
       let catched = false
       let body: any
-      let ceekErrorType: CEEK_ERROR
+      let lylaErrorType: CEEK_ERROR
       try {
-        const resp = await window.ceek.get('/api/get-text', {
+        const resp = await window.lyla.get('/api/get-text', {
           responseType: 'blob'
         })
         body = resp.body
         console.log(resp.json)
-        return [false, body instanceof Blob, ceekErrorType]
+        return [false, body instanceof Blob, lylaErrorType]
       } catch (e) {
         catched = true
-        window.catchError(({ ceekError }) => {
-          ceekErrorType = ceekError.type
+        window.catchError(({ lylaError }) => {
+          lylaErrorType = lylaError.type
         })(e)
       }
-      return [catched, body instanceof Blob, ceekErrorType]
+      return [catched, body instanceof Blob, lylaErrorType]
     }
   )
   expect(throws0).toEqual(true)
   expect(bodyIsBlob).toEqual(true)
-  expect(ceekErrorType0).toEqual(CEEK_ERROR.INVALID_TRANSFORMATION)
-  const [throws1, bodyIsArryBuffer, ceekErrorType1] = await page.evaluate(
+  expect(lylaErrorType0).toEqual(CEEK_ERROR.INVALID_TRANSFORMATION)
+  const [throws1, bodyIsArryBuffer, lylaErrorType1] = await page.evaluate(
     async () => {
       let catched = false
       let body: any
-      let ceekErrorType: CEEK_ERROR
+      let lylaErrorType: CEEK_ERROR
       try {
-        const resp = await window.ceek.get('/api/get-text', {
+        const resp = await window.lyla.get('/api/get-text', {
           responseType: 'arraybuffer'
         })
         body = resp.body
         console.log(resp.json)
-        return [false, body instanceof ArrayBuffer, ceekErrorType]
+        return [false, body instanceof ArrayBuffer, lylaErrorType]
       } catch (e) {
         catched = true
-        window.catchError(({ ceekError }) => {
-          ceekErrorType = ceekError.type
+        window.catchError(({ lylaError }) => {
+          lylaErrorType = lylaError.type
         })(e)
       }
-      return [catched, body instanceof ArrayBuffer, ceekErrorType]
+      return [catched, body instanceof ArrayBuffer, lylaErrorType]
     }
   )
   expect(throws1).toEqual(true)
   expect(bodyIsArryBuffer).toEqual(true)
-  expect(ceekErrorType1).toEqual(CEEK_ERROR.INVALID_TRANSFORMATION)
+  expect(lylaErrorType1).toEqual(CEEK_ERROR.INVALID_TRANSFORMATION)
 })
 
 test('json can be set', async ({ page }) => {
   expect(
     await page.evaluate(async () => {
-      const resp = await window.ceek.get('/api/get-text', {
+      const resp = await window.lyla.get('/api/get-text', {
         responseType: 'arraybuffer'
       })
       resp.json = 'resp json'

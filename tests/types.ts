@@ -1,8 +1,8 @@
-import type { Ceek, OnError } from '../src'
+import type { Lyla, OnError } from '../src'
 
 declare global {
   interface Window {
-    ceek: Ceek
+    lyla: Lyla
     catchError: OnError
   }
 }

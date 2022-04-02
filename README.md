@@ -1,6 +1,6 @@
-# ceek
+# lyla
 
-Ceek is an explicit request library for browser.
+Lyla is an explicit request library for browser.
 
 - Won't transform data without explicit config.
 - Won't suppress expection silently (JSON parse error, config error, eg.).
@@ -11,21 +11,21 @@ Ceek is an explicit request library for browser.
 ## Usage
 
 ```ts
-import { ceek } from 'ceek'
+import { lyla } from 'lyla'
 
-const { json } = await ceek.post('https://example.com', {
+const { json } = await lyla.post('https://example.com', {
   json: { foo: 'bar' }
 })
 ```
 
 ## API
 
-### ceek<T>(options: CeekRequestOptions): CeekResponse<T>
+### lyla<T>(options: LylaRequestOptions): LylaResponse<T>
 
-#### CeekRequestOptions
+#### LylaRequestOptions
 
 ```ts
-type CeekRequestOptions = {
+type LylaRequestOptions = {
   method:
     | 'get'
     | 'GET'
@@ -55,10 +55,10 @@ type CeekRequestOptions = {
 }
 ```
 
-#### CeekResponse
+#### LylaResponse
 
 ```ts
-export type CeekResponse<T = any> = {
+export type LylaResponse<T = any> = {
   status: number
   statusText: string
   headers: Record<string, string>
@@ -70,17 +70,17 @@ export type CeekResponse<T = any> = {
 ## Error handling
 
 ```ts
-import { catchError, matchError, CEEK_ERROR } from 'ceek'
+import { catchError, matchError, CEEK_ERROR } from 'lyla'
 
 // promise style
-ceek
+lyla
   .get('https://example.com')
   .then((resp) => {
     console.log(resp.json)
   })
-  .catch(catchError(({ ceekError, error }) => {
-    if (ceekError) {
-      switch ceekError.type {
+  .catch(catchError(({ lylaError, error }) => {
+    if (lylaError) {
+      switch lylaError.type {
         CEEK_ERROR.INVALID_JSON:
           console.log('json parse error')
           break
@@ -92,9 +92,9 @@ ceek
 
 // async style
 try {
-  const { json } = await ceek.get('https://example.com')
+  const { json } = await lyla.get('https://example.com')
 } catch (e) {
-  matchError(e, ({ ceekError, error }) => {
+  matchError(e, ({ lylaError, error }) => {
     // ...
   })
 }
@@ -103,10 +103,10 @@ try {
 TODO global error handler
 
 ```ts
-import type { CeekError } from 'ceek'
+import type { LylaError } from 'lyla'
 
-const request = ceek.extend({
-  onError(error: CeekError) {
+const request = lyla.extend({
+  onError(error: LylaError) {
     switch error.type {
       // ...
     }

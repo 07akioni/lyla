@@ -2,3 +2,4 @@ node_modules
 es
 lib
 pnpm-lock.yaml
+.pnpm-debug.log

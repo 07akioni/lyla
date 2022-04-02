@@ -1,3 +1,3 @@
-import { createCeek } from './core.js'
+import { createLyla } from './core.js'
 
-export const ceek = createCeek()
+export const lyla = createLyla()

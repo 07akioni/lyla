@@ -1,27 +1,27 @@
-export type CeekOptions = {
+export type LylaOptions = {
   baseUrl?: string
   withCredentials?: boolean
   headers?: Record<string, string>
   hooks?: {
     onBeforeOptionsNormalized: Array<
       (
-        options: CeekRequestOptions
-      ) => CeekRequestOptions | Promise<CeekRequestOptions>
+        options: LylaRequestOptions
+      ) => LylaRequestOptions | Promise<LylaRequestOptions>
     >
     onBeforeRequest: Array<
       (
-        options: CeekRequestOptions
-      ) => CeekRequestOptions | Promise<CeekRequestOptions>
+        options: LylaRequestOptions
+      ) => LylaRequestOptions | Promise<LylaRequestOptions>
     >
     onAfterResponse: Array<
       (
-        reqsponse: CeekResponse<any>
-      ) => CeekResponse<any> | Promise<CeekResponse<any>>
+        reqsponse: LylaResponse<any>
+      ) => LylaResponse<any> | Promise<LylaResponse<any>>
     >
   }
 }
 
-export type CeekRequestOptions = {
+export type LylaRequestOptions = {
   method:
     | 'get'
     | 'GET'
@@ -50,7 +50,7 @@ export type CeekRequestOptions = {
   ) => void
 }
 
-export type CeekResponse<T = any> = {
+export type LylaResponse<T = any> = {
   status: number
   statusText: string
   headers: Record<string, string>

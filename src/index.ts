@@ -1,5 +1,5 @@
-export type { Ceek } from './core.js'
-export type { CeekOptions, CeekRequestOptions, CeekResponse} from './types.js'
-export { ceek } from './instance.js'
+export type { Lyla } from './core.js'
+export type { LylaOptions, LylaRequestOptions, LylaResponse} from './types.js'
+export { lyla } from './instance.js'
 export type { OnError } from './error.js'
 export { catchError, matchError, CEEK_ERROR } from './error.js'

@@ -1,7 +1,7 @@
 import axios from 'axios'
-import { ceek, catchError } from '../src'
+import { lyla, catchError } from '../src'
 
-const request = ceek.extend({ baseUrl: '/api/' })
+const request = lyla.extend({ baseUrl: '/api/' })
 
 type Handler = [string, () => void]
 
@@ -178,8 +178,8 @@ const handlers: Handler[] = [
         })
         .catch(
           catchError((e) => {
-            if (e.ceekError) {
-              console.log(e.ceekError)
+            if (e.lylaError) {
+              console.log(e.lylaError)
             } else {
               console.error(e.error)
             }

@@ -5,7 +5,7 @@ beforeEach(test)
 ;(['get', 'post', 'delete', 'put', 'patch'] as const).forEach((method) => {
   test(`${method}, \`responseType\` is not set`, async ({ page }) => {
     const body = await page.evaluate(async (method) => {
-      const { body } = await window.ceek[method](`/api/${method}-text`)
+      const { body } = await window.lyla[method](`/api/${method}-text`)
       return body
     }, method)
     expect(body).toEqual('hello world')
@@ -13,7 +13,7 @@ beforeEach(test)
 
   test(`${method}, \`responseType\` is set to \`text\``, async ({ page }) => {
     const body = await page.evaluate(async (method) => {
-      const { body } = await window.ceek[method](`/api/${method}-text`)
+      const { body } = await window.lyla[method](`/api/${method}-text`)
       return body
     }, method)
     expect(body).toEqual('hello world')
@@ -23,7 +23,7 @@ beforeEach(test)
     page
   }) => {
     const isArrayBuffer = await page.evaluate(async (method) => {
-      const { body } = await window.ceek[method](`/api/${method}-text`, {
+      const { body } = await window.lyla[method](`/api/${method}-text`, {
         responseType: 'arraybuffer'
       })
       return body instanceof ArrayBuffer
@@ -33,7 +33,7 @@ beforeEach(test)
 
   test(`${method}, \`responseType\` is set to \`blob\``, async ({ page }) => {
     const isArrayBuffer = await page.evaluate(async (method) => {
-      const { body } = await window.ceek[method](`/api/${method}-text`, {
+      const { body } = await window.lyla[method](`/api/${method}-text`, {
         responseType: 'blob'
       })
       return body instanceof Blob
@@ -43,7 +43,7 @@ beforeEach(test)
 
   test(`${method}, request & response \`headers\` works`, async ({ page }) => {
     const respHeaders = await page.evaluate(async (method) => {
-      const resp = await window.ceek[method](`/api/${method}-return-headers`, {
+      const resp = await window.lyla[method](`/api/${method}-return-headers`, {
         headers: {
           headerKey: 'headerValue'
         }
@@ -56,7 +56,7 @@ beforeEach(test)
   if (method !== 'get') {
     test(`${method}, \`request.json\` works`, async ({ page }) => {
       const [body, json] = await page.evaluate(async (method) => {
-        const resp = await window.ceek[method](`/api/${method}-return-body`, {
+        const resp = await window.lyla[method](`/api/${method}-return-body`, {
           json: {
             jsonKey: 'jsonValue'
           }
