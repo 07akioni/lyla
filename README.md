@@ -30,11 +30,26 @@ const { json } = await lyla.post('https://example.com', {
 
 ### lyla<T>(options: LylaRequestOptions): LylaResponse<T>
 
+### lyla.get<T>(options: LylaRequestOptions): LylaResponse<T>
+
+### lyla.post<T>(options: LylaRequestOptions): LylaResponse<T>
+
+### lyla.put<T>(options: LylaRequestOptions): LylaResponse<T>
+
+### lyla.patch<T>(options: LylaRequestOptions): LylaResponse<T>
+
+### lyla.head<T>(options: LylaRequestOptions): LylaResponse<T>
+
+### lyla.delete<T>(options: LylaRequestOptions): LylaResponse<T>
+
+### lyla.extend(options: LylaRequestOptions): Lyla
+
 #### LylaRequestOptions
 
 ```ts
 type LylaRequestOptions = {
-  method:
+  url?: string
+  method?:
     | 'get'
     | 'GET'
     | 'post'
@@ -45,28 +60,45 @@ type LylaRequestOptions = {
     | 'PATCH'
     | 'head'
     | 'delete'
-  url: string
   timeout?: number
   withCredentials?: boolean
   headers?: Record<string, string>
-  responseType?: 'arraybuffer' | 'blob' | 'text'
+  responseType?: Exclude<XMLHttpRequestResponseType, 'document' | 'json' | ''>
   body?: XMLHttpRequestBodyInit
   json?: any
   query?: Record<string, string>
   baseUrl?: string
+  signal?: AbortSignal
   onUploadProgress?: (
     progressEvent: ProgressEvent<XMLHttpRequestEventTarget>
   ) => void
   onDownloadProgress?: (
     progressEvent: ProgressEvent<XMLHttpRequestEventTarget>
   ) => void
+  hooks?: {
+    onBeforeOptionsNormalized?: Array<
+      (
+        options: LylaRequestOptions
+      ) => LylaRequestOptions | Promise<LylaRequestOptions>
+    >
+    onBeforeRequest?: Array<
+      (
+        options: LylaRequestOptions
+      ) => LylaRequestOptions | Promise<LylaRequestOptions>
+    >
+    onAfterResponse?: Array<
+      (
+        reqsponse: LylaResponse<any>
+      ) => LylaResponse<any> | Promise<LylaResponse<any>>
+    >
+  }
 }
 ```
 
 #### LylaResponse
 
 ```ts
-export type LylaResponse<T = any> = {
+type LylaResponse<T = any> = {
   status: number
   statusText: string
   headers: Record<string, string>

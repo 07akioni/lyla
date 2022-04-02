@@ -19,6 +19,7 @@ export type LylaRequestOptions = {
   json?: any
   query?: Record<string, string>
   baseUrl?: string
+  signal?: AbortSignal
   onUploadProgress?: (
     progressEvent: ProgressEvent<XMLHttpRequestEventTarget>
   ) => void

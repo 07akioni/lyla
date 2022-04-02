@@ -142,12 +142,27 @@ function createLyla(lylaOptions: LylaRequestOptions = {}): Lyla {
       body,
       responseType = 'text',
       withCredentials,
+      signal,
       onUploadProgress,
       onDownloadProgress
     } = _options
 
+    function cleanup() {
+      if (signal) {
+        signal.removeEventListener('abort', onAbortSignalReceived)
+      }
+    }
+
+    function onAbortSignalReceived() {
+      xhr.abort()
+    }
+
     const xhr = new XMLHttpRequest()
     xhr.open(method || 'get', url || '')
+
+    if (signal) {
+      signal.addEventListener('abort', onAbortSignalReceived)
+    }
 
     let _resolve: (value: LylaResponse<T>) => void
     let _reject: (value: LylaError) => void
@@ -210,6 +225,8 @@ function createLyla(lylaOptions: LylaRequestOptions = {}): Lyla {
       xhr.addEventListener('progress', onDownloadProgress)
     }
     xhr.addEventListener('loadend', async (e) => {
+      cleanup()
+
       let response: LylaResponse = {
         status: xhr.status,
         statusText: xhr.statusText,
