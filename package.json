@@ -10,9 +10,10 @@
   ],
   "scripts": {
     "build": "tsc -p tsconfig.cjs.json && tsc -p tsconfig.esm.json",
-    "release": "pnpm run build && pnpm publish",
+    "release": "pnpm run build-test && pnpm publish",
     "dev": "vite",
-    "test": "./tests/before-test.sh && pnpm run build && playwright test && ./tests/after-test.sh"
+    "build-test": "./tests/before-test.sh && pnpm run build && playwright test && ./tests/after-test.sh",
+    "test": "./tests/before-test.sh && playwright test && ./tests/after-test.sh"
   },
   "author": "07akioni",
   "license": "MIT",
