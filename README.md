@@ -21,7 +21,15 @@ yarn add lyla # for yarn
 ```ts
 import { lyla } from 'lyla'
 
-const { json } = await lyla.post('https://example.com', {
+const {json} = await lyla.get<T>('https://example.com')
+
+const { json } = await lyla.post<T>('https://example.com', {
+  json: { foo: 'bar' }
+})
+
+const { json } = await lyla<T>({
+  url: 'https://example.com',
+  method: 'POST',
   json: { foo: 'bar' }
 })
 ```
