@@ -1,4 +1,4 @@
-cd server
+cd ./server
 SERVER_PID=`cat SERVER_PID`
 CORS_SERVER_PID=`cat CORS_SERVER_PID`
 pkill -P $SERVER_PID
