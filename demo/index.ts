@@ -28,7 +28,8 @@ const handlers: Handler[] = [
         console.log(body)
       })
       axios
-        .get('/api/res-text', {
+        .get('http://localhost:7070', {
+          baseURL: 'http://localhost:3000',
           responseType: 'json'
         })
         .then((resp) => {
