@@ -1,9 +1,10 @@
-import type { Lyla, OnError } from '../src'
+import type { CatchError, Lyla, MatchError } from '../src'
 
 declare global {
   interface Window {
     lyla: Lyla
-    catchError: OnError
+    catchError: CatchError
+    matchError: MatchError
   }
 }
 

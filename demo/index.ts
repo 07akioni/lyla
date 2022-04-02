@@ -188,7 +188,7 @@ const handlers: Handler[] = [
     }
   ],
   [
-    'test',
+    'hooks',
     () => {
       const _req = request.extend({
         hooks: {
@@ -219,9 +219,51 @@ const handlers: Handler[] = [
           ]
         }
       })
-      _req.post('/gigigi').then(resp => {
+      _req.post('/gigigi').then((resp) => {
         console.log(resp)
       })
+    }
+  ],
+  [
+    'cors set cookie',
+    async () => {
+      const resp = await lyla.get('http://localhost:7070/api/get-set-cookie', { withCredentials: true })
+      console.log(resp)
+    }
+  ],
+  [
+    'cors get with credentials',
+    async () => {
+      const resp = await lyla.get('http://localhost:7070/api/get-return-headers', { withCredentials: true })
+      console.log(resp)
+    }
+  ],
+  [
+    'cors get without credentials',
+    async () => {
+      const resp = await lyla.get('http://localhost:7070/api/get-return-headers')
+      console.log(resp)
+    }
+  ],
+  [
+    'cors post cookie',
+    async () => {
+      const resp = await lyla.post('http://localhost:7070/api/post-set-cookie', { withCredentials: true })
+      console.log(resp)
+    }
+  ],
+  [
+    'cors post with credentials',
+    async () => {
+      const resp = await lyla.post('http://localhost:7070/api/post-return-headers', { withCredentials: true })
+      console.log(resp)
+    }
+  ],
+  [
+    'cors post without credentials',
+    async () => {
+      const resp = await lyla.post('http://localhost:7070/api/post-return-headers')
+      console.log(resp)
     }
   ]
 ]

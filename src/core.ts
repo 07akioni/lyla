@@ -141,6 +141,7 @@ function createLyla(lylaOptions: LylaRequestOptions = {}): Lyla {
       headers,
       body,
       responseType = 'text',
+      withCredentials,
       onUploadProgress,
       onDownloadProgress
     } = _options
@@ -170,6 +171,7 @@ function createLyla(lylaOptions: LylaRequestOptions = {}): Lyla {
     // Set 'accept' header
     const accept = _headers.get('accept') ?? responseTypes[responseType]
     xhr.setRequestHeader('accept', accept)
+    xhr.withCredentials = !!withCredentials
 
     const requestPromise = new Promise<LylaResponse<T>>((resolve, reject) => {
       _resolve = resolve

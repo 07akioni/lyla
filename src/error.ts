@@ -91,7 +91,7 @@ export function catchError<T, E = Error>(
 
 export function matchError<T, E = Error>(
   error: any,
-  matcher: <T>(
+  matcher: (
     mergedError:
       | { lylaError: LylaError; error: undefined }
       | { lylaError: undefined; error: E }
@@ -104,4 +104,5 @@ export function matchError<T, E = Error>(
   }
 }
 
-export type OnError = typeof catchError
+export type CatchError = typeof catchError
+export type MatchError = typeof matchError

@@ -3,7 +3,9 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
+	"os"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -27,6 +29,16 @@ func GetTestRoutes(r *gin.Engine) {
 		data, _ := ioutil.ReadAll(c.Request.Body)
 		c.String(200, string(data[:]))
 	})
+	r.GET("/api/get-set-cookie", func(c *gin.Context) {
+		c.Header("set-cookie", "foo-get=bar")
+		c.Header("X-Cors", "amazing")
+	})
+	r.GET("/api/get-check-cookie", func(c *gin.Context) {
+		if cookie, err := c.Request.Cookie("foo-get"); err != nil || cookie.Value != "bar" {
+			fmt.Println("Amazing")
+			c.Status(500)
+		}
+	})
 }
 
 func PostTestRoutes(r *gin.Engine) {
@@ -48,6 +60,15 @@ func PostTestRoutes(r *gin.Engine) {
 	r.POST("/api/post-return-body", func(c *gin.Context) {
 		data, _ := ioutil.ReadAll(c.Request.Body)
 		c.String(200, string(data[:]))
+	})
+	r.POST("/api/post-set-cookie", func(c *gin.Context) {
+		c.Header("set-cookie", "foo-post=bar")
+	})
+	r.POST("/api/post-check-cookie", func(c *gin.Context) {
+		if cookie, err := c.Request.Cookie("foo-post"); err != nil || cookie.Value != "bar" {
+			fmt.Println("Amazing")
+			c.Status(500)
+		}
 	})
 }
 
@@ -131,6 +152,17 @@ func HeadTestRoutes(r *gin.Engine) {
 func main() {
 	fmt.Println("hello")
 	r := gin.Default()
+	corsRoutes := gin.New()
+
+	corsRoutes.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"http://localhost:8080", "http://localhost:3000"},
+		AllowMethods:     []string{"GET", "POST"},
+		ExposeHeaders:    []string{"X-Cors", "Set-Cookie"},
+		AllowCredentials: true,
+	}))
+
+	GetTestRoutes(corsRoutes)
+	PostTestRoutes(corsRoutes)
 
 	GetTestRoutes(r)
 	PostTestRoutes(r)
@@ -186,5 +218,9 @@ func main() {
 		})
 	})
 
-	r.Run() // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
+	if len(os.Args) >= 2 && os.Args[1] == "7070" {
+		corsRoutes.Run(":7070")
+	} else {
+		r.Run() // 8080
+	}
 }
