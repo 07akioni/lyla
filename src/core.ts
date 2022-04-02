@@ -1,5 +1,5 @@
 import { responseTypes } from './constants.js'
-import { defineLylaError, LYLA_ERROR } from './error.js'
+import { defineLylaError, LylaBadRequestError, LYLA_ERROR } from './error.js'
 import { mergeUrl } from './utils.js'
 import type {
   LylaAbortedError,
@@ -310,7 +310,13 @@ function createLyla(lylaOptions: LylaRequestOptions = {}): Lyla {
       )
     })
     if (method === 'GET' && body) {
-      throw new Error("Can not send a request with body in 'GET' method.")
+      throw defineLylaError<LylaBadRequestError>({
+        type: LYLA_ERROR.BAD_REQUEST,
+        message: "Can not send a request with body in 'GET' method.",
+        error: undefined,
+        response: undefined,
+        event: undefined
+      })
     }
     xhr.send(body)
     return requestPromise

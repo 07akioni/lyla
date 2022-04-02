@@ -6,7 +6,8 @@ export enum LYLA_ERROR {
   INVALID_JSON = 'INVALID_JSON',
   INVALID_TRANSFORMATION = 'INVALID_TRANSFORMATION',
   TIMEOUT = 'TIMEOUT',
-  HTTP = 'HTTP'
+  HTTP = 'HTTP',
+  BAD_REQUEST = 'BAD_REQUEST'
 }
 
 export interface LylaTimeoutError extends Error {
@@ -51,6 +52,13 @@ export interface LylaAbortedError extends Error {
   response: undefined
 }
 
+export interface LylaBadRequestError extends Error {
+  type: LYLA_ERROR.BAD_REQUEST
+  error: undefined
+  event: undefined
+  response: undefined
+}
+
 export type LylaError =
   | LylaNetworkError
   | LylaInvalidJSONError
@@ -58,6 +66,7 @@ export type LylaError =
   | LylaHttpError
   | LylaInvalidTransformationError
   | LylaTimeoutError
+  | LylaBadRequestError
 
 class _LylaError extends Error {}
 
