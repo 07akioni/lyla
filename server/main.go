@@ -35,7 +35,6 @@ func GetTestRoutes(r *gin.Engine) {
 	})
 	r.GET("/api/get-check-cookie", func(c *gin.Context) {
 		if cookie, err := c.Request.Cookie("foo-get"); err != nil || cookie.Value != "bar" {
-			fmt.Println("Amazing")
 			c.Status(500)
 		}
 	})
@@ -67,7 +66,6 @@ func PostTestRoutes(r *gin.Engine) {
 	})
 	r.POST("/api/post-check-cookie", func(c *gin.Context) {
 		if cookie, err := c.Request.Cookie("foo-post"); err != nil || cookie.Value != "bar" {
-			fmt.Println("Amazing")
 			c.Status(500)
 		}
 	})
@@ -150,10 +148,49 @@ func HeadTestRoutes(r *gin.Engine) {
 	})
 }
 
+func DemoRoutes(r *gin.Engine) {
+	r.GET("/api/res-json", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"key": "value",
+		})
+	})
+
+	r.GET("/api/res-json-content-type-json", func(c *gin.Context) {
+		c.Header("Content-Type", "application/json")
+		c.JSON(200, gin.H{
+			"key": "value",
+		})
+	})
+
+	r.GET("/api/res-text", func(c *gin.Context) {
+		c.String(200, "ok")
+	})
+
+	r.POST("/api/res-json", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"key": "value",
+		})
+	})
+
+	r.POST("/api/res-json-content-type-json", func(c *gin.Context) {
+		c.Header("Content-Type", "application/json")
+		c.JSON(200, gin.H{
+			"key": "value",
+		})
+	})
+}
+
+func StaticRoutes(r *gin.Engine) {
+	r.Static("/es", "../es")
+	r.StaticFile("/", "./index.html")
+}
+
 func main() {
 	fmt.Println("hello")
 	r := gin.Default()
 	corsRoutes := gin.New()
+
+	StaticRoutes(r)
 
 	corsRoutes.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"http://localhost:8080", "http://localhost:3000"},
@@ -186,38 +223,7 @@ func main() {
 		fmt.Println("[request.body]", string(body))
 	})
 
-	r.Static("/es", "../es")
-	r.StaticFile("/", "./index.html")
-
-	r.GET("/api/res-json", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"key": "value",
-		})
-	})
-
-	r.GET("/api/res-json-content-type-json", func(c *gin.Context) {
-		c.Header("Content-Type", "application/json")
-		c.JSON(200, gin.H{
-			"key": "value",
-		})
-	})
-
-	r.GET("/api/res-text", func(c *gin.Context) {
-		c.String(200, "ok")
-	})
-
-	r.POST("/api/res-json", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"key": "value",
-		})
-	})
-
-	r.POST("/api/res-json-content-type-json", func(c *gin.Context) {
-		c.Header("Content-Type", "application/json")
-		c.JSON(200, gin.H{
-			"key": "value",
-		})
-	})
+	DemoRoutes(r)
 
 	if len(os.Args) >= 2 && os.Args[1] == "cors" {
 		corsRoutes.Run(":7070")
