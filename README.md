@@ -70,9 +70,11 @@ type LylaRequestOptions = {
   baseUrl?: string
   signal?: AbortSignal
   onUploadProgress?: (
+    progress: LylaProgress,
     progressEvent: ProgressEvent<XMLHttpRequestEventTarget>
   ) => void
   onDownloadProgress?: (
+    progress: LylaProgress,
     progressEvent: ProgressEvent<XMLHttpRequestEventTarget>
   ) => void
   hooks?: {
@@ -104,6 +106,17 @@ type LylaResponse<T = any> = {
   headers: Record<string, string>
   body: string | ArrayBuffer | Blob
   json: T
+}
+```
+
+#### LylaProgress
+
+```ts
+type LylaProgress = {
+  percent: number
+  loaded: number
+  total: number
+  lengthComputable: boolean
 }
 ```
 
