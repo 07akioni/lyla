@@ -1,6 +1,6 @@
 {
   "name": "lyla",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "description": "",
   "module": "es/index.js",
   "main": "lib/index.js",
