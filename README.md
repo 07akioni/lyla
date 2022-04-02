@@ -10,7 +10,7 @@ Lyla is an explicit request library for browser.
 
 ## Installation
 
-```
+```bash
 npm i lyla # for npm
 pnpm i lyla # for pnpm
 yarn add lyla # for yarn
