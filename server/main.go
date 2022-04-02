@@ -219,7 +219,7 @@ func main() {
 		})
 	})
 
-	if len(os.Args) >= 2 && os.Args[1] == "7070" {
+	if len(os.Args) >= 2 && os.Args[1] == "cors" {
 		corsRoutes.Run(":7070")
 	} else {
 		r.Run() // 8080

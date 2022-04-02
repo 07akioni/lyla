@@ -190,9 +190,9 @@ function createLyla(lylaOptions: LylaRequestOptions = {}): Lyla {
 
     const requestPromise = new Promise<LylaResponse<T>>((resolve, reject) => {
       _resolve = resolve
-      _reject = () => {
+      _reject = (e) => {
         cleanup()
-        reject()
+        reject(e)
       }
     })
 

@@ -228,42 +228,57 @@ const handlers: Handler[] = [
   [
     'cors set cookie',
     async () => {
-      const resp = await lyla.get('http://localhost:7070/api/get-set-cookie', { withCredentials: true })
+      const resp = await lyla.get('http://localhost:7070/api/get-set-cookie', {
+        withCredentials: true
+      })
       console.log(resp)
     }
   ],
   [
     'cors get with credentials',
     async () => {
-      const resp = await lyla.get('http://localhost:7070/api/get-return-headers', { withCredentials: true })
+      const resp = await lyla.get(
+        'http://localhost:7070/api/get-return-headers',
+        { withCredentials: true }
+      )
       console.log(resp)
     }
   ],
   [
     'cors get without credentials',
     async () => {
-      const resp = await lyla.get('http://localhost:7070/api/get-return-headers')
+      const resp = await lyla.get(
+        'http://localhost:7070/api/get-return-headers'
+      )
       console.log(resp)
     }
   ],
   [
     'cors post cookie',
     async () => {
-      const resp = await lyla.post('http://localhost:7070/api/post-set-cookie', { withCredentials: true })
+      const resp = await lyla.post(
+        'http://localhost:7070/api/post-set-cookie',
+        { withCredentials: true }
+      )
       console.log(resp)
     }
   ],
   [
     'cors post with credentials',
     async () => {
-      const resp = await lyla.post('http://localhost:7070/api/post-return-headers', { withCredentials: true })
+      const resp = await lyla.post(
+        'http://localhost:7070/api/post-return-headers',
+        { withCredentials: true }
+      )
       console.log(resp)
     }
   ],
   [
     'cors post without credentials',
     async () => {
-      const resp = await lyla.post('http://localhost:7070/api/post-return-headers')
+      const resp = await lyla.post(
+        'http://localhost:7070/api/post-return-headers'
+      )
       console.log(resp)
     }
   ],
@@ -280,6 +295,16 @@ const handlers: Handler[] = [
           console.log('d', e.lengthComputable, e.loaded / e.total)
         }
       })
+    }
+  ],
+  [
+    'test',
+    async () => {
+      try {
+        await lyla.get('http://localhost:7070/api/get-check-cookie')
+      } catch (e) {
+        debugger
+      }
     }
   ]
 ]
