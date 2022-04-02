@@ -36,18 +36,18 @@ test('cors post', async ({ page }) => {
       withCredentials: true
     })
   })
-  // expect(status).toEqual(200)
-  // const errorType = await page.evaluate(async () => {
-  //   try {
-  //     await window.lyla.post('http://localhost:7070/api/post-check-cookie')
-  //   } catch (e) {
-  //     return window.matchError(e, ({ lylaError }) => {
-  //       return lylaError?.type
-  //     })
-  //   }
-  //   return undefined
-  // })
-  // expect(errorType).toEqual(LYLA_ERROR.HTTP)
+  expect(status).toEqual(200)
+  const errorType = await page.evaluate(async () => {
+    try {
+      await window.lyla.post('http://localhost:7070/api/post-check-cookie')
+    } catch (e) {
+      return window.matchError(e, ({ lylaError }) => {
+        return lylaError?.type
+      })
+    }
+    return undefined
+  })
+  expect(errorType).toEqual(LYLA_ERROR.HTTP)
   await page.evaluate(async () => {
     await window.lyla.post('http://localhost:7070/api/post-check-cookie', {
       withCredentials: true

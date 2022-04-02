@@ -222,10 +222,30 @@ function createLyla(lylaOptions: LylaRequestOptions = {}): Lyla {
       )
     })
     if (onUploadProgress) {
-      xhr.upload.addEventListener('progress', onUploadProgress)
+      xhr.upload.addEventListener('progress', (e) => {
+        onUploadProgress(
+          {
+            lengthComputable: e.lengthComputable,
+            percent: e.lengthComputable ? (e.loaded / e.total) * 100 : 0,
+            loaded: e.loaded,
+            total: e.total
+          },
+          e
+        )
+      })
     }
     if (onDownloadProgress) {
-      xhr.addEventListener('progress', onDownloadProgress)
+      xhr.addEventListener('progress', (e) => {
+        onDownloadProgress(
+          {
+            lengthComputable: e.lengthComputable,
+            percent: e.lengthComputable ? (e.loaded / e.total) * 100 : 0,
+            loaded: e.loaded,
+            total: e.total
+          },
+          e
+        )
+      })
     }
     xhr.addEventListener('loadend', async (e) => {
       cleanup()
@@ -235,29 +255,28 @@ function createLyla(lylaOptions: LylaRequestOptions = {}): Lyla {
         statusText: xhr.statusText,
         headers: createHeaders(xhr.getAllResponseHeaders()),
         body: xhr.response,
-        json: null
-      }
-
-      if (typeof xhr.response !== 'string') {
-        throw defineLylaError<LylaInvalidTransformationError>({
-          type: LYLA_ERROR.INVALID_TRANSFORMATION,
-          message: `Can not convert ${responseType} to JSON`,
-          event: undefined,
-          error: undefined,
-          response
-        })
-      }
-
-      try {
-        response = JSON.parse(xhr.response)
-      } catch (e) {
-        throw defineLylaError<LylaInvalidJSONError>({
-          type: LYLA_ERROR.INVALID_JSON,
-          message: (e as TypeError).message,
-          event: undefined,
-          error: e as TypeError,
-          response
-        })
+        get json() {
+          if (responseType !== 'text') {
+            throw defineLylaError<LylaInvalidTransformationError>({
+              type: LYLA_ERROR.INVALID_TRANSFORMATION,
+              message: `Can not convert ${responseType} to JSON`,
+              event: undefined,
+              error: undefined,
+              response
+            })
+          }
+          try {
+            return JSON.parse(xhr.response)
+          } catch (e) {
+            throw defineLylaError<LylaInvalidJSONError>({
+              type: LYLA_ERROR.INVALID_JSON,
+              message: (e as TypeError).message,
+              event: undefined,
+              error: e as TypeError,
+              response
+            })
+          }
+        }
       }
 
       if (!isOkStatus(xhr.status)) {

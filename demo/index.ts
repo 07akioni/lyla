@@ -266,6 +266,21 @@ const handlers: Handler[] = [
       const resp = await lyla.post('http://localhost:7070/api/post-return-headers')
       console.log(resp)
     }
+  ],
+  [
+    'progress',
+    async () => {
+      request.post('/post-return-body', {
+        responseType: 'text',
+        body: Array(50000).fill('xxxxxxxxxx').join(''),
+        onUploadProgress(e) {
+          console.log('u', e.loaded / e.total)
+        },
+        onDownloadProgress(e) {
+          console.log('d', e.lengthComputable, e.loaded / e.total)
+        }
+      })
+    }
   ]
 ]
 

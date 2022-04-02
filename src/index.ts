@@ -1,5 +1,5 @@
 export type { Lyla } from './core.js'
-export type { LylaRequestOptions, LylaResponse } from './types.js'
+export type { LylaRequestOptions, LylaResponse, LylaProgress } from './types.js'
 export { lyla } from './instance.js'
 export type { MatchError, CatchError } from './error.js'
 export { catchError, matchError, LYLA_ERROR } from './error.js'

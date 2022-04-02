@@ -59,6 +59,7 @@ func PostTestRoutes(r *gin.Engine) {
 	})
 	r.POST("/api/post-return-body", func(c *gin.Context) {
 		data, _ := ioutil.ReadAll(c.Request.Body)
+		c.Header("content-length", fmt.Sprint(len(data)))
 		c.String(200, string(data[:]))
 	})
 	r.POST("/api/post-set-cookie", func(c *gin.Context) {
