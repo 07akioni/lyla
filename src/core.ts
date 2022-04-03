@@ -16,6 +16,13 @@ function isOkStatus(status: number): boolean {
   return 200 <= status && status < 300
 }
 
+// It's possible that the raw http response headers has multiple headers with
+// same name. For example:
+// header1: value1
+// header1: value2
+// However when it's resolved by `xhr.getAllResponseHeaders` or
+// `Response.Headers.entries`, the resolved value in browsers would be
+// `header1: 'value1, value2'`, so there's no need deduplicate the headers
 function createHeaders(headers: string): Record<string, string> {
   if (!headers) return {}
 

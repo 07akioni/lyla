@@ -433,15 +433,15 @@ const handlers: Handler[] = [
       console.log(resp)
     }
   ],
-  // [
-  //   'same headers',
-  //   async () => {
-  //     const { headers } = await lyla.get('/api/get-set-same-header')
-  //     console.log(headers)
-  //     const resp = await fetch('/api/get-set-same-header')
-  //     console.log([...resp.headers.entries()])
-  //   }
-  // ]
+  [
+    'same headers',
+    async () => {
+      const { headers } = await lyla.get('http://localhost:8080/api/get-set-same-header')
+      console.log(headers)
+      const resp = await fetch('http://localhost:8080/api/get-set-same-header')
+      console.log([...resp.headers.entries()])
+    }
+  ]
 ]
 
 handlers.forEach(([selector, handler]) => {
