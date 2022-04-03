@@ -43,7 +43,6 @@ export function mergeOptions<T>(...sources: Array<Partial<T> | undefined>): T {
       }
       merged = merged.push(...source)
     } else if (isObject(source)) {
-      debugger
       for (let [key, value] of Object.entries(source)) {
         if (isObject(value) && key in merged) {
           value = mergeOptions(merged[key], value)

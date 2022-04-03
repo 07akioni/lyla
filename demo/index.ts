@@ -13,8 +13,8 @@ const handlers: Handler[] = [
         .get('res-text', {
           responseType: 'text',
           headers: {
-            'key1': 1,
-            'key2': 2
+            key1: 1,
+            key2: 2
           }
         })
         .then(({ body }) => {
@@ -313,12 +313,20 @@ const handlers: Handler[] = [
   ],
   [
     'set json',
-    async () =>  {
+    async () => {
       const resp = await lyla.get('/api/get-text', {
         responseType: 'arraybuffer'
       })
       resp.json = 'resp json'
       console.log(resp.json)
+    }
+  ],
+  [
+    'extend test',
+    async () => {
+      const extended = lyla.extend({ baseUrl: 'http://localhost:7070' })
+      const resp = await extended.get('api/get-set-cookie')
+      console.log(resp)
     }
   ]
 ]
