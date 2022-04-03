@@ -432,7 +432,16 @@ const handlers: Handler[] = [
       const resp = await lyla2.post('/gigigi')
       console.log(resp)
     }
-  ]
+  ],
+  // [
+  //   'same headers',
+  //   async () => {
+  //     const { headers } = await lyla.get('/api/get-set-same-header')
+  //     console.log(headers)
+  //     const resp = await fetch('/api/get-set-same-header')
+  //     console.log([...resp.headers.entries()])
+  //   }
+  // ]
 ]
 
 handlers.forEach(([selector, handler]) => {

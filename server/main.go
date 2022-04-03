@@ -33,10 +33,20 @@ func GetTestRoutes(r *gin.Engine) {
 		c.Header("set-cookie", "foo-get=bar")
 		c.Header("X-Cors", "amazing")
 	})
+	// r.GET("/api/get-set-same-header", func(c *gin.Context) {
+	// 	c.Header("set-cookie", "foo-get1=bar")
+	// 	c.Header("Set-cookie", "foo-get2=bar")
+	// 	c.Header("set-gigi", "gigigi")
+	// 	c.Header("Set-gigi", "gagaga")
+	// })
 	r.GET("/api/get-check-cookie", func(c *gin.Context) {
 		if cookie, err := c.Request.Cookie("foo-get"); err != nil || cookie.Value != "bar" {
 			c.Status(500)
 		}
+	})
+	r.GET("/api/get-headers", func(c *gin.Context) {
+		c.Header("X-UPPER", "X-UPPER")
+		c.Header("x-lower", "x-lower")
 	})
 }
 
