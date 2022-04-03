@@ -46,13 +46,13 @@ function createLyla(lylaOptions: LylaRequestOptions = {}): Lyla {
   async function request<T = any>(
     options: LylaRequestOptions
   ): Promise<LylaResponse<T>> {
-    if (lylaOptions?.hooks?.onBeforeOptionsNormalized) {
-      for (const hook of lylaOptions.hooks.onBeforeOptionsNormalized) {
+    if (lylaOptions?.hooks?.onInit) {
+      for (const hook of lylaOptions.hooks.onInit) {
         options = await hook(options)
       }
     }
-    if (options?.hooks?.onBeforeOptionsNormalized) {
-      for (const hook of options.hooks.onBeforeOptionsNormalized) {
+    if (options?.hooks?.onInit) {
+      for (const hook of options.hooks.onInit) {
         options = await hook(options)
       }
     }

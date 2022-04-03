@@ -9,7 +9,7 @@ test('`hooks` should work', async ({ page }) => {
     return (
       await window.lyla.post('/gigigi', {
         hooks: {
-          onBeforeOptionsNormalized: [
+          onInit: [
             (options) => {
               if (options.url === '/gigigi') {
                 options.url = '/api/post-return-body'
@@ -44,7 +44,7 @@ test('`hooks` should work with `extend`', async ({ page }) => {
   const body = await page.evaluate(async () => {
     const lyla = window.lyla.extend({
       hooks: {
-        onBeforeOptionsNormalized: [
+        onInit: [
           (options) => {
             if (options.url === '/gigigi') {
               options.url = '/api/post-return-body'
@@ -79,7 +79,7 @@ test('`hooks` should work with multiple `extend`', async ({ page }) => {
   const body = await page.evaluate(async () => {
     const lyla1 = window.lyla.extend({
       hooks: {
-        onBeforeOptionsNormalized: [
+        onInit: [
           (options) => {
             if (options.url === '/gigigi') {
               options.url = '/gogogo'
@@ -107,7 +107,7 @@ test('`hooks` should work with multiple `extend`', async ({ page }) => {
     })
     const lyla2 = lyla1.extend({
       hooks: {
-        onBeforeOptionsNormalized: [
+        onInit: [
           (options) => {
             if (options.url === '/gogogo') {
               options.url = '/api/post-return-body'

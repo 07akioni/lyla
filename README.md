@@ -98,8 +98,8 @@ type LylaRequestOptions = {
     /**
      * Callbacks fired when options is passed into the request. In this moment,
      * request options haven't be normalized.
-     */onBeforeOptionsNormalized
-    ?: Array<
+     */
+    onInit?: Array<
       (
         options: LylaRequestOptions
       ) => LylaRequestOptions | Promise<LylaRequestOptions>
@@ -176,7 +176,6 @@ type LylaProgress = {
    */
   lengthComputable: boolean
 }
-
 ```
 
 #### type LylaResponseHeaders

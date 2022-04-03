@@ -197,7 +197,7 @@ const handlers: Handler[] = [
     () => {
       const _req = request.extend({
         hooks: {
-          onBeforeOptionsNormalized: [
+          onInit: [
             (options) => {
               if (options.url === '/gigigi') {
                 options.url = '/post-return-body'
@@ -375,7 +375,7 @@ const handlers: Handler[] = [
     async () => {
       const lyla1 = lyla.extend({
         hooks: {
-          onBeforeOptionsNormalized: [
+          onInit: [
             (options) => {
               if (options.url === '/gigigi') {
                 options.url = '/gogogo'
@@ -403,7 +403,7 @@ const handlers: Handler[] = [
       })
       const lyla2 = lyla1.extend({
         hooks: {
-          onBeforeOptionsNormalized: [
+          onInit: [
             (options) => {
               if (options.url === '/gogogo') {
                 options.url = '/api/post-return-body'
