@@ -328,6 +328,20 @@ const handlers: Handler[] = [
       const resp = await extended.get('api/get-set-cookie')
       console.log(resp)
     }
+  ],
+  [
+    'extend headers',
+    async () => {
+      const extended = lyla.extend({
+        baseUrl: '/api',
+        headers: {
+          str: 'str',
+          num: 123
+        }
+      })
+      const { headers } = await extended.post('/post-return-headers')
+      console.log(headers)
+    }
   ]
 ]
 
