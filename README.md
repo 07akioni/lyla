@@ -42,9 +42,7 @@ const { json } = await lyla.post('https://example.com', {
 
 ### lyla.delete<T>(options: LylaRequestOptions): LylaResponse<T>
 
-### lyla.extend(options: LylaRequestOptions): Lyla
-
-#### LylaRequestOptions
+#### type LylaRequestOptions
 
 ```ts
 type LylaRequestOptions = {
@@ -59,14 +57,18 @@ type LylaRequestOptions = {
     | 'patch'
     | 'PATCH'
     | 'head'
+    | 'HEAD'
     | 'delete'
+    | 'DELETE'
+    | 'options'
+    | 'OPTIONS'
   timeout?: number
   withCredentials?: boolean
-  headers?: Record<string, string>
+  headers?: LylaRequestHeaders
   responseType?: Exclude<XMLHttpRequestResponseType, 'document' | 'json' | ''>
   body?: XMLHttpRequestBodyInit
   json?: any
-  query?: Record<string, string>
+  query?: Record<string, string | number>
   baseUrl?: string
   signal?: AbortSignal
   onUploadProgress?: (
@@ -97,7 +99,7 @@ type LylaRequestOptions = {
 }
 ```
 
-#### LylaResponse
+#### type LylaResponse
 
 ```ts
 type LylaResponse<T = any> = {
@@ -109,15 +111,45 @@ type LylaResponse<T = any> = {
 }
 ```
 
-#### LylaProgress
+#### type LylaProgress
 
 ```ts
 type LylaProgress = {
-  percent: number
+  percent: number // 0 - 100
   loaded: number
   total: number
   lengthComputable: boolean
 }
+```
+
+#### type LylaResponseHeaders
+
+```ts
+type LylaRequestHeaders = Record<string, string | number | undefined>
+```
+
+Request headers can be `string`, `number` or `undefined`. If it's `undefined`,
+it would override default options' headers. For example:
+
+```ts
+import { lyla } from 'lyla'
+
+const request = lyla.extend({ headers: { foo: 'bar' } })
+
+// Request won't have the `foo` header
+request.get('http://example.com', { headers: { foo: undefined } })
+```
+
+### lyla.extend(options: LylaRequestOptions): Lyla
+
+Create a new lyla instance base on current lyla and new default options.
+
+```ts
+import { lyla } from 'lyla'
+
+const request = lyla.extend({ baseUrl: 'http://example.com' })
+
+request.get() // ...
 ```
 
 ## Error handling

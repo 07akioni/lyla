@@ -60,7 +60,7 @@ export type LylaResponse<T = any> = {
 }
 
 export type LylaProgress = {
-  percent: number
+  percent: number // 0 - 100
   loaded: number
   total: number
   lengthComputable: boolean
