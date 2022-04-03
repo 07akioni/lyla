@@ -41,11 +41,6 @@ export type LylaRequestOptions = {
    * Abort signal of the request.
    */
   signal?: AbortSignal
-  /**
-   * Whether to trigger `hooks.onResponseError`. Error will always be thrown
-   * whether it's set.
-   */
-  triggerResponseError?: boolean
   onUploadProgress?: (
     progress: LylaProgress,
     progressEvent: ProgressEvent<XMLHttpRequestEventTarget>

@@ -116,13 +116,12 @@ function createLyla(lylaOptions: LylaRequestOptions = {}): Lyla {
       responseType = 'text',
       withCredentials,
       signal,
-      triggerResponseError,
       onUploadProgress,
       onDownloadProgress
     } = _options
 
     async function handleResponseError(error: LylaError) {
-      if (triggerResponseError && _options.hooks?.onResponseError) {
+      if (_options.hooks?.onResponseError) {
         for (const hook of _options.hooks?.onResponseError) {
           await hook(error)
         }
