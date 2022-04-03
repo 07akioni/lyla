@@ -10,7 +10,11 @@ export type LylaRequestOptions = {
     | 'patch'
     | 'PATCH'
     | 'head'
+    | 'HEAD'
     | 'delete'
+    | 'DELETE'
+    | 'options'
+    | 'OPTIONS'
   timeout?: number
   withCredentials?: boolean
   headers?: LylaRequestHeaders
