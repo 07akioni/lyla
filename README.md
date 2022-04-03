@@ -249,8 +249,9 @@ import type { LylaError } from 'lyla'
 const request = lyla.extend({
   hooks: {
     onResponseError(error: LylaError) {
-    switch error.type {
-      // ...
+      switch error.type {
+        // ...
+      }
     }
   }
 })
