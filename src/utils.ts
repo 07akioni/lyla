@@ -41,7 +41,7 @@ export function mergeOptions<T>(...sources: Array<Partial<T> | undefined>): T {
       if (!Array.isArray(merged)) {
         merged = []
       }
-      merged = merged.push(...source)
+      merged.push(...source)
     } else if (isObject(source)) {
       for (let [key, value] of Object.entries(source)) {
         if (isObject(value) && key in merged) {
