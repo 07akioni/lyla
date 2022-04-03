@@ -74,7 +74,13 @@ function createLyla(lylaOptions: LylaRequestOptions = {}): Lyla {
       )
       const queryString = urlSearchParams.toString()
       if (_options.url.includes('?')) {
-        throw new TypeError("`query` can't be set if `url` contains '?'")
+        throw defineLylaError<LylaBadRequestError>({
+          type: LYLA_ERROR.BAD_REQUEST,
+          message: "`options.query` can't be set if `url` contains '?'",
+          event: undefined,
+          error: undefined,
+          response: undefined
+        })
       }
       if (queryString.length) {
         _options.url = _options.url + '?' + queryString
@@ -89,6 +95,16 @@ function createLyla(lylaOptions: LylaRequestOptions = {}): Lyla {
 
     // Move json data to body as string
     if (_options.json !== undefined) {
+      if (_options.body !== undefined) {
+        throw defineLylaError<LylaBadRequestError>({
+          type: LYLA_ERROR.BAD_REQUEST,
+          message:
+            "`options.json` can't be used together `options.body`. If you want to use `options.json`, you should left `options.body` as undefined",
+          event: undefined,
+          error: undefined,
+          response: undefined
+        })
+      }
       _options.body = JSON.stringify(_options.json)
     }
 
