@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test'
 import { beforeEach } from './utils'
+import './types'
 
 beforeEach(test)
 

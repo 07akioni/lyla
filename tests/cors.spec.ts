@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test'
 import { LYLA_ERROR } from '../src/error'
 import { beforeEach } from './utils'
+import './types'
 
 beforeEach(test)
 
