@@ -28,19 +28,19 @@ const { json } = await lyla.post('https://example.com', {
 
 ## API
 
-### lyla<T>(options: LylaRequestOptions): LylaResponse<T>
+### lyla\<T\>(options: LylaRequestOptions): LylaResponse\<T\>
 
-### lyla.get<T>(options: LylaRequestOptions): LylaResponse<T>
+### lyla.get\<T\>(options: LylaRequestOptions): LylaResponse\<T\>
 
-### lyla.post<T>(options: LylaRequestOptions): LylaResponse<T>
+### lyla.post\<T\>(options: LylaRequestOptions): LylaResponse\<T\>
 
-### lyla.put<T>(options: LylaRequestOptions): LylaResponse<T>
+### lyla.put\<T\>(options: LylaRequestOptions): LylaResponse\<T\>
 
-### lyla.patch<T>(options: LylaRequestOptions): LylaResponse<T>
+### lyla.patch\<T\>(options: LylaRequestOptions): LylaResponse\<T\>
 
-### lyla.head<T>(options: LylaRequestOptions): LylaResponse<T>
+### lyla.head\<T\>(options: LylaRequestOptions): LylaResponse\<T\>
 
-### lyla.delete<T>(options: LylaRequestOptions): LylaResponse<T>
+### lyla.delete\<T\>(options: LylaRequestOptions): LylaResponse\<T\>
 
 #### type LylaRequestOptions
 
