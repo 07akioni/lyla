@@ -232,6 +232,7 @@ function createLyla(lylaOptions: LylaRequestOptions = {}): Lyla {
       })
     }
     xhr.addEventListener('loadend', async (e) => {
+      if (aborted) return
       cleanup()
       let _json: any
       let _jsonIsSet = false
@@ -303,7 +304,9 @@ function createLyla(lylaOptions: LylaRequestOptions = {}): Lyla {
 
       _resolve(response)
     })
+    let aborted = false
     xhr.addEventListener('abort', (e) => {
+      aborted = true
       const error = defineLylaError<LylaAbortedError>({
         type: LYLA_ERROR.ABORTED,
         message: 'Request Aborted',
