@@ -4,7 +4,7 @@ export enum LYLA_ERROR {
   NETWORK = 'NETWORK',
   ABORTED = 'ABORTED',
   INVALID_JSON = 'INVALID_JSON',
-  INVALID_TRANSFORMATION = 'INVALID_TRANSFORMATION',
+  INVALID_CONVERSION = 'INVALID_CONVERSION',
   TIMEOUT = 'TIMEOUT',
   HTTP = 'HTTP',
   BAD_REQUEST = 'BAD_REQUEST'
@@ -17,8 +17,8 @@ export interface LylaTimeoutError extends Error {
   response: undefined
 }
 
-export interface LylaInvalidTransformationError extends Error {
-  type: LYLA_ERROR.INVALID_TRANSFORMATION
+export interface LylaInvalidConversionError extends Error {
+  type: LYLA_ERROR.INVALID_CONVERSION
   error: undefined
   event: undefined
   response: LylaResponse<null>
@@ -64,7 +64,7 @@ export type LylaError =
   | LylaInvalidJSONError
   | LylaAbortedError
   | LylaHttpError
-  | LylaInvalidTransformationError
+  | LylaInvalidConversionError
   | LylaTimeoutError
   | LylaBadRequestError
 

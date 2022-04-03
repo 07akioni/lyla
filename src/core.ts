@@ -5,7 +5,7 @@ import type {
   LylaAbortedError,
   LylaError,
   LylaHttpError,
-  LylaInvalidTransformationError,
+  LylaInvalidConversionError,
   LylaInvalidJSONError,
   LylaNetworkError,
   LylaTimeoutError
@@ -250,8 +250,8 @@ function createLyla(lylaOptions: LylaRequestOptions = {}): Lyla {
         get json() {
           if (_jsonIsSet) return _json
           if (responseType !== 'text') {
-            const error = defineLylaError<LylaInvalidTransformationError>({
-              type: LYLA_ERROR.INVALID_TRANSFORMATION,
+            const error = defineLylaError<LylaInvalidConversionError>({
+              type: LYLA_ERROR.INVALID_CONVERSION,
               message: `Can not convert ${responseType} to JSON`,
               event: undefined,
               error: undefined,

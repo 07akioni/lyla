@@ -61,7 +61,7 @@ test('throws error if try getting json when `responseType` is not `text`', async
   )
   expect(throws0).toEqual(true)
   expect(bodyIsBlob).toEqual(true)
-  expect(lylaErrorType0).toEqual(LYLA_ERROR.INVALID_TRANSFORMATION)
+  expect(lylaErrorType0).toEqual(LYLA_ERROR.INVALID_CONVERSION)
   const [throws1, bodyIsArryBuffer, lylaErrorType1] = await page.evaluate(
     async () => {
       let catched = false
@@ -85,7 +85,7 @@ test('throws error if try getting json when `responseType` is not `text`', async
   )
   expect(throws1).toEqual(true)
   expect(bodyIsArryBuffer).toEqual(true)
-  expect(lylaErrorType1).toEqual(LYLA_ERROR.INVALID_TRANSFORMATION)
+  expect(lylaErrorType1).toEqual(LYLA_ERROR.INVALID_CONVERSION)
 })
 
 test('json can be set', async ({ page }) => {
