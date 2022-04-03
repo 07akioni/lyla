@@ -241,13 +241,14 @@ try {
 }
 ```
 
-TODO global error handler
+### Global error handling
 
 ```ts
 import type { LylaError } from 'lyla'
 
 const request = lyla.extend({
-  onError(error: LylaError) {
+  hooks: {
+    onResponseError(error: LylaError) {
     switch error.type {
       // ...
     }
