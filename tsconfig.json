@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "declaration": true,
-    "lib": ["DOM", "ES2015"],
+    "lib": ["DOM", "ES2015", "DOM.Iterable"],
     "target": "ES6",
     "esModuleInterop": true,
     "moduleResolution": "node",

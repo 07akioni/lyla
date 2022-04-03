@@ -1,6 +1,6 @@
 import { responseTypes } from './constants.js'
 import { defineLylaError, LylaBadRequestError, LYLA_ERROR } from './error.js'
-import { mergeUrl } from './utils.js'
+import { mergeUrl,  mergeHeaders, mergeOptions } from './utils.js'
 import type {
   LylaAbortedError,
   LylaError,
@@ -72,38 +72,18 @@ function createLyla(lylaOptions: LylaRequestOptions = {}): Lyla {
   async function request<T = any>(
     options: LylaRequestOptions
   ): Promise<LylaResponse<T>> {
-    for (const hook of [
-      ...(options?.hooks?.onBeforeOptionsNormalized || []),
-      ...(lylaOptions?.hooks?.onBeforeOptionsNormalized || [])
-    ]) {
-      options = await hook(options)
-    }
-
-    const onBeforeRequest = [
-      ...(options?.hooks?.onBeforeRequest || []),
-      ...(lylaOptions?.hooks?.onBeforeRequest || [])
-    ]
-    const onAfterResponse = [
-      ...(options?.hooks?.onAfterResponse || []),
-      ...(lylaOptions?.hooks?.onAfterResponse || [])
-    ]
-
-    let _options: LylaRequestOptions = {
-      ...lylaOptions,
-      ...options,
-      headers: {
-        ...lylaOptions.headers,
-        ...options.headers
-      },
-      query: {
-        ...lylaOptions.query,
-        ...options.query
-      },
-      hooks: {
-        onBeforeRequest,
-        onAfterResponse
+    if (lylaOptions?.hooks?.onBeforeOptionsNormalized) {
+      for (const hook of lylaOptions.hooks.onBeforeOptionsNormalized) {
+        options = await hook(options)
       }
     }
+    if (options?.hooks?.onBeforeOptionsNormalized) {
+      for (const hook of options.hooks.onBeforeOptionsNormalized) {
+        options = await hook(options)
+      }
+    }
+
+    let _options: LylaRequestOptions = mergeOptions(lylaOptions, options)
 
     _options.method = _options.method?.toUpperCase() as any
     _options.responseType = options.responseType || 'text'
@@ -115,7 +95,9 @@ function createLyla(lylaOptions: LylaRequestOptions = {}): Lyla {
 
     // Resolve query string, patch it to URL
     if (_options.query) {
-      const urlSearchParams = new URLSearchParams(_options.query)
+      const urlSearchParams = new URLSearchParams(
+        _options.query as Record<string, string>
+      )
       const queryString = urlSearchParams.toString()
       if (_options.url.includes('?')) {
         throw new TypeError("`query` can't be set if `url` contains '?'")
@@ -125,8 +107,10 @@ function createLyla(lylaOptions: LylaRequestOptions = {}): Lyla {
       }
     }
 
-    for (const hook of onBeforeRequest) {
-      _options = await hook(_options)
+    if (_options.hooks?.onBeforeRequest) {
+      for (const hook of _options.hooks?.onBeforeRequest) {
+        _options = await hook(_options)
+      }
     }
 
     // Move json data to body as string
@@ -138,7 +122,6 @@ function createLyla(lylaOptions: LylaRequestOptions = {}): Lyla {
       timeout,
       url,
       method,
-      headers,
       body,
       responseType = 'text',
       withCredentials,
@@ -169,11 +152,14 @@ function createLyla(lylaOptions: LylaRequestOptions = {}): Lyla {
 
     // make request headers
     const requestHeaders: Record<string, string> = {}
-    const _headers = new Headers(headers)
+    const _headers = new Headers()
+    mergeHeaders(_headers, lylaOptions.headers)
+    mergeHeaders(_headers, options.headers)
     _headers.forEach((value, key) => {
       xhr.setRequestHeader(key, value)
       requestHeaders[key] = value
     })
+    _options.headers = requestHeaders
 
     // Set 'content-type' header
     if (_options.json !== undefined) {
@@ -307,8 +293,10 @@ function createLyla(lylaOptions: LylaRequestOptions = {}): Lyla {
         )
       }
 
-      for (const hook of onAfterResponse) {
-        response = await hook(response)
+      if (_options.hooks?.onAfterResponse) {
+        for (const hook of _options.hooks.onAfterResponse) {
+          response = await hook(response)
+        }
       }
 
       _resolve(response)

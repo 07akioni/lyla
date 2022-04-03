@@ -11,7 +11,11 @@ const handlers: Handler[] = [
     () => {
       request
         .get('res-text', {
-          responseType: 'text'
+          responseType: 'text',
+          headers: {
+            'key1': 1,
+            'key2': 2
+          }
         })
         .then(({ body }) => {
           console.log(body)

@@ -13,11 +13,11 @@ export type LylaRequestOptions = {
     | 'delete'
   timeout?: number
   withCredentials?: boolean
-  headers?: Record<string, string>
+  headers?: LylaRequestHeaders
   responseType?: Exclude<XMLHttpRequestResponseType, 'document' | 'json' | ''>
   body?: XMLHttpRequestBodyInit
   json?: any
-  query?: Record<string, string>
+  query?: Record<string, string | number>
   baseUrl?: string
   signal?: AbortSignal
   onUploadProgress?: (
@@ -61,3 +61,5 @@ export type LylaProgress = {
   total: number
   lengthComputable: boolean
 }
+
+export type LylaRequestHeaders = Record<string, string | number | undefined>
