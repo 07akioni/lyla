@@ -279,7 +279,7 @@ function createLyla(lylaOptions: LylaRequestOptions = {}): Lyla {
       _reject(
         defineLylaError<LylaAbortedError>({
           type: LYLA_ERROR.ABORTED,
-          message: 'JSON Syntax Error',
+          message: 'Request Aborted',
           event: e,
           error: undefined,
           response: undefined
