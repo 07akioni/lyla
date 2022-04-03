@@ -1,0 +1,46 @@
+name: Feedback bug
+title: "Title describing the problem"
+body:
+  - type: markdown
+    attributes:
+      value: |
+        # Before You Start...
+        The issue list is reserved exclusively for bug reports and feature requests. That means we do not accept usage questions. If you open an issue that does not conform to the requirements, ** it will be closed immediately **.
+
+        Please try to search for your issue - it may have already been answered or even fixed in the development branch. However, if you find that an old, closed issue still persists in the latest version, you should open a new issue using the form below instead of commenting on the old issue.
+
+  - type: input
+    id: version
+    attributes:
+      label: lyla version
+      description: Check if the issue is reproducible with the latest stable version.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduceSteps
+    attributes:
+      label: Step to reproduce
+      description: After the replay is turned on, what actions do we need to perform to make the bug appear? Simple and clear steps can help us locate the problem more quickly. Please clearly describe the steps of reproducing the issue. Issues without clear reproducing steps will not be repaired. If the issue marked with 'need reproduction' does not provide relevant steps within 7 days, it will be closed directly.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expect
+    attributes:
+      label: What is expected
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: What is actually happening
+    validations:
+      required: true
+
+  - type: textarea
+    id: remarks
+    attributes:
+      label: Any additional comments (optional)
+      description: Some background / context of how you ran into this bug.
