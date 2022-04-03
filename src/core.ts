@@ -10,44 +10,7 @@ import type {
   LylaNetworkError,
   LylaTimeoutError
 } from './error.js'
-import type { LylaRequestOptions, LylaResponse } from './types.js'
-
-export interface Lyla {
-  <T = any>(options: LylaRequestOptions): Promise<LylaResponse<T>>
-  extend: (
-    options?:
-      | LylaRequestOptions
-      | ((options: LylaRequestOptions) => LylaRequestOptions)
-  ) => Lyla
-  get: <T = any>(
-    url: string,
-    options?: Omit<LylaRequestOptions, 'url' | 'method'>
-  ) => Promise<LylaResponse<T>>
-  post: <T = any>(
-    url: string,
-    options?: Omit<LylaRequestOptions, 'url' | 'method'>
-  ) => Promise<LylaResponse<T>>
-  put: <T = any>(
-    url: string,
-    options?: Omit<LylaRequestOptions, 'url' | 'method'>
-  ) => Promise<LylaResponse<T>>
-  patch: <T = any>(
-    url: string,
-    options?: Omit<LylaRequestOptions, 'url' | 'method'>
-  ) => Promise<LylaResponse<T>>
-  head: <T = any>(
-    url: string,
-    options?: Omit<LylaRequestOptions, 'url' | 'method'>
-  ) => Promise<LylaResponse<T>>
-  delete: <T = any>(
-    url: string,
-    options?: Omit<LylaRequestOptions, 'url' | 'method'>
-  ) => Promise<LylaResponse<T>>
-  options: <T = any>(
-    url: string,
-    options?: Omit<LylaRequestOptions, 'url' | 'method'>
-  ) => Promise<LylaResponse<T>>
-}
+import type { LylaRequestOptions, LylaResponse, Lyla } from './types.js'
 
 function isOkStatus(status: number): boolean {
   return 200 <= status && status < 300

@@ -67,3 +67,40 @@ export type LylaProgress = {
 }
 
 export type LylaRequestHeaders = Record<string, string | number | undefined>
+
+export type Lyla = {
+  <T = any>(options: LylaRequestOptions): Promise<LylaResponse<T>>
+  extend: (
+    options?:
+      | LylaRequestOptions
+      | ((options: LylaRequestOptions) => LylaRequestOptions)
+  ) => Lyla
+  get: <T = any>(
+    url: string,
+    options?: Omit<LylaRequestOptions, 'url' | 'method'>
+  ) => Promise<LylaResponse<T>>
+  post: <T = any>(
+    url: string,
+    options?: Omit<LylaRequestOptions, 'url' | 'method'>
+  ) => Promise<LylaResponse<T>>
+  put: <T = any>(
+    url: string,
+    options?: Omit<LylaRequestOptions, 'url' | 'method'>
+  ) => Promise<LylaResponse<T>>
+  patch: <T = any>(
+    url: string,
+    options?: Omit<LylaRequestOptions, 'url' | 'method'>
+  ) => Promise<LylaResponse<T>>
+  head: <T = any>(
+    url: string,
+    options?: Omit<LylaRequestOptions, 'url' | 'method'>
+  ) => Promise<LylaResponse<T>>
+  delete: <T = any>(
+    url: string,
+    options?: Omit<LylaRequestOptions, 'url' | 'method'>
+  ) => Promise<LylaResponse<T>>
+  options: <T = any>(
+    url: string,
+    options?: Omit<LylaRequestOptions, 'url' | 'method'>
+  ) => Promise<LylaResponse<T>>
+}
