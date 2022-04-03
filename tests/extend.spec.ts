@@ -71,3 +71,34 @@ test('`baseUrl` extended can be overrided', async ({ page }) => {
     })
   })
 })
+
+test('`extend` multiple times', async ({ page }) => {
+  const headers = await page.evaluate(async () => {
+    const extended1 = window.lyla.extend({
+      baseUrl: '/x',
+      headers: {
+        str: 'str',
+        num: 123,
+        wow: 'wow',
+        gigi: ''
+      }
+    })
+    const extended2 = extended1.extend({
+      baseUrl: '/api',
+      headers: {
+        str: undefined,
+        num: 22
+      }
+    })
+    const { headers } = await extended2.post('/post-return-headers', {
+      headers: {
+        gigi: 'gigi'
+      }
+    })
+    return headers
+  })
+  expect(headers.str).toEqual(undefined)
+  expect(headers.num).toEqual('22')
+  expect(headers.wow).toEqual('wow')
+  expect(headers.gigi).toEqual('gigi')
+})

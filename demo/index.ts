@@ -342,6 +342,33 @@ const handlers: Handler[] = [
       const { headers } = await extended.post('/post-return-headers')
       console.log(headers)
     }
+  ],
+  [
+    'multiple extend',
+    async () => {
+      const extended1 = lyla.extend({
+        baseUrl: '/x',
+        headers: {
+          str: 'str',
+          num: 123,
+          wow: 'wow',
+          gigi: ''
+        }
+      })
+      const extended2 = extended1.extend({
+        baseUrl: '/api',
+        headers: {
+          str: undefined,
+          num: 22
+        }
+      })
+      const { headers } = await extended2.post('/post-return-headers', {
+        headers: {
+          gigi: 'gigi'
+        }
+      })
+      console.log(headers)
+    }
   ]
 ]
 

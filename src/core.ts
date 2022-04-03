@@ -313,7 +313,7 @@ function createLyla(lylaOptions: LylaRequestOptions = {}): Lyla {
     const extendedOptions =
       typeof options === 'function'
         ? options(lylaOptions)
-        : { ...options, ...lylaOptions }
+        : mergeOptions(lylaOptions, options)
     return createLyla(extendedOptions)
   }
 
