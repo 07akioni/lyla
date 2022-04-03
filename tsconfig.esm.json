@@ -3,5 +3,6 @@
   "compilerOptions": {
     "outDir": "es",
     "module": "ESNext"
-  }
+  },
+  "include": ["src"]
 }

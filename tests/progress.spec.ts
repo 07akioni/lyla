@@ -6,7 +6,7 @@ beforeEach(test)
 
 test('`uploadProgress` & `downloadProgress`', async ({ page }) => {
   const client = await page.context().newCDPSession(page)
-  const res = await client.send('Network.emulateNetworkConditions', {
+  await client.send('Network.emulateNetworkConditions', {
     offline: false,
     uploadThroughput: 2000000,
     downloadThroughput: 4000000,
@@ -14,8 +14,8 @@ test('`uploadProgress` & `downloadProgress`', async ({ page }) => {
     latency: 0
   })
   const [up, dp] = await page.evaluate(async () => {
-    const up = []
-    const dp = []
+    const up: number[] = []
+    const dp: number[] = []
     await window.lyla.post('/api/post-return-body', {
       responseType: 'text',
       body: Array(200000).fill('xxxx').join(''),

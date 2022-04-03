@@ -16,8 +16,8 @@ test('`uploadProgress` & `downloadProgress`', async ({ page }) => {
   })
   const [errorType, up, dp] = await page.evaluate(async () => {
     const controller = new AbortController()
-    const up = []
-    const dp = []
+    const up: number[] = []
+    const dp: number[] = []
     setTimeout(() => {
       controller.abort()
     }, 300)
@@ -34,9 +34,9 @@ test('`uploadProgress` & `downloadProgress`', async ({ page }) => {
         }
       })
     } catch (e) {
-      return window.matchError(e, (e) => [e.lylaError.type, up, dp])
+      return window.matchError(e, (e) => [e.lylaError?.type, up, dp] as const)
     }
-    return undefined
+    return [undefined, [], []]
   })
   await page.waitForTimeout(2000)
   expect(errorType).toEqual(LYLA_ERROR.ABORTED)

@@ -9,7 +9,7 @@ test('throws error if response is not json serializable', async ({ page }) => {
   const [throws, body, lylaErrorType] = await page.evaluate(async () => {
     let catched = false
     let body: any
-    let lylaErrorType: LYLA_ERROR
+    let lylaErrorType: LYLA_ERROR | undefined
     try {
       const resp = await window.lyla.get('/api/get-text')
       body = resp.body
@@ -18,7 +18,7 @@ test('throws error if response is not json serializable', async ({ page }) => {
     } catch (e) {
       catched = true
       window.catchError(({ lylaError }) => {
-        lylaErrorType = lylaError.type
+        lylaErrorType = lylaError?.type
       })(e)
     }
     return [catched, body, lylaErrorType]
@@ -42,7 +42,7 @@ test('throws error if try getting json when `responseType` is not `text`', async
     async () => {
       let catched = false
       let body: any
-      let lylaErrorType: LYLA_ERROR
+      let lylaErrorType: LYLA_ERROR | undefined
       try {
         const resp = await window.lyla.get('/api/get-text', {
           responseType: 'blob'
@@ -53,7 +53,7 @@ test('throws error if try getting json when `responseType` is not `text`', async
       } catch (e) {
         catched = true
         window.catchError(({ lylaError }) => {
-          lylaErrorType = lylaError.type
+          lylaErrorType = lylaError?.type
         })(e)
       }
       return [catched, body instanceof Blob, lylaErrorType]
@@ -66,7 +66,7 @@ test('throws error if try getting json when `responseType` is not `text`', async
     async () => {
       let catched = false
       let body: any
-      let lylaErrorType: LYLA_ERROR
+      let lylaErrorType: LYLA_ERROR | undefined
       try {
         const resp = await window.lyla.get('/api/get-text', {
           responseType: 'arraybuffer'
@@ -77,7 +77,7 @@ test('throws error if try getting json when `responseType` is not `text`', async
       } catch (e) {
         catched = true
         window.catchError(({ lylaError }) => {
-          lylaErrorType = lylaError.type
+          lylaErrorType = lylaError?.type
         })(e)
       }
       return [catched, body instanceof ArrayBuffer, lylaErrorType]
