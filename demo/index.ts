@@ -306,6 +306,16 @@ const handlers: Handler[] = [
         debugger
       }
     }
+  ],
+  [
+    'set json',
+    async () =>  {
+      const resp = await lyla.get('/api/get-text', {
+        responseType: 'arraybuffer'
+      })
+      resp.json = 'resp json'
+      console.log(resp.json)
+    }
   ]
 ]
 

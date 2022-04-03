@@ -249,13 +249,21 @@ function createLyla(lylaOptions: LylaRequestOptions = {}): Lyla {
     }
     xhr.addEventListener('loadend', async (e) => {
       cleanup()
-
+      let _json: any
+      let _jsonIsSet = false
+      let _cachedJson: any
+      let _cachedJsonParsingError: TypeError
       let response: LylaResponse = {
         status: xhr.status,
         statusText: xhr.statusText,
         headers: createHeaders(xhr.getAllResponseHeaders()),
         body: xhr.response,
+        set json(value: any) {
+          _jsonIsSet = true
+          _json = value
+        },
         get json() {
+          if (_jsonIsSet) return _json
           if (responseType !== 'text') {
             throw defineLylaError<LylaInvalidTransformationError>({
               type: LYLA_ERROR.INVALID_TRANSFORMATION,
@@ -265,14 +273,21 @@ function createLyla(lylaOptions: LylaRequestOptions = {}): Lyla {
               response
             })
           }
-          try {
-            return JSON.parse(xhr.response)
-          } catch (e) {
+          if (_cachedJson === undefined) {
+            try {
+              return (_cachedJson = JSON.parse(xhr.response))
+            } catch (e) {
+              _cachedJsonParsingError = e as TypeError
+            }
+          } else {
+            return _cachedJson
+          }
+          if (_cachedJsonParsingError) {
             throw defineLylaError<LylaInvalidJSONError>({
               type: LYLA_ERROR.INVALID_JSON,
-              message: (e as TypeError).message,
+              message: _cachedJsonParsingError.message,
               event: undefined,
-              error: e as TypeError,
+              error: _cachedJsonParsingError,
               response
             })
           }

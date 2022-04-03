@@ -42,7 +42,7 @@ export interface LylaInvalidJSONError extends Error {
   type: LYLA_ERROR.INVALID_JSON
   error: SyntaxError
   event: undefined
-  response: LylaResponse<null>
+  response: LylaResponse
 }
 
 export interface LylaAbortedError extends Error {
