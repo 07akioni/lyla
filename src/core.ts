@@ -1,6 +1,6 @@
 import { responseTypes } from './constants.js'
 import { defineLylaError, LylaBadRequestError, LYLA_ERROR } from './error.js'
-import { mergeUrl,  mergeHeaders, mergeOptions } from './utils.js'
+import { mergeUrl, mergeHeaders, mergeOptions } from './utils.js'
 import type {
   LylaAbortedError,
   LylaError,
@@ -40,6 +40,10 @@ export interface Lyla {
     options?: Omit<LylaRequestOptions, 'url' | 'method'>
   ) => Promise<LylaResponse<T>>
   delete: <T = any>(
+    url: string,
+    options?: Omit<LylaRequestOptions, 'url' | 'method'>
+  ) => Promise<LylaResponse<T>>
+  options: <T = any>(
     url: string,
     options?: Omit<LylaRequestOptions, 'url' | 'method'>
   ) => Promise<LylaResponse<T>>
@@ -357,7 +361,8 @@ function createLyla(lylaOptions: LylaRequestOptions = {}): Lyla {
     put: createRequestShortcut('put'),
     patch: createRequestShortcut('patch'),
     head: createRequestShortcut('head'),
-    delete: createRequestShortcut('delete')
+    delete: createRequestShortcut('delete'),
+    options: createRequestShortcut('options')
   })
 }
 
