@@ -21,7 +21,7 @@ export interface LylaInvalidConversionError extends Error {
   type: LYLA_ERROR.INVALID_CONVERSION
   error: undefined
   event: undefined
-  response: LylaResponse<null>
+  response: LylaResponse
 }
 
 export interface LylaHttpError extends Error {
