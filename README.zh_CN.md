@@ -10,6 +10,8 @@
 - 响应数据支持 TypeScript 类型
 - 支持上传进度（基于 fetch API 无法做到）
 
+和其他库的差别见 [FAQ](/#FAQ)。
+
 ## 安装
 
 ```bash
@@ -30,21 +32,21 @@ const { json } = await lyla.post('https://example.com', {
 
 ## API
 
-### lyla\<T\>(options: LylaRequestOptions): LylaResponse\<T\>
+### `lyla<T>(options: LylaRequestOptions): LylaResponse<T>`
 
-### lyla.get\<T\>(options: LylaRequestOptions): LylaResponse\<T\>
+### `lyla.get<T>(options: LylaRequestOptions): LylaResponse<T>`
 
-### lyla.post\<T\>(options: LylaRequestOptions): LylaResponse\<T\>
+### `lyla.post<T>(options: LylaRequestOptions): LylaResponse<T>`
 
-### lyla.put\<T\>(options: LylaRequestOptions): LylaResponse\<T\>
+### `lyla.put<T>(options: LylaRequestOptions): LylaResponse<T>`
 
-### lyla.patch\<T\>(options: LylaRequestOptions): LylaResponse\<T\>
+### `lyla.patch<T>(options: LylaRequestOptions): LylaResponse<T>`
 
-### lyla.head\<T\>(options: LylaRequestOptions): LylaResponse\<T\>
+### `lyla.head<T>(options: LylaRequestOptions): LylaResponse<T>`
 
-### lyla.delete\<T\>(options: LylaRequestOptions): LylaResponse\<T\>
+### `lyla.delete<T>(options: LylaRequestOptions): LylaResponse<T>`
 
-#### type LylaRequestOptions
+#### `LylaRequestOptions` 类型
 
 ```ts
 type LylaRequestOptions = {
@@ -128,7 +130,7 @@ type LylaRequestOptions = {
 }
 ```
 
-#### LylaResponse 类型
+#### `LylaResponse` 类型
 
 ```ts
 type LylaResponse<T = any> = {
@@ -149,7 +151,7 @@ type LylaResponse<T = any> = {
 }
 ```
 
-#### LylaProgress 类型
+#### `LylaProgress` 类型
 
 ```ts
 type LylaProgress = {
@@ -172,7 +174,7 @@ type LylaProgress = {
 }
 ```
 
-#### type LylaResponseHeaders
+#### `LylaResponseHeaders` 类型
 
 ```ts
 type LylaRequestHeaders = Record<string, string | number | undefined>
@@ -190,7 +192,7 @@ const request = lyla.extend({ headers: { foo: 'bar' } })
 request.get('http://example.com', { headers: { foo: undefined } })
 ```
 
-### lyla.extend(options: LylaRequestOptions | ((options: LylaRequestOptions) => LylaRequestOptions)): Lyla
+### `lyla.extend(options: LylaRequestOptions | ((options: LylaRequestOptions) => LylaRequestOptions)): Lyla`
 
 创建一个有新默认值的 lyla 实例。
 
@@ -250,3 +252,13 @@ const request = lyla.extend({
   }
 })
 ```
+
+## FAQ
+
+- 为什么不用 axios？
+  - `axios.defaults` 对所有 axios 实例都生效，也就是说你的代码可能意外的被其他人影响，并且
+    没有选项去避免这点
+  - axios 默认静默会把不合法的 JSON 值转化为 string
+- 为什么不用 ky？
+  - ky 基于 fetch，无法支持上传进度
+  - ky 的 Response 响应数据无法指定特定类型

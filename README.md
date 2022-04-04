@@ -10,6 +10,8 @@ English · [中文](https://github.com/07akioni/lyla/blob/main/README.zh_CN.md)
 - Supports typescript for response data.
 - Supports upload progress (which isn't supported by fetch API).
 
+For difference compared with other libs, see [FAQ](/#FAQ).
+
 ## Installation
 
 ```bash
@@ -30,21 +32,21 @@ const { json } = await lyla.post('https://example.com', {
 
 ## API
 
-### lyla\<T\>(options: LylaRequestOptions): LylaResponse\<T\>
+### `lyla<T>(options: LylaRequestOptions): LylaResponse<T>`
 
-### lyla.get\<T\>(options: LylaRequestOptions): LylaResponse\<T\>
+### `lyla.get<T>(options: LylaRequestOptions): LylaResponse<T>`
 
-### lyla.post\<T\>(options: LylaRequestOptions): LylaResponse\<T\>
+### `lyla.post<T>(options: LylaRequestOptions): LylaResponse<T>`
 
-### lyla.put\<T\>(options: LylaRequestOptions): LylaResponse\<T\>
+### `lyla.put<T>(options: LylaRequestOptions): LylaResponse<T>`
 
-### lyla.patch\<T\>(options: LylaRequestOptions): LylaResponse\<T\>
+### `lyla.patch<T>(options: LylaRequestOptions): LylaResponse<T>`
 
-### lyla.head\<T\>(options: LylaRequestOptions): LylaResponse\<T\>
+### `lyla.head<T>(options: LylaRequestOptions): LylaResponse<T>`
 
-### lyla.delete\<T\>(options: LylaRequestOptions): LylaResponse\<T\>
+### `lyla.delete<T>(options: LylaRequestOptions): LylaResponse<T>`
 
-#### type LylaRequestOptions
+#### type `LylaRequestOptions`
 
 ```ts
 type LylaRequestOptions = {
@@ -134,7 +136,7 @@ type LylaRequestOptions = {
 }
 ```
 
-#### type LylaResponse
+#### type `LylaResponse`
 
 ```ts
 type LylaResponse<T = any> = {
@@ -156,7 +158,7 @@ type LylaResponse<T = any> = {
 }
 ```
 
-#### type LylaProgress
+#### type `LylaProgress`
 
 ```ts
 type LylaProgress = {
@@ -180,7 +182,7 @@ type LylaProgress = {
 }
 ```
 
-#### type LylaResponseHeaders
+#### type `LylaResponseHeaders`
 
 ```ts
 type LylaRequestHeaders = Record<string, string | number | undefined>
@@ -198,7 +200,7 @@ const request = lyla.extend({ headers: { foo: 'bar' } })
 request.get('http://example.com', { headers: { foo: undefined } })
 ```
 
-### lyla.extend(options: LylaRequestOptions | ((options: LylaRequestOptions) => LylaRequestOptions)): Lyla
+### `lyla.extend(options: LylaRequestOptions | ((options: LylaRequestOptions) => LylaRequestOptions)): Lyla`
 
 Create a new lyla instance base on current lyla and new default options.
 
@@ -258,3 +260,14 @@ const request = lyla.extend({
   }
 })
 ```
+
+## FAQ
+
+- Why not use axios？
+  - `axios.defaults` will be applied to all axios instances, which means your
+    code may be influenced unexpectedly by others. The behavior can't be
+    changed by any options.
+  - axios will transform invalid JSON to string sliently be default.
+- Why not ky？
+  - ky is based on fetch, it can't support upload progress.
+  - ky's Response data type can't be typed.
