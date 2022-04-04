@@ -348,15 +348,8 @@ function createLyla(lylaOptions: LylaRequestOptions = {}): Lyla {
     }
   }
 
-  function extend(
-    options?:
-      | LylaRequestOptions
-      | ((options: LylaRequestOptions) => LylaRequestOptions)
-  ): Lyla {
-    const extendedOptions =
-      typeof options === 'function'
-        ? options(lylaOptions)
-        : mergeOptions(lylaOptions, options)
+  function extend(options?: LylaRequestOptions): Lyla {
+    const extendedOptions = mergeOptions(lylaOptions, options)
     return createLyla(extendedOptions)
   }
 

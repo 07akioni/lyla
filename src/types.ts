@@ -128,11 +128,7 @@ export type LylaRequestHeaders = Record<string, string | number | undefined>
 
 export type Lyla = {
   <T = any>(options: LylaRequestOptions): Promise<LylaResponse<T>>
-  extend: (
-    options?:
-      | LylaRequestOptions
-      | ((options: LylaRequestOptions) => LylaRequestOptions)
-  ) => Lyla
+  extend: (options?: LylaRequestOptions) => Lyla
   get: <T = any>(
     url: string,
     options?: Omit<LylaRequestOptions, 'url' | 'method'>

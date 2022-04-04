@@ -209,7 +209,7 @@ const request = lyla.extend({ headers: { foo: 'bar' } })
 request.get('http://example.com', { headers: { foo: undefined } })
 ```
 
-### `lyla.extend(options: LylaRequestOptions | ((options: LylaRequestOptions) => LylaRequestOptions)): Lyla`
+### `lyla.extend(options: LylaRequestOptions): Lyla`
 
 Create a new lyla instance base on current lyla and new default options.
 

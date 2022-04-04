@@ -200,7 +200,7 @@ const request = lyla.extend({ headers: { foo: 'bar' } })
 request.get('http://example.com', { headers: { foo: undefined } })
 ```
 
-### `lyla.extend(options: LylaRequestOptions | ((options: LylaRequestOptions) => LylaRequestOptions)): Lyla`
+### `lyla.extend(options: LylaRequestOptions): Lyla`
 
 创建一个有新默认值的 lyla 实例。
 
