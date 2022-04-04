@@ -4,6 +4,7 @@ An HTTP client with explicit behavior & error handling for the browser.
 
 English · [中文](https://github.com/07akioni/lyla/blob/main/README.zh_CN.md)
 
+- Won't share options between different instances, which means your reqeust won't be unexpectedly modified.
 - Won't transform response body implicitly (For example transform invalid JSON to string).
 - Won't suppress expection silently (JSON parse error, config error, eg.).
 - Explicitly error handling.
