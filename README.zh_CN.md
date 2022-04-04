@@ -264,7 +264,8 @@ const request = lyla.extend({
 ## FAQ
 
 - 为什么不用 axios？
-  - `axios.defaults` 对所有 axios 实例都生效，也就是说你的代码可能意外的被其他人影响，并且没有选项去避免这点
+  - `axios.defaults` 对所有 axios 使用 `axios.create` 创建的实例都生效，也就是说你的代码可能意外的被其他人影响，并且没有选项去避免这点
+  - `axios.defaults` 是一个全局单例，也就是说你无法保证拿到一个干净的副本，因为你的代码可能运行在修改了它的代码之后
   - axios 默认会静默地把不合法的 JSON 值转化为 string
 - 为什么不用 ky？
   - ky 基于 fetch，无法支持上传进度
