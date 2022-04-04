@@ -15,6 +15,11 @@ const handlers: Handler[] = [
           headers: {
             key1: 1,
             key2: 2
+          },
+          query: {
+            中文: 'oops',
+            key1: 1,
+            key2: 2
           }
         })
         .then(({ body }) => {
