@@ -28,6 +28,14 @@ import { lyla } from 'lyla'
 const { json } = await lyla.post('https://example.com', {
   json: { foo: 'bar' }
 })
+
+// TypeScript
+type MyType = {}
+
+// `json`'s type is `MyType`
+const { json } = await lyla.post<MyType>('https://example.com', {
+  json: { foo: 'bar' }
+})
 ```
 
 ## API

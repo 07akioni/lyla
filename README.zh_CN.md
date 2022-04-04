@@ -28,6 +28,14 @@ import { lyla } from 'lyla'
 const { json } = await lyla.post('https://example.com', {
   json: { foo: 'bar' }
 })
+
+// TypeScript
+type MyType = {}
+
+// `json` 的类型是 `MyType`
+const { json } = await lyla.post<MyType>('https://example.com', {
+  json: { foo: 'bar' }
+})
 ```
 
 ## API
