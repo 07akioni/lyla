@@ -1,4 +1,4 @@
-import type { LylaResponseError } from './error'
+import type { LylaResponseError } from './error.js'
 
 export type LylaRequestOptions = {
   url?: string
