@@ -28,7 +28,7 @@ export type LylaRequestOptions = {
   /**
    * Type of `response.body`.
    */
-  responseType?: Exclude<XMLHttpRequestResponseType, 'document' | 'json' | ''>
+  responseType?: 'arraybuffer' | 'blob' | 'text'
   body?: XMLHttpRequestBodyInit
   /**
    * JSON value to be written into the request body. It can't be used with

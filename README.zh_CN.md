@@ -1,24 +1,24 @@
 # lyla
 
-English · [中文](https://github.com/07akioni/lyla/README.zh_CN.md)
+[English](https://github.com/07akioni/lyla) · 中文
 
-An HTTP client with explicit behavior & error handling for the browser.
+一个表现可预期、错误处理可预期的浏览器 HTTP 请求库。
 
-- Won't transform response body implicitly (For example transform invalid JSON to string).
-- Won't suppress expection silently (JSON parse error, config error, eg.).
-- Explicitly error handling.
-- Supports typescript for response data.
-- Supports upload progress (which isn't supported by fetch API).
+- 不会隐式转换响应数据（例如在不能解析成 JSON 时转换成 string）
+- 不吞异常（例如 JSON 解析错误、配置错误）
+- 可预期的异常处理
+- 响应数据支持 TypeScript 类型
+- 支持上传进度（基于 fetch API 无法做到）
 
-## Installation
+## 安装
 
 ```bash
-npm i lyla # for npm
-pnpm i lyla # for pnpm
-yarn add lyla # for yarn
+npm i lyla # 使用 npm 安装
+pnpm i lyla # 使用 pnpm 安装
+yarn add lyla # 使用 yarn 安装
 ```
 
-## Usage
+## 使用
 
 ```ts
 import { lyla } from 'lyla'
@@ -66,26 +66,24 @@ type LylaRequestOptions = {
     | 'OPTIONS'
   timeout?: number
   /**
-   * True when credentials are to be included in a cross-origin request.
-   * False when they are to be excluded in a cross-origin request and when
-   * cookies are to be ignored in its response.
+   * 为 true 时跨域请求时包含 credentials（https://fetch.spec.whatwg.org/#credentials）
+   * 为 false 时跨域请求时不包含 credentials，并且会忽略响应的 cookies
    */
   withCredentials?: boolean
   headers?: LylaRequestHeaders
   /**
-   * Type of `response.body`.
+   * `response.body` 的类型
    */
   responseType?: 'arraybuffer' | 'blob' | 'text'
   body?: XMLHttpRequestBodyInit
   /**
-   * JSON value to be written into the request body. It can't be used with
-   * `body`.
+   * 需要被写入请求主体的 JSON 值，不可以同时和 body 使用
    */
   json?: any
   query?: Record<string, string | number>
   baseUrl?: string
   /**
-   * Abort signal of the request.
+   * 请求使用的 Abort signal
    */
   signal?: AbortSignal
   onUploadProgress?: (
@@ -98,8 +96,7 @@ type LylaRequestOptions = {
   ) => void
   hooks?: {
     /**
-     * Callbacks fired when options is passed into the request. In this moment,
-     * request options haven't be normalized.
+     * 请求选项被传入时的回调，此时选项还没有被转换为最终的请求参数
      */
     onInit?: Array<
       (
@@ -107,8 +104,7 @@ type LylaRequestOptions = {
       ) => LylaRequestOptions | Promise<LylaRequestOptions>
     >
     /**
-     * Callbacks fired before request is sent. In this moment, request options is
-     * normalized.
+     * 请求发送之前的回调，此时选项已经被转换为最终的请求参数
      */
     onBeforeRequest?: Array<
       (
@@ -116,7 +112,7 @@ type LylaRequestOptions = {
       ) => LylaRequestOptions | Promise<LylaRequestOptions>
     >
     /**
-     * Callbacks fired after response is received.
+     * 收到响应之后的回调
      */
     onAfterResponse?: Array<
       (
@@ -124,57 +120,53 @@ type LylaRequestOptions = {
       ) => LylaResponse<any> | Promise<LylaResponse<any>>
     >
     /**
-     * Callbacks fired when there's error while response handling. It's only
-     * fired by LylaError. Error thrown by user won't triggered the callback,
-     * for example if user throws an error in `onAfterResponse` hook. The
-     * callback won't be fired.
+     * 响应处理遇到异常时的回调。只会在 LylaError 产生时被触发，用户触发的异常不会触发此回
+     * 调，例如用户在 `onAfterResponse` 回调中抛出异常不会触发该回调。
      */
     onResponseError?: Array<(error: LylaResponseError) => void>
   }
 }
 ```
 
-#### type LylaResponse
+#### LylaResponse 类型
 
 ```ts
 type LylaResponse<T = any> = {
   status: number
   statusText: string
   /**
-   * Headers of the response. All the keys are in lower case.
+   * 响应头，全部的 key 都是小写
    */
   headers: Record<string, string>
   /**
-   * Response body.
+   * 响应主体
    */
   body: string | ArrayBuffer | Blob
   /**
-   * JSON value of the response. If body is not valid JSON text, access the
-   * field will cause an error.
+   * 响应的 JSON 值。如果响应主体不是合法的 JSON 文本，获取这个值会抛出一个异常
    */
   json: T
 }
 ```
 
-#### type LylaProgress
+#### LylaProgress 类型
 
 ```ts
 type LylaProgress = {
   /**
-   * Percentage of the progress. From 0 to 100.
+   * 进度百分比，从 0 到 100
    */
   percent: number
   /**
-   * Loaded bytes of the progress.
+   * 进度加载的字节数
    */
   loaded: number
   /**
-   * Total bytes of the progress. If progress is not length-computable it would
-   * be 0.
+   * 完整进度需要加载的字节数，如果无法获取这个值它会是 0
    */
   total: number
   /**
-   * Whether the total bytes of the progress is computable.
+   * 进度需要加载的总字节数是否可以获取到
    */
   lengthComputable: boolean
 }
@@ -186,21 +178,21 @@ type LylaProgress = {
 type LylaRequestHeaders = Record<string, string | number | undefined>
 ```
 
-Request headers can be `string`, `number` or `undefined`. If it's `undefined`,
-it would override default options' headers. For example:
+请求头部可以是 `string`、`number` 或 `undefined`。如果它是 `undefined`，则可以去掉默认请
+求头，例如：
 
 ```ts
 import { lyla } from 'lyla'
 
 const request = lyla.extend({ headers: { foo: 'bar' } })
 
-// Request won't have the `foo` header
+// 请求不会有 `foo` 请求头
 request.get('http://example.com', { headers: { foo: undefined } })
 ```
 
 ### lyla.extend(options: LylaRequestOptions | ((options: LylaRequestOptions) => LylaRequestOptions)): Lyla
 
-Create a new lyla instance base on current lyla and new default options.
+创建一个有新默认值的 lyla 实例。
 
 ```ts
 import { lyla } from 'lyla'
@@ -210,12 +202,12 @@ const request = lyla.extend({ baseUrl: 'http://example.com' })
 request.get() // ...
 ```
 
-## Error handling
+## 异常处理
 
 ```ts
 import { catchError, matchError, LYLA_ERROR } from 'lyla'
 
-// promise style
+// promise 风格
 lyla
   .get('https://example.com')
   .then((resp) => {
@@ -233,7 +225,7 @@ lyla
     }
   }))
 
-// async style
+// async 风格
 try {
   const { json } = await lyla.get('https://example.com')
 } catch (e) {
@@ -243,7 +235,7 @@ try {
 }
 ```
 
-### Global error handling
+### 全局异常处理
 
 ```ts
 import type { LylaError } from 'lyla'
