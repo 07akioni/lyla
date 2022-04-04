@@ -10,6 +10,7 @@ English · [中文](https://github.com/07akioni/lyla/blob/main/README.zh_CN.md)
 - Explicitly error handling.
 - Supports typescript for response data.
 - Supports upload progress (which isn't supported by fetch API).
+- Friendly error tracing (with sync trace, you can see where the request is sent on error).
 
 For difference compared with other libs, see [FAQ](#faq).
 

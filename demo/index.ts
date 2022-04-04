@@ -459,6 +459,13 @@ const handlers: Handler[] = [
       const resp = await fetch('http://localhost:8080/api/get-set-same-header')
       console.log([...resp.headers.entries()])
     }
+  ],
+  [
+    'error',
+    async () => {
+      lyla.get('www.baidu.com')
+      axios.get('www.baidu.com')
+    }
   ]
 ]
 
