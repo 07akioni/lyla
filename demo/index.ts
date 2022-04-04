@@ -25,6 +25,12 @@ const handlers: Handler[] = [
         .then(({ body }) => {
           console.log(body)
         })
+        .catch(
+          catchError(({ lylaError }) => {
+            console.log(lylaError)
+            console.log(lylaError?.event)
+          })
+        )
     }
   ],
   [
@@ -330,7 +336,12 @@ const handlers: Handler[] = [
     'extend test',
     async () => {
       const extended = lyla.extend({ baseUrl: 'http://localhost:7070' })
-      const resp = await extended.get('api/get-set-cookie')
+      let resp: any
+      try {
+        resp = await extended.get('api/get-set-cookie')
+      } catch (e) {
+        console.log(e)
+      }
       console.log(resp)
     }
   ],
@@ -441,7 +452,9 @@ const handlers: Handler[] = [
   [
     'same headers',
     async () => {
-      const { headers } = await lyla.get('http://localhost:8080/api/get-set-same-header')
+      const { headers } = await lyla.get(
+        'http://localhost:8080/api/get-set-same-header'
+      )
       console.log(headers)
       const resp = await fetch('http://localhost:8080/api/get-set-same-header')
       console.log([...resp.headers.entries()])

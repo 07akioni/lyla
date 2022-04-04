@@ -79,11 +79,15 @@ export type LylaError =
 class _LylaError extends Error {}
 
 export function defineLylaError<T extends LylaError>(
-  error: Omit<T, 'name'>
+  lylaErrorProps: Omit<T, 'name'>,
+  stack: string | undefined
 ): T {
   const lylaError = new _LylaError()
-  lylaError.name = `LylaError[${error.type}]`
-  return Object.assign(lylaError, error) as any
+  lylaError.name = `LylaError[${lylaErrorProps.type}]`
+  if (stack) {
+    lylaError.stack += stack
+  }
+  return Object.assign(lylaError, lylaErrorProps) as any
 }
 
 function isLylaError(error: unknown): error is LylaError {

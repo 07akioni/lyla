@@ -72,6 +72,11 @@ function createLyla(lylaOptions: LylaRequestOptions = {}): Lyla {
       _options.url = mergeUrl(_options.baseUrl, _options.url)
     }
 
+    let stack: string | undefined
+    try {
+      stack = new Error().stack?.replace(/^Error/, '')
+    } catch (_) {}
+
     // Resolve query string, patch it to URL
     if (_options.query) {
       const urlSearchParams = new URLSearchParams(
@@ -79,13 +84,16 @@ function createLyla(lylaOptions: LylaRequestOptions = {}): Lyla {
       )
       const queryString = urlSearchParams.toString()
       if (_options.url.includes('?')) {
-        throw defineLylaError<LylaBadRequestError>({
-          type: LYLA_ERROR.BAD_REQUEST,
-          message: "`options.query` can't be set if `url` contains '?'",
-          event: undefined,
-          error: undefined,
-          response: undefined
-        })
+        throw defineLylaError<LylaBadRequestError>(
+          {
+            type: LYLA_ERROR.BAD_REQUEST,
+            message: "`options.query` can't be set if `url` contains '?'",
+            event: undefined,
+            error: undefined,
+            response: undefined
+          },
+          undefined
+        )
       }
       if (queryString.length) {
         _options.url = _options.url + '?' + queryString
@@ -101,14 +109,17 @@ function createLyla(lylaOptions: LylaRequestOptions = {}): Lyla {
     // Move json data to body as string
     if (_options.json !== undefined) {
       if (_options.body !== undefined) {
-        throw defineLylaError<LylaBadRequestError>({
-          type: LYLA_ERROR.BAD_REQUEST,
-          message:
-            "`options.json` can't be used together `options.body`. If you want to use `options.json`, you should left `options.body` as undefined",
-          event: undefined,
-          error: undefined,
-          response: undefined
-        })
+        throw defineLylaError<LylaBadRequestError>(
+          {
+            type: LYLA_ERROR.BAD_REQUEST,
+            message:
+              "`options.json` can't be used together `options.body`. If you want to use `options.json`, you should left `options.body` as undefined",
+            event: undefined,
+            error: undefined,
+            response: undefined
+          },
+          undefined
+        )
       }
       _options.body = JSON.stringify(_options.json)
     }
@@ -188,25 +199,31 @@ function createLyla(lylaOptions: LylaRequestOptions = {}): Lyla {
     xhr.responseType = responseType
     if (timeout) {
       xhr.addEventListener('timeout', (e) => {
-        const error = defineLylaError<LylaTimeoutError>({
-          type: LYLA_ERROR.TIMEOUT,
-          message: 'Timeout',
-          event: e,
-          error: undefined,
-          response: undefined
-        })
+        const error = defineLylaError<LylaTimeoutError>(
+          {
+            type: LYLA_ERROR.TIMEOUT,
+            message: 'Timeout',
+            event: e,
+            error: undefined,
+            response: undefined
+          },
+          stack
+        )
         handleResponseError(error)
         _reject(error)
       })
     }
     xhr.addEventListener('error', (e) => {
-      const error = defineLylaError<LylaNetworkError>({
-        type: LYLA_ERROR.NETWORK,
-        message: 'Network Error',
-        event: e,
-        error: undefined,
-        response: undefined
-      })
+      const error = defineLylaError<LylaNetworkError>(
+        {
+          type: LYLA_ERROR.NETWORK,
+          message: 'Network Error',
+          event: e,
+          error: undefined,
+          response: undefined
+        },
+        stack
+      )
       handleResponseError(error)
       _reject(error)
     })
@@ -255,13 +272,16 @@ function createLyla(lylaOptions: LylaRequestOptions = {}): Lyla {
         get json() {
           if (_jsonIsSet) return _json
           if (responseType !== 'text') {
-            const error = defineLylaError<LylaInvalidConversionError>({
-              type: LYLA_ERROR.INVALID_CONVERSION,
-              message: `Can not convert ${responseType} to JSON`,
-              event: undefined,
-              error: undefined,
-              response
-            })
+            const error = defineLylaError<LylaInvalidConversionError>(
+              {
+                type: LYLA_ERROR.INVALID_CONVERSION,
+                message: `Can not convert ${responseType} to JSON`,
+                event: undefined,
+                error: undefined,
+                response
+              },
+              undefined
+            )
             handleResponseError(error)
             throw error
           }
@@ -275,13 +295,16 @@ function createLyla(lylaOptions: LylaRequestOptions = {}): Lyla {
             return _cachedJson
           }
           if (_cachedJsonParsingError) {
-            const error = defineLylaError<LylaInvalidJSONError>({
-              type: LYLA_ERROR.INVALID_JSON,
-              message: _cachedJsonParsingError.message,
-              event: undefined,
-              error: _cachedJsonParsingError,
-              response
-            })
+            const error = defineLylaError<LylaInvalidJSONError>(
+              {
+                type: LYLA_ERROR.INVALID_JSON,
+                message: _cachedJsonParsingError.message,
+                event: undefined,
+                error: _cachedJsonParsingError,
+                response
+              },
+              undefined
+            )
             handleResponseError(error)
             throw error
           }
@@ -290,13 +313,16 @@ function createLyla(lylaOptions: LylaRequestOptions = {}): Lyla {
 
       if (!isOkStatus(xhr.status)) {
         const reason = `${xhr.status} ${xhr.statusText}`
-        const error = defineLylaError<LylaHttpError>({
-          type: LYLA_ERROR.HTTP,
-          message: `Request Failed with ${reason}`,
-          event: e,
-          error: undefined,
-          response
-        })
+        const error = defineLylaError<LylaHttpError>(
+          {
+            type: LYLA_ERROR.HTTP,
+            message: `Request Failed with ${reason}`,
+            event: e,
+            error: undefined,
+            response
+          },
+          stack
+        )
         handleResponseError(error)
         _reject(error)
       }
@@ -312,24 +338,30 @@ function createLyla(lylaOptions: LylaRequestOptions = {}): Lyla {
     let aborted = false
     xhr.addEventListener('abort', (e) => {
       aborted = true
-      const error = defineLylaError<LylaAbortedError>({
-        type: LYLA_ERROR.ABORTED,
-        message: 'Request Aborted',
-        event: e,
-        error: undefined,
-        response: undefined
-      })
+      const error = defineLylaError<LylaAbortedError>(
+        {
+          type: LYLA_ERROR.ABORTED,
+          message: 'Request Aborted',
+          event: e,
+          error: undefined,
+          response: undefined
+        },
+        stack
+      )
       handleResponseError(error)
       _reject(error)
     })
     if (method === 'GET' && body) {
-      throw defineLylaError<LylaBadRequestError>({
-        type: LYLA_ERROR.BAD_REQUEST,
-        message: "Can not send a request with body in 'GET' method.",
-        error: undefined,
-        response: undefined,
-        event: undefined
-      })
+      throw defineLylaError<LylaBadRequestError>(
+        {
+          type: LYLA_ERROR.BAD_REQUEST,
+          message: "Can not send a request with body in 'GET' method.",
+          error: undefined,
+          response: undefined,
+          event: undefined
+        },
+        undefined
+      )
     }
     xhr.send(body)
     return requestPromise
