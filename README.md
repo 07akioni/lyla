@@ -10,7 +10,7 @@ English · [中文](https://github.com/07akioni/lyla/blob/main/README.zh_CN.md)
 - Supports typescript for response data.
 - Supports upload progress (which isn't supported by fetch API).
 
-For difference compared with other libs, see [FAQ](/README.md#faq).
+For difference compared with other libs, see [FAQ](#faq).
 
 ## Installation
 
