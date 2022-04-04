@@ -275,7 +275,7 @@ const request = lyla.extend({
 - Why not axios？
   - `axios.defaults` will be applied to all axios instances created by `axios.create`, which means your code may be influenced unexpectedly by others. The behavior can't be changed by any options.
   - `axios.defaults` is a global singleton, which means you can't get a clean copy of it. Since your code may run after than others' code that modifies it.
-  - axios will transform invalid JSON to string sliently be default.
+  - axios will transform invalid JSON to string sliently by default.
 - Why not ky？
   - ky is based on fetch, it can't support upload progress.
   - ky's Response data type can't be typed.
