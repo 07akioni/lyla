@@ -26,7 +26,5 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
     - run: npm install
-    - run: cd server
-    - run: go get
-    - run: cd ..
+    - run: cd server && go get
     - run: npm run build-and-test
