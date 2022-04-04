@@ -271,7 +271,7 @@ const request = lyla.extend({
 
 ## FAQ
 
-- Why not use axios？
+- Why not axios？
   - `axios.defaults` will be applied to all axios instances, which means your
     code may be influenced unexpectedly by others. The behavior can't be
     changed by any options.
