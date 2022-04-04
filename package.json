@@ -1,6 +1,6 @@
 {
   "name": "lyla",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "description": "An HTTP client with explicit behavior & error handling for the browser",
   "module": "es/index.js",
   "main": "lib/index.js",
