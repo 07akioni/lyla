@@ -2,6 +2,13 @@
   "name": "lyla",
   "version": "0.4.0",
   "description": "An HTTP client with explicit behavior & error handling for the browser",
+  "keywords": [
+    "http-request",
+    "http-client",
+    "request",
+    "xhr",
+    "xmlhttprequest"
+  ],
   "module": "es/index.js",
   "main": "lib/index.js",
   "files": [
