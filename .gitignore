@@ -3,3 +3,4 @@ es
 lib
 pnpm-lock.yaml
 .pnpm-debug.log
+.DS_Store
