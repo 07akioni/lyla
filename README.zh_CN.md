@@ -1,4 +1,4 @@
-# lyla
+# lyla · [![npm version](https://badge.fury.io/js/lyla.svg)](https://badge.fury.io/js/lyla)
 
 一个表现可预期、错误处理可预期的浏览器 HTTP 请求库。
 
