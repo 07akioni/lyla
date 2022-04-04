@@ -1,4 +1,4 @@
-# lyla · [![npm version](https://badge.fury.io/js/lyla.svg)](https://badge.fury.io/js/lyla)
+# lyla · [![ci](https://github.com/07akioni/lyla/actions/workflows/node.js.yml/badge.svg)](https://github.com/07akioni/lyla/actions/workflows/node.js.yml/badge.svg) [![npm version](https://badge.fury.io/js/lyla.svg)](https://badge.fury.io/js/lyla)
 
 An HTTP client with explicit behavior & error handling for the browser.
 
