@@ -59,6 +59,14 @@ export interface LylaBadRequestError extends Error {
   response: undefined
 }
 
+export type LylaResponseError =
+  | LylaNetworkError
+  | LylaInvalidJSONError
+  | LylaAbortedError
+  | LylaHttpError
+  | LylaInvalidConversionError
+  | LylaTimeoutError
+
 export type LylaError =
   | LylaNetworkError
   | LylaInvalidJSONError
@@ -72,7 +80,7 @@ class _LylaError extends Error {}
 
 export function defineLylaError<T extends LylaError>(
   error: Omit<T, 'name'>
-): LylaError {
+): T {
   const lylaError = new _LylaError()
   lylaError.name = `LylaError[${error.type}]`
   return Object.assign(lylaError, error) as any

@@ -127,7 +127,7 @@ type LylaRequestOptions = {
      * for example if user throws an error in `onAfterResponse` hook. The
      * callback won't be fired.
      */
-    onResponseError?: Array<(error: LylaError) => void>
+    onResponseError?: Array<(error: LylaResponseError) => void>
   }
 }
 ```
@@ -248,7 +248,7 @@ import type { LylaError } from 'lyla'
 
 const request = lyla.extend({
   hooks: {
-    onResponseError(error: LylaError) {
+    onResponseError(error: LylaResponseError) {
       switch error.type {
         // ...
       }

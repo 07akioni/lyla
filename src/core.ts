@@ -1,5 +1,10 @@
 import { responseTypes } from './constants.js'
-import { defineLylaError, LylaBadRequestError, LYLA_ERROR } from './error.js'
+import {
+  defineLylaError,
+  LylaBadRequestError,
+  LylaResponseError,
+  LYLA_ERROR
+} from './error.js'
 import { mergeUrl, mergeHeaders, mergeOptions } from './utils.js'
 import type {
   LylaAbortedError,
@@ -120,7 +125,7 @@ function createLyla(lylaOptions: LylaRequestOptions = {}): Lyla {
       onDownloadProgress
     } = _options
 
-    async function handleResponseError(error: LylaError) {
+    async function handleResponseError(error: LylaResponseError) {
       if (_options.hooks?.onResponseError) {
         for (const hook of _options.hooks?.onResponseError) {
           await hook(error)

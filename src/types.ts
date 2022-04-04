@@ -1,4 +1,4 @@
-import { LylaError } from './error'
+import type { LylaResponseError } from './error'
 
 export type LylaRequestOptions = {
   url?: string
@@ -82,7 +82,7 @@ export type LylaRequestOptions = {
      * for example if user throws an error in `onAfterResponse` hook. The
      * callback won't be fired.
      */
-    onResponseError?: Array<(error: LylaError) => void>
+    onResponseError?: Array<(error: LylaResponseError) => void>
   }
 }
 
