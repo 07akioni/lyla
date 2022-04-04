@@ -180,8 +180,7 @@ type LylaProgress = {
 type LylaRequestHeaders = Record<string, string | number | undefined>
 ```
 
-请求头部可以是 `string`、`number` 或 `undefined`。如果它是 `undefined`，则可以去掉默认请
-求头，例如：
+请求头部可以是 `string`、`number` 或 `undefined`。如果它是 `undefined`，则可以去掉默认请求头，例如：
 
 ```ts
 import { lyla } from 'lyla'
@@ -256,8 +255,7 @@ const request = lyla.extend({
 ## FAQ
 
 - 为什么不用 axios？
-  - `axios.defaults` 对所有 axios 实例都生效，也就是说你的代码可能意外的被其他人影响，并且
-    没有选项去避免这点
+  - `axios.defaults` 对所有 axios 实例都生效，也就是说你的代码可能意外的被其他人影响，并且没有选项去避免这点
   - axios 默认静默会把不合法的 JSON 值转化为 string
 - 为什么不用 ky？
   - ky 基于 fetch，无法支持上传进度
