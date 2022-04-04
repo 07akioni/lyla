@@ -1,8 +1,8 @@
 # lyla
 
-[English](https://github.com/07akioni/lyla) · 中文
-
 一个表现可预期、错误处理可预期的浏览器 HTTP 请求库。
+
+[English](https://github.com/07akioni/lyla) · 中文
 
 - 不会隐式转换响应数据（例如在不能解析成 JSON 时转换成 string）
 - 不吞异常（例如 JSON 解析错误、配置错误）
