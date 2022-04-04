@@ -46,7 +46,7 @@ const { json } = await lyla.post('https://example.com', {
 
 ### `lyla.delete<T>(options: LylaRequestOptions): LylaResponse<T>`
 
-#### type `LylaRequestOptions`
+#### Type `LylaRequestOptions`
 
 ```ts
 type LylaRequestOptions = {
@@ -136,7 +136,7 @@ type LylaRequestOptions = {
 }
 ```
 
-#### type `LylaResponse`
+#### Type `LylaResponse`
 
 ```ts
 type LylaResponse<T = any> = {
@@ -158,7 +158,7 @@ type LylaResponse<T = any> = {
 }
 ```
 
-#### type `LylaProgress`
+#### Type `LylaProgress`
 
 ```ts
 type LylaProgress = {
@@ -182,7 +182,7 @@ type LylaProgress = {
 }
 ```
 
-#### type `LylaResponseHeaders`
+#### Type `LylaResponseHeaders`
 
 ```ts
 type LylaRequestHeaders = Record<string, string | number | undefined>
