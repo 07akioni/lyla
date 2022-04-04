@@ -10,7 +10,7 @@
 - 响应数据支持 TypeScript 类型
 - 支持上传进度（基于 fetch API 无法做到）
 
-和其他库的差别见 [FAQ](/#FAQ)。
+和其他库的差别见 [FAQ](/README.zh_CN.md#faq)。
 
 ## 安装
 
