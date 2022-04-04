@@ -248,7 +248,7 @@ try {
 ### 全局异常处理
 
 ```ts
-import type { LylaError } from 'lyla'
+import type { LylaResponseError } from 'lyla'
 
 const request = lyla.extend({
   hooks: {

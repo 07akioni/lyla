@@ -257,7 +257,7 @@ try {
 ### Global error handling
 
 ```ts
-import type { LylaError } from 'lyla'
+import type { LylaResponseError } from 'lyla'
 
 const request = lyla.extend({
   hooks: {
