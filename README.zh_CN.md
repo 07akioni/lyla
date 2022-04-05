@@ -184,7 +184,7 @@ type LylaProgress = {
 }
 ```
 
-#### `LylaResponseHeaders` 类型
+#### `LylaRequestHeaders` 类型
 
 ```ts
 type LylaRequestHeaders = Record<string, string | number | undefined>
