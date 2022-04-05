@@ -147,7 +147,7 @@ type LylaResponse<T = any> = {
   status: number
   statusText: string
   /**
-   * 响应头，全部的 key 都是小写
+   * 响应头，key 全部都是小写
    */
   headers: Record<string, string>
   /**
