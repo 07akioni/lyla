@@ -312,7 +312,7 @@ export enum LYLA_ERROR {
 ### Global error listener
 
 ```ts
-import type { LylaError } from 'lyla'
+import type { LylaResponseError } from 'lyla'
 
 const request = lyla.extend({
   hooks: {

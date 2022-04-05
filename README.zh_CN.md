@@ -303,7 +303,7 @@ export enum LYLA_ERROR {
 ### 全局异常监听
 
 ```ts
-import type { LylaError } from 'lyla'
+import type { LylaResponseError } from 'lyla'
 
 const request = lyla.extend({
   hooks: {
