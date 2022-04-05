@@ -3,32 +3,32 @@ import type { LylaResponse } from './types.js'
 export enum LYLA_ERROR {
   /**
    * Request encountered an error, fired by XHR `onerror` event. It doesn't mean
-   * your network has error, for example CORS error also triggers NETWORK_ERROR
+   * your network has error, for example CORS error also triggers NETWORK_ERROR.
    */
   NETWORK = 'NETWORK',
   /**
-   * Request is aborted
+   * Request is aborted.
    */
   ABORTED = 'ABORTED',
   /**
-   * Response text is not valid JSON
+   * Response text is not valid JSON.
    */
   INVALID_JSON = 'INVALID_JSON',
   /**
    * Trying resolving `response.json` with `responseType='arraybuffer'` or
-   * `responseType='blob'`
+   * `responseType='blob'`.
    */
   INVALID_CONVERSION = 'INVALID_CONVERSION',
   /**
-   * Request timeout
+   * Request timeout.
    */
   TIMEOUT = 'TIMEOUT',
   /**
-   * HTTP status error
+   * HTTP status error.
    */
   HTTP = 'HTTP',
   /**
-   * Request `options` is not valid. It's not a response error
+   * Request `options` is not valid. It's not a response error.
    */
   BAD_REQUEST = 'BAD_REQUEST'
 }
