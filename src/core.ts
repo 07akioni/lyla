@@ -87,7 +87,7 @@ function createLyla(lylaOptions: LylaRequestOptions = {}): Lyla {
         throw defineLylaError<LylaBadRequestError>(
           {
             type: LYLA_ERROR.BAD_REQUEST,
-            message: "`options.query` can't be set if `url` contains '?'",
+            message: "`options.query` can't be set if `options.url` contains '?'",
             event: undefined,
             error: undefined,
             response: undefined
@@ -113,7 +113,7 @@ function createLyla(lylaOptions: LylaRequestOptions = {}): Lyla {
           {
             type: LYLA_ERROR.BAD_REQUEST,
             message:
-              "`options.json` can't be used together `options.body`. If you want to use `options.json`, you should left `options.body` as undefined",
+              "`options.json` can't be used together `options.body`. If you want to use `options.json`, you should left `options.body` as `undefined`",
             event: undefined,
             error: undefined,
             response: undefined
@@ -219,7 +219,7 @@ function createLyla(lylaOptions: LylaRequestOptions = {}): Lyla {
       const error = defineLylaError<LylaNetworkError>(
         {
           type: LYLA_ERROR.NETWORK,
-          message: 'Network Error',
+          message: 'Network error',
           event: e,
           error: undefined,
           response: undefined
@@ -318,7 +318,7 @@ function createLyla(lylaOptions: LylaRequestOptions = {}): Lyla {
         const error = defineLylaError<LylaHttpError>(
           {
             type: LYLA_ERROR.HTTP,
-            message: `Request Failed with ${reason}`,
+            message: `Request failed with ${reason}`,
             event: e,
             error: undefined,
             response
@@ -343,7 +343,7 @@ function createLyla(lylaOptions: LylaRequestOptions = {}): Lyla {
       const error = defineLylaError<LylaAbortedError>(
         {
           type: LYLA_ERROR.ABORTED,
-          message: 'Request Aborted',
+          message: 'Request aborted',
           event: e,
           error: undefined,
           response: undefined
