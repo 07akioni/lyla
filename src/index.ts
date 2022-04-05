@@ -5,5 +5,5 @@ export type {
   Lyla
 } from './types.js'
 export { lyla } from './instance.js'
-export type { MatchError, CatchError } from './error.js'
-export { catchError, matchError, LYLA_ERROR } from './error.js'
+export type { MatchError, CatchError, LylaErrorHandler } from './error.js'
+export { catchError, matchError, isLylaError, LYLA_ERROR } from './error.js'

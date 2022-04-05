@@ -113,16 +113,12 @@ export function defineLylaError<T extends LylaError>(
   return Object.assign(lylaError, lylaErrorProps) as any
 }
 
-function isLylaError(error: unknown): error is LylaError {
+export function isLylaError(error: unknown): error is LylaError {
   return error instanceof _LylaError
 }
 
 export function catchError<T, E = Error>(
-  handler: (
-    mergedError:
-      | { lylaError: LylaError; error: undefined }
-      | { lylaError: undefined; error: E }
-  ) => T
+  handler: LylaErrorHandler<T, E>
 ): (e: any) => T {
   return (e) => {
     if (isLylaError(e)) {
@@ -135,11 +131,7 @@ export function catchError<T, E = Error>(
 
 export function matchError<T, E = Error>(
   error: any,
-  matcher: (
-    mergedError:
-      | { lylaError: LylaError; error: undefined }
-      | { lylaError: undefined; error: E }
-  ) => T
+  matcher: LylaErrorHandler<T, E>
 ): T {
   if (isLylaError(error)) {
     return matcher({ lylaError: error, error: undefined })
@@ -147,6 +139,12 @@ export function matchError<T, E = Error>(
     return matcher({ lylaError: undefined, error })
   }
 }
+
+export type LylaErrorHandler<T, E = Error> = (
+  mergedError:
+    | { lylaError: LylaError; error: undefined }
+    | { lylaError: undefined; error: E }
+) => T
 
 export type CatchError = typeof catchError
 export type MatchError = typeof matchError
