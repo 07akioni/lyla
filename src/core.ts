@@ -202,7 +202,9 @@ function createLyla(lylaOptions: LylaRequestOptions = {}): Lyla {
         const error = defineLylaError<LylaTimeoutError>(
           {
             type: LYLA_ERROR.TIMEOUT,
-            message: 'Timeout',
+            message: timeout
+              ? `Timeout of ${timeout}ms exceeded`
+              : 'Timeout exceeded',
             event: e,
             error: undefined,
             response: undefined
