@@ -7,7 +7,7 @@ English · [中文](https://github.com/07akioni/lyla/blob/main/README.zh_CN.md)
 - Won't share options between different instances, which means your reqeust won't be unexpectedly modified.
 - Won't transform response body implicitly (For example transform invalid JSON to string).
 - Won't suppress expection silently (JSON parse error, config error, eg.).
-- Explicitly error handling.
+- [Explicit error handling](#error-handling).
 - Supports typescript for response data.
 - Supports upload progress (which isn't supported by fetch API).
 - Friendly error tracing (with sync trace, you can see where the request is sent on error).
@@ -255,7 +255,59 @@ try {
 }
 ```
 
-### Global error handling
+### Type `LylaError`
+
+```ts
+// This is not a percise definition. For full definition, see
+// https://github.com/07akioni/lyla/blob/main/src/error.ts
+type LylaError = {
+  name: string
+  message: string
+  type: LYLA_ERROR
+  error: Error | undefined
+  event: Event | undefined
+  response: LylaResponse | undefined
+}
+```
+
+### `LYLA_ERROR`
+
+```ts
+export enum LYLA_ERROR {
+  /**
+   * Request encountered an error, fired by XHR `onerror` event. It doesn't mean
+   * your network has error, for example CORS error also triggers NETWORK_ERROR.
+   */
+  NETWORK = 'NETWORK',
+  /**
+   * Request is aborted
+   */
+  ABORTED = 'ABORTED',
+  /**
+   * Response text is not valid JSON
+   */
+  INVALID_JSON = 'INVALID_JSON',
+  /**
+   * Trying resolving `response.json` with `responseType='arraybuffer'` or
+   * `responseType='blob'`
+   */
+  INVALID_CONVERSION = 'INVALID_CONVERSION',
+  /**
+   * Request timeout
+   */
+  TIMEOUT = 'TIMEOUT',
+  /**
+   * HTTP status error
+   */
+  HTTP = 'HTTP',
+  /**
+   * Request `options` is not valid. It's not a response error.
+   */
+  BAD_REQUEST = 'BAD_REQUEST'
+}
+```
+
+### Global error listener
 
 ```ts
 import type { LylaError } from 'lyla'

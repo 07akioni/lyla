@@ -7,7 +7,7 @@
 - 不会在不同的实例中共享配置，也就是说你的实例不会被别人影响
 - 不会隐式转换响应数据（例如在不能解析成 JSON 时转换成 string）
 - 不吞异常（例如 JSON 解析错误、配置错误）
-- 可预期的异常处理
+- [可预期的异常处理](#error-handling)
 - 响应数据支持 TypeScript 类型
 - 支持上传进度（基于 fetch API 无法做到）
 - 更友好的异常 trace（包含同步调用栈，出错时你可以看到请求发起的位置）
@@ -246,7 +246,59 @@ try {
 }
 ```
 
-### 全局异常处理
+### Type `LylaError`
+
+```ts
+// This is not a percise definition. For full definition, see
+// https://github.com/07akioni/lyla/blob/main/src/error.ts
+type LylaError = {
+  name: string
+  message: string
+  type: LYLA_ERROR
+  error: Error | undefined
+  event: Event | undefined
+  response: LylaResponse | undefined
+}
+```
+
+### `LYLA_ERROR`
+
+```ts
+export enum LYLA_ERROR {
+  /**
+   * 请求遇到了异常，被 XHR `onerror` 事件触发。这不一定说明你的网络本身有问题，例如跨域的错
+   * 误也可以触发一个网络错误
+   */
+  NETWORK = 'NETWORK',
+  /**
+   * 请求被丢弃
+   */
+  ABORTED = 'ABORTED',
+  /**
+   * 响应文本不是合法 JSON
+   */
+  INVALID_JSON = 'INVALID_JSON',
+  /**
+   * 试图对于 `responseType='arraybuffer'` 或 `responseType='blob'` 的响应访问
+   * `response.json`
+   */
+  INVALID_CONVERSION = 'INVALID_CONVERSION',
+  /**
+   * 请求超时
+   */
+  TIMEOUT = 'TIMEOUT',
+  /**
+   * 响应 HTTP 状态异常
+   */
+  HTTP = 'HTTP',
+  /**
+   * 请求的配置不合法，它不是一个响应异常
+   */
+  BAD_REQUEST = 'BAD_REQUEST'
+}
+```
+
+### 全局异常监听
 
 ```ts
 import type { LylaError } from 'lyla'
