@@ -466,6 +466,26 @@ const handlers: Handler[] = [
       lyla.get('www.baidu.com')
       axios.get('www.baidu.com')
     }
+  ],
+  [
+    'abort',
+    async () => {
+      const abortController = new AbortController()
+      request.post('/post-return-body', {
+        signal: abortController.signal,
+        responseType: 'text',
+        body: Array(50000).fill('xxxxxxxxxx').join(''),
+        onUploadProgress(e) {
+          console.log('u', e.loaded / e.total)
+        },
+        onDownloadProgress(e) {
+          console.log('d', e.lengthComputable, e.loaded / e.total)
+        }
+      })
+      setTimeout(() => {
+        abortController.abort()
+      }, 1000)
+    }
   ]
 ]
 
