@@ -225,6 +225,8 @@ lyla
     console.log(resp.json)
   })
   .catch(catchError(({ lylaError, error }) => {
+    // lylaError 和 error 只有一个会存在，如果 lylaError 存在，说明这个异常是由 lyla 触
+    // 发的
     if (lylaError) {
       switch lylaError.type {
         LYLA_ERROR.INVALID_JSON:
@@ -249,7 +251,7 @@ try {
 ### Type `LylaError`
 
 ```ts
-// This is not a percise definition. For full definition, see
+// 这不是个精确的定义，如果需要完整的定义，请参考
 // https://github.com/07akioni/lyla/blob/main/src/error.ts
 type LylaError = {
   name: string

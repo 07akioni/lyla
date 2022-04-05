@@ -3,7 +3,7 @@ import type { LylaResponse } from './types.js'
 export enum LYLA_ERROR {
   /**
    * Request encountered an error, fired by XHR `onerror` event. It doesn't mean
-   * your network has error, for example CORS error also triggers NETWORK_ERROR.
+   * your network has error, for example CORS error also triggers NETWORK_ERROR
    */
   NETWORK = 'NETWORK',
   /**
@@ -28,7 +28,7 @@ export enum LYLA_ERROR {
    */
   HTTP = 'HTTP',
   /**
-   * Request `options` is not valid. It's not a response error.
+   * Request `options` is not valid. It's not a response error
    */
   BAD_REQUEST = 'BAD_REQUEST'
 }
