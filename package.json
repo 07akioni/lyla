@@ -1,6 +1,6 @@
 {
   "name": "lyla",
-  "version": "0.4.3",
+  "version": "0.4.4",
   "description": "An HTTP client with explicit behavior & error handling for the browser",
   "keywords": [
     "http-request",
