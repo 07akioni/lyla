@@ -192,7 +192,7 @@ type LylaProgress = {
 }
 ```
 
-#### Type `LylaResponseHeaders`
+#### Type `LylaRequestHeaders`
 
 ```ts
 type LylaRequestHeaders = Record<string, string | number | undefined>
