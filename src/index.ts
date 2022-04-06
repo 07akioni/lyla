@@ -9,6 +9,7 @@ export type {
   MatchError,
   CatchError,
   LylaErrorHandler,
-  LylaResponseError
+  LylaResponseError,
+  LylaError
 } from './error.js'
 export { catchError, matchError, isLylaError, LYLA_ERROR } from './error.js'
