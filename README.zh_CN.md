@@ -225,8 +225,8 @@ lyla
     console.log(resp.json)
   })
   .catch(catchError(({ lylaError, error }) => {
-    // lylaError 和 error 只有一个会存在，如果 lylaError 存在，说明这个异常是由 lyla 触
-    // 发的
+    // lylaError 和 error 只有一个会存在，
+    // 如果 lylaError 存在，说明这个异常是由 lyla 触发的
     if (lylaError) {
       switch lylaError.type {
         LYLA_ERROR.INVALID_JSON:
