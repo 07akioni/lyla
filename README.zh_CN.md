@@ -144,6 +144,7 @@ type LylaRequestOptions = {
 
 ```ts
 type LylaResponse<T = any> = {
+  requestOptions: LylaRequestOptions
   status: number
   statusText: string
   /**
