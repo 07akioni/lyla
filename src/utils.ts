@@ -21,15 +21,15 @@ function isObject(value: any): value is object {
 }
 
 export function mergeHeaders(
-  target: Headers,
+  target: Record<string, string>,
   source: LylaRequestHeaders | undefined
 ): void {
   if (!source) return
   for (const [key, value] of Object.entries(source)) {
     if (value === undefined) {
-      target.delete(key)
+      delete target[key]
     } else {
-      target.set(key, value as string)
+      target[key.toLowerCase()] = typeof value === 'string' ? value : `${value}`
     }
   }
 }

@@ -127,23 +127,15 @@ function createLyla(
 
     // make request headers
     const requestHeaders: Record<string, string> = {}
-    const _headers = new Headers()
-    mergeHeaders(_headers, lylaOptions.headers)
-    mergeHeaders(_headers, options.headers)
+    mergeHeaders(requestHeaders, lylaOptions.headers)
+    mergeHeaders(requestHeaders, options.headers)
     // Set 'content-type' header
     if (_options.json !== undefined) {
-      _headers.set(
-        'content-type',
-        _headers.get('content-type') ?? 'application/json'
-      )
+      requestHeaders['content-type'] =
+        requestHeaders['content-type'] ?? 'application/json'
     }
-    _headers.set(
-      'accept',
-      _headers.get('accept') ?? responseTypes[responseType]
-    )
-    _headers.forEach((value, key) => {
-      requestHeaders[key] = value
-    })
+    requestHeaders['accept'] =
+      requestHeaders['accept'] ?? responseTypes[responseType]
     _options.headers = requestHeaders
 
     let settled = false
