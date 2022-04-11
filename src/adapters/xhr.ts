@@ -47,7 +47,6 @@ export const xhrAdapter: LylaAdapter = ({
   for (const [key, value] of Object.entries(headers)) {
     xhr.setRequestHeader(key, value as string)
   }
-  xhr.send(body)
   if (onUploadProgress) {
     xhr.upload.addEventListener('progress', (e) => {
       onUploadProgress({
@@ -82,6 +81,7 @@ export const xhrAdapter: LylaAdapter = ({
   xhr.addEventListener('error', (e) => {
     onNetworkError({ e })
   })
+  xhr.send(body)
   return {
     abort() {
       xhr.abort()
