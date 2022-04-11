@@ -1,22 +1,24 @@
 import type { LylaResponseError } from './error.js'
 
+export type LylaMethod =
+  | 'get'
+  | 'GET'
+  | 'post'
+  | 'POST'
+  | 'put'
+  | 'PUT'
+  | 'patch'
+  | 'PATCH'
+  | 'head'
+  | 'HEAD'
+  | 'delete'
+  | 'DELETE'
+  | 'options'
+  | 'OPTIONS'
+
 export type LylaRequestOptions = {
   url?: string
-  method?:
-    | 'get'
-    | 'GET'
-    | 'post'
-    | 'POST'
-    | 'put'
-    | 'PUT'
-    | 'patch'
-    | 'PATCH'
-    | 'head'
-    | 'HEAD'
-    | 'delete'
-    | 'DELETE'
-    | 'options'
-    | 'OPTIONS'
+  method?: LylaMethod
   timeout?: number
   /**
    * True when credentials are to be included in a cross-origin request.
@@ -29,7 +31,7 @@ export type LylaRequestOptions = {
    * Type of `response.body`.
    */
   responseType?: 'arraybuffer' | 'blob' | 'text'
-  body?: XMLHttpRequestBodyInit
+  body?: Blob | BufferSource | FormData | URLSearchParams | string
   /**
    * JSON value to be written into the request body. It can't be used with
    * `body`.
@@ -41,14 +43,8 @@ export type LylaRequestOptions = {
    * Abort signal of the request.
    */
   signal?: AbortSignal
-  onUploadProgress?: (
-    progress: LylaProgress,
-    progressEvent: ProgressEvent<XMLHttpRequestEventTarget>
-  ) => void
-  onDownloadProgress?: (
-    progress: LylaProgress,
-    progressEvent: ProgressEvent<XMLHttpRequestEventTarget>
-  ) => void
+  onUploadProgress?: (progress: LylaProgress) => void
+  onDownloadProgress?: (progress: LylaProgress) => void
   hooks?: {
     /**
      * Callbacks fired when options is passed into the request. In this moment,

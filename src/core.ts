@@ -16,38 +16,15 @@ import type {
   LylaTimeoutError
 } from './error.js'
 import type { LylaRequestOptions, LylaResponse, Lyla } from './types.js'
+import { LylaAdapter } from './adapters/type.js'
 
 function isOkStatus(status: number): boolean {
   return 200 <= status && status < 300
 }
 
-// It's possible that the raw http response headers has multiple headers with
-// same name. For example:
-// header1: value1
-// header1: value2
-// However when it's resolved by `xhr.getAllResponseHeaders` or
-// `Response.Headers.entries`, the resolved value in browsers would be
-// `header1: 'value1, value2'`, so there's no need deduplicate the headers
-function createHeaders(headers: string): Record<string, string> {
-  if (!headers) return {}
-
-  const headerMap: Record<string, string> = {}
-
-  // Convert the header string into an array
-  // of individual headers
-  const headerPairs = headers.trim().split(/[\r\n]+/)
-
-  headerPairs.forEach(function (line) {
-    const parts = line.split(':')
-    const header = (parts[0] || '').trim()
-    const value = (parts[1] || '').trim()
-    headerMap[header] = value
-  })
-
-  return headerMap
-}
-
-function createLyla(lylaOptions: LylaRequestOptions = {}): Lyla {
+function createLyla(
+  lylaOptions: LylaRequestOptions & { adapter: LylaAdapter }
+): Lyla {
   async function request<T = any>(
     options: LylaRequestOptions
   ): Promise<LylaResponse<T>> {
@@ -87,7 +64,8 @@ function createLyla(lylaOptions: LylaRequestOptions = {}): Lyla {
         throw defineLylaError<LylaBadRequestError>(
           {
             type: LYLA_ERROR.BAD_REQUEST,
-            message: "`options.query` can't be set if `options.url` contains '?'",
+            message:
+              "`options.query` can't be set if `options.url` contains '?'",
             event: undefined,
             error: undefined,
             response: undefined
@@ -130,7 +108,7 @@ function createLyla(lylaOptions: LylaRequestOptions = {}): Lyla {
       method = 'get',
       body,
       responseType = 'text',
-      withCredentials,
+      withCredentials = false,
       signal,
       onUploadProgress,
       onDownloadProgress
@@ -144,23 +122,6 @@ function createLyla(lylaOptions: LylaRequestOptions = {}): Lyla {
       }
     }
 
-    function cleanup() {
-      if (signal) {
-        signal.removeEventListener('abort', onAbortSignalReceived)
-      }
-    }
-
-    function onAbortSignalReceived() {
-      xhr.abort()
-    }
-
-    const xhr = new XMLHttpRequest()
-    xhr.open(method, url)
-
-    if (signal) {
-      signal.addEventListener('abort', onAbortSignalReceived)
-    }
-
     let _resolve: (value: LylaResponse<T>) => void
     let _reject: (value: LylaError) => void
 
@@ -169,24 +130,161 @@ function createLyla(lylaOptions: LylaRequestOptions = {}): Lyla {
     const _headers = new Headers()
     mergeHeaders(_headers, lylaOptions.headers)
     mergeHeaders(_headers, options.headers)
-    _headers.forEach((value, key) => {
-      xhr.setRequestHeader(key, value)
-      requestHeaders[key] = value
-    })
-    _options.headers = requestHeaders
-
     // Set 'content-type' header
     if (_options.json !== undefined) {
-      xhr.setRequestHeader(
+      _headers.set(
         'content-type',
         _headers.get('content-type') ?? 'application/json'
       )
     }
+    _headers.set(
+      'accept',
+      _headers.get('accept') ?? responseTypes[responseType]
+    )
+    _headers.forEach((value, key) => {
+      requestHeaders[key] = value
+    })
+    _options.headers = requestHeaders
 
-    // Set 'accept' header
-    const accept = _headers.get('accept') ?? responseTypes[responseType]
-    xhr.setRequestHeader('accept', accept)
-    xhr.withCredentials = !!withCredentials
+    let settled = false
+    function cleanup() {
+      settled = true
+      if (signal) {
+        signal.removeEventListener('abort', onAbortSignalReceived)
+      }
+    }
+
+    let aborted = false
+    function onAbortSignalReceived() {
+      if (aborted) return
+      aborted = true
+      const error = defineLylaError<LylaAbortedError>(
+        {
+          type: LYLA_ERROR.ABORTED,
+          message: 'Request aborted',
+          event: undefined,
+          error: undefined,
+          response: undefined
+        },
+        stack
+      )
+      handleResponseError(error)
+      _reject(error)
+      adapterHandle.abort()
+    }
+
+    if (signal) {
+      signal.addEventListener('abort', onAbortSignalReceived)
+    }
+
+    const adapterHandle = lylaOptions.adapter({
+      url,
+      method,
+      body,
+      json: _options.json,
+      headers: requestHeaders,
+      responseType,
+      withCredentials,
+      onNetworkError({ e }) {
+        const error = defineLylaError<LylaNetworkError>(
+          {
+            type: LYLA_ERROR.NETWORK,
+            message: 'Network error',
+            event: e,
+            error: undefined,
+            response: undefined
+          },
+          stack
+        )
+        handleResponseError(error)
+        _reject(error)
+      },
+      onDownloadProgress,
+      onUploadProgress,
+      async onResponse(resp, e) {
+        if (aborted) return
+        cleanup()
+        let _json: any
+        let _jsonIsSet = false
+        let _cachedJson: any
+        let _cachedJsonParsingError: TypeError
+        let response: LylaResponse = {
+          requestOptions: _options,
+          status: resp.status,
+          statusText: resp.statusText,
+          headers: resp.headers,
+          body: resp.body,
+          set json(value: any) {
+            _jsonIsSet = true
+            _json = value
+          },
+          get json() {
+            if (_jsonIsSet) return _json
+            if (responseType !== 'text') {
+              const error = defineLylaError<LylaInvalidConversionError>(
+                {
+                  type: LYLA_ERROR.INVALID_CONVERSION,
+                  message: `Can not convert ${responseType} to JSON`,
+                  event: undefined,
+                  error: undefined,
+                  response
+                },
+                undefined
+              )
+              handleResponseError(error)
+              throw error
+            }
+            if (_cachedJson === undefined) {
+              try {
+                return (_cachedJson = JSON.parse(resp.body as string))
+              } catch (e) {
+                _cachedJsonParsingError = e as TypeError
+              }
+            } else {
+              return _cachedJson
+            }
+            if (_cachedJsonParsingError) {
+              const error = defineLylaError<LylaInvalidJSONError>(
+                {
+                  type: LYLA_ERROR.INVALID_JSON,
+                  message: _cachedJsonParsingError.message,
+                  event: undefined,
+                  error: _cachedJsonParsingError,
+                  response
+                },
+                undefined
+              )
+              handleResponseError(error)
+              throw error
+            }
+          }
+        }
+
+        if (!isOkStatus(resp.status)) {
+          const reason = `${resp.status} ${resp.statusText}`
+          const error = defineLylaError<LylaHttpError>(
+            {
+              type: LYLA_ERROR.HTTP,
+              message: `Request failed with ${reason}`,
+              event: e,
+              error: undefined,
+              response
+            },
+            stack
+          )
+          handleResponseError(error)
+          _reject(error)
+        }
+
+        if (_options.hooks?.onAfterResponse) {
+          for (const hook of _options.hooks.onAfterResponse) {
+            response = await hook(response)
+          }
+        }
+
+        _resolve(response)
+      }
+    })
 
     const requestPromise = new Promise<LylaResponse<T>>((resolve, reject) => {
       _resolve = resolve
@@ -196,16 +294,18 @@ function createLyla(lylaOptions: LylaRequestOptions = {}): Lyla {
       }
     })
 
-    xhr.responseType = responseType
     if (timeout) {
-      xhr.addEventListener('timeout', (e) => {
+      setTimeout(() => {
+        if (settled) return
+        adapterHandle.abort()
+        aborted = true
         const error = defineLylaError<LylaTimeoutError>(
           {
             type: LYLA_ERROR.TIMEOUT,
             message: timeout
               ? `Timeout of ${timeout}ms exceeded`
               : 'Timeout exceeded',
-            event: e,
+            event: undefined,
             error: undefined,
             response: undefined
           },
@@ -213,147 +313,8 @@ function createLyla(lylaOptions: LylaRequestOptions = {}): Lyla {
         )
         handleResponseError(error)
         _reject(error)
-      })
+      }, timeout)
     }
-    xhr.addEventListener('error', (e) => {
-      const error = defineLylaError<LylaNetworkError>(
-        {
-          type: LYLA_ERROR.NETWORK,
-          message: 'Network error',
-          event: e,
-          error: undefined,
-          response: undefined
-        },
-        stack
-      )
-      handleResponseError(error)
-      _reject(error)
-    })
-    if (onUploadProgress) {
-      xhr.upload.addEventListener('progress', (e) => {
-        onUploadProgress(
-          {
-            lengthComputable: e.lengthComputable,
-            percent: e.lengthComputable ? (e.loaded / e.total) * 100 : 0,
-            loaded: e.loaded,
-            total: e.total
-          },
-          e
-        )
-      })
-    }
-    if (onDownloadProgress) {
-      xhr.addEventListener('progress', (e) => {
-        onDownloadProgress(
-          {
-            lengthComputable: e.lengthComputable,
-            percent: e.lengthComputable ? (e.loaded / e.total) * 100 : 0,
-            loaded: e.loaded,
-            total: e.total
-          },
-          e
-        )
-      })
-    }
-    xhr.addEventListener('loadend', async (e) => {
-      if (aborted) return
-      cleanup()
-      let _json: any
-      let _jsonIsSet = false
-      let _cachedJson: any
-      let _cachedJsonParsingError: TypeError
-      let response: LylaResponse = {
-        requestOptions: _options,
-        status: xhr.status,
-        statusText: xhr.statusText,
-        headers: createHeaders(xhr.getAllResponseHeaders()),
-        body: xhr.response,
-        set json(value: any) {
-          _jsonIsSet = true
-          _json = value
-        },
-        get json() {
-          if (_jsonIsSet) return _json
-          if (responseType !== 'text') {
-            const error = defineLylaError<LylaInvalidConversionError>(
-              {
-                type: LYLA_ERROR.INVALID_CONVERSION,
-                message: `Can not convert ${responseType} to JSON`,
-                event: undefined,
-                error: undefined,
-                response
-              },
-              undefined
-            )
-            handleResponseError(error)
-            throw error
-          }
-          if (_cachedJson === undefined) {
-            try {
-              return (_cachedJson = JSON.parse(xhr.response))
-            } catch (e) {
-              _cachedJsonParsingError = e as TypeError
-            }
-          } else {
-            return _cachedJson
-          }
-          if (_cachedJsonParsingError) {
-            const error = defineLylaError<LylaInvalidJSONError>(
-              {
-                type: LYLA_ERROR.INVALID_JSON,
-                message: _cachedJsonParsingError.message,
-                event: undefined,
-                error: _cachedJsonParsingError,
-                response
-              },
-              undefined
-            )
-            handleResponseError(error)
-            throw error
-          }
-        }
-      }
-
-      if (!isOkStatus(xhr.status)) {
-        const reason = `${xhr.status} ${xhr.statusText}`
-        const error = defineLylaError<LylaHttpError>(
-          {
-            type: LYLA_ERROR.HTTP,
-            message: `Request failed with ${reason}`,
-            event: e,
-            error: undefined,
-            response
-          },
-          stack
-        )
-        handleResponseError(error)
-        _reject(error)
-      }
-
-      if (_options.hooks?.onAfterResponse) {
-        for (const hook of _options.hooks.onAfterResponse) {
-          response = await hook(response)
-        }
-      }
-
-      _resolve(response)
-    })
-    let aborted = false
-    xhr.addEventListener('abort', (e) => {
-      aborted = true
-      const error = defineLylaError<LylaAbortedError>(
-        {
-          type: LYLA_ERROR.ABORTED,
-          message: 'Request aborted',
-          event: e,
-          error: undefined,
-          response: undefined
-        },
-        stack
-      )
-      handleResponseError(error)
-      _reject(error)
-    })
     if (method === 'GET' && body) {
       throw defineLylaError<LylaBadRequestError>(
         {
@@ -366,7 +327,6 @@ function createLyla(lylaOptions: LylaRequestOptions = {}): Lyla {
         undefined
       )
     }
-    xhr.send(body)
     return requestPromise
   }
 
@@ -384,7 +344,9 @@ function createLyla(lylaOptions: LylaRequestOptions = {}): Lyla {
   }
 
   function extend(options?: LylaRequestOptions): Lyla {
-    const extendedOptions = mergeOptions(lylaOptions, options)
+    const extendedOptions = mergeOptions<
+      LylaRequestOptions & { adapter: LylaAdapter }
+    >(lylaOptions, options)
     return createLyla(extendedOptions)
   }
 

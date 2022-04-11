@@ -36,7 +36,7 @@ export enum LYLA_ERROR {
 export interface LylaTimeoutError extends Error {
   type: LYLA_ERROR.TIMEOUT
   error: undefined
-  event: ProgressEvent<XMLHttpRequestEventTarget>
+  event: undefined
   response: undefined
 }
 
@@ -71,7 +71,7 @@ export interface LylaInvalidJSONError extends Error {
 export interface LylaAbortedError extends Error {
   type: LYLA_ERROR.ABORTED
   error: undefined
-  event: ProgressEvent<XMLHttpRequestEventTarget>
+  event: undefined
   response: undefined
 }
 
