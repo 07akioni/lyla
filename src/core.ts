@@ -263,6 +263,7 @@ function createLyla(lylaOptions: LylaRequestOptions = {}): Lyla {
       let _cachedJson: any
       let _cachedJsonParsingError: TypeError
       let response: LylaResponse = {
+        requestOptions: _options,
         status: xhr.status,
         statusText: xhr.statusText,
         headers: createHeaders(xhr.getAllResponseHeaders()),
