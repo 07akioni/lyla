@@ -1,0 +1,15 @@
+{
+  "name": "lyla",
+  "scripts": {
+    "build": "tsc -p tsconfig.cjs.json && tsc -p tsconfig.esm.json"
+  },
+  "main": "lib/index.js",
+  "module": "es/index.js",
+  "dependencies": {
+    "@lyla/core": "workspace:*",
+    "@lyla/web": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^4.6.2"
+  }
+}

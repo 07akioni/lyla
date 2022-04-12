@@ -16,8 +16,13 @@ import type {
   LylaNetworkError,
   LylaTimeoutError
 } from './error.js'
-import type { LylaRequestOptions, LylaResponse, Lyla } from './types.js'
-import type { LylaAdapter, LylaAdapterMeta } from './adapters/type.js'
+import type {
+  LylaRequestOptions,
+  LylaResponse,
+  Lyla,
+  LylaAdapter,
+  LylaAdapterMeta
+} from './types.js'
 
 function isOkStatus(status: number): boolean {
   return 200 <= status && status < 300

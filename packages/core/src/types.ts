@@ -1,4 +1,3 @@
-import { LylaAdapterMeta } from './adapters/type.js'
 import type { LylaResponseError } from './error.js'
 
 export type LylaMethod =
@@ -19,7 +18,7 @@ export type LylaMethod =
 
 export type LylaRequestOptions<M extends LylaAdapterMeta = LylaAdapterMeta> = {
   url?: string
-  method?: LylaMethod
+  method?: M['method']
   timeout?: number
   /**
    * True when credentials are to be included in a cross-origin request.
@@ -163,3 +162,38 @@ export type Lyla<M extends LylaAdapterMeta = LylaAdapterMeta> = {
     options?: Omit<LylaRequestOptions<M>, 'url' | 'method'>
   ) => Promise<LylaResponse<T, M>>
 }
+
+export interface LylaAdapterMeta {
+  method: LylaMethod
+  requestBody: XMLHttpRequestBodyInit | undefined
+  responseType: 'arraybuffer' | 'blob' | 'text'
+  responseBody: string | ArrayBuffer | Blob
+  networkErrorDetail: any
+  responseDetail: any
+}
+
+export interface LylaAdapterOptions<T extends LylaAdapterMeta> {
+  url: string
+  method: T['method']
+  headers: Record<string, string>
+  body: T['requestBody']
+  json: object | undefined
+  responseType: T['responseType']
+  withCredentials: boolean
+  onNetworkError(detail: T['networkErrorDetail']): void
+  onUploadProgress: ((progress: LylaProgress) => void) | undefined
+  onDownloadProgress: ((progress: LylaProgress) => void) | undefined
+  onResponse(
+    response: {
+      body: string | ArrayBuffer | Blob
+      status: number
+      statusText: string
+      headers: Record<string, string>
+    },
+    detail: T['responseDetail']
+  ): void
+}
+
+export type LylaAdapter<T extends LylaAdapterMeta> = (
+  options: LylaAdapterOptions<T>
+) => { abort: () => void }

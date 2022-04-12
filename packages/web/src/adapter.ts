@@ -1,7 +1,26 @@
-import type { LylaAdapter, LylaAdapterMeta } from './type.js'
+import type {
+  LylaAdapter,
+  LylaAdapterMeta as LylaCoreAdapterMeta
+} from '@lyla/core'
 
-export interface LylaXhrAdapterMeta extends LylaAdapterMeta {
+export interface LylaAdapterMeta extends LylaCoreAdapterMeta {
+  method:
+    | 'get'
+    | 'GET'
+    | 'post'
+    | 'POST'
+    | 'put'
+    | 'PUT'
+    | 'patch'
+    | 'PATCH'
+    | 'head'
+    | 'HEAD'
+    | 'delete'
+    | 'DELETE'
+    | 'options'
+    | 'OPTIONS'
   networkErrorDetail: ProgressEvent<XMLHttpRequestEventTarget>
+  requestBody: XMLHttpRequestBodyInit
   responseDetail: ProgressEvent<XMLHttpRequestEventTarget>
   responseType: 'arraybuffer' | 'blob' | 'text'
   body: XMLHttpRequestBodyInit
@@ -33,7 +52,7 @@ function createHeaders(headers: string): Record<string, string> {
   return headerMap
 }
 
-export const xhrAdapter: LylaAdapter<LylaXhrAdapterMeta> = ({
+export const adapter: LylaAdapter<LylaAdapterMeta> = ({
   url,
   method,
   headers,

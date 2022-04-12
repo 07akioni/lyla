@@ -1,5 +1,4 @@
-import { LylaAdapterMeta } from './adapters/type.js'
-import type { LylaResponse } from './types.js'
+import type { LylaAdapterMeta, LylaResponse } from './types.js'
 
 export enum LYLA_ERROR {
   /**
