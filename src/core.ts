@@ -1,4 +1,3 @@
-import { responseTypes } from './constants.js'
 import {
   defineLylaError,
   LylaBadRequestError,
@@ -134,10 +133,9 @@ function createLyla(
       requestHeaders['content-type'] =
         requestHeaders['content-type'] ?? 'application/json'
     }
-    requestHeaders['accept'] =
-      requestHeaders['accept'] ?? responseTypes[responseType]
+    requestHeaders['accept'] = requestHeaders.accept ?? '*/*'
     _options.headers = requestHeaders
-
+    
     let settled = false
     function cleanup() {
       settled = true
