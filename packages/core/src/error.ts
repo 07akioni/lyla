@@ -1,3 +1,4 @@
+import { LylaAdapterMeta } from './adapters/type.js'
 import type { LylaResponse } from './types.js'
 
 export enum LYLA_ERROR {
@@ -36,75 +37,81 @@ export enum LYLA_ERROR {
 export interface LylaTimeoutError extends Error {
   type: LYLA_ERROR.TIMEOUT
   error: undefined
-  event: undefined
+  detail: undefined
   response: undefined
 }
 
-export interface LylaInvalidConversionError extends Error {
+export interface LylaInvalidConversionError<
+  M extends LylaAdapterMeta = LylaAdapterMeta
+> extends Error {
   type: LYLA_ERROR.INVALID_CONVERSION
   error: undefined
-  event: undefined
-  response: LylaResponse
+  detail: undefined
+  response: LylaResponse<any, M>
 }
 
-export interface LylaHttpError extends Error {
+export interface LylaHttpError<M extends LylaAdapterMeta = LylaAdapterMeta>
+  extends Error {
   type: LYLA_ERROR.HTTP
   error: undefined
-  event: ProgressEvent<XMLHttpRequestEventTarget>
-  response: LylaResponse
+  detail: undefined
+  response: LylaResponse<any, M>
 }
 
-export interface LylaNetworkError extends Error {
+export interface LylaNetworkError<M extends LylaAdapterMeta = LylaAdapterMeta>
+  extends Error {
   type: LYLA_ERROR.NETWORK
   error: undefined
-  event: ProgressEvent<XMLHttpRequestEventTarget>
+  detail: M['networkErrorDetail']
   response: undefined
 }
 
-export interface LylaInvalidJSONError extends Error {
+export interface LylaInvalidJSONError<
+  M extends LylaAdapterMeta = LylaAdapterMeta
+> extends Error {
   type: LYLA_ERROR.INVALID_JSON
   error: SyntaxError
-  event: undefined
-  response: LylaResponse
+  detail: undefined
+  response: LylaResponse<any, M>
 }
 
 export interface LylaAbortedError extends Error {
   type: LYLA_ERROR.ABORTED
   error: undefined
-  event: undefined
+  detail: undefined
   response: undefined
 }
 
 export interface LylaBadRequestError extends Error {
   type: LYLA_ERROR.BAD_REQUEST
   error: undefined
-  event: undefined
+  detail: undefined
   response: undefined
 }
 
-export type LylaResponseError =
-  | LylaNetworkError
-  | LylaInvalidJSONError
+export type LylaResponseError<M extends LylaAdapterMeta = LylaAdapterMeta> =
+  | LylaNetworkError<M>
+  | LylaHttpError<M>
+  | LylaInvalidJSONError<M>
+  | LylaInvalidConversionError<M>
   | LylaAbortedError
-  | LylaHttpError
-  | LylaInvalidConversionError
   | LylaTimeoutError
 
-export type LylaError =
-  | LylaNetworkError
-  | LylaInvalidJSONError
+export type LylaError<M extends LylaAdapterMeta = LylaAdapterMeta> =
+  | LylaNetworkError<M>
+  | LylaHttpError<M>
+  | LylaInvalidJSONError<M>
+  | LylaInvalidConversionError<M>
   | LylaAbortedError
-  | LylaHttpError
-  | LylaInvalidConversionError
   | LylaTimeoutError
   | LylaBadRequestError
 
 class _LylaError extends Error {}
 
-export function defineLylaError<T extends LylaError>(
-  lylaErrorProps: Omit<T, 'name'>,
-  stack: string | undefined
-): T {
+export function defineLylaError<
+  M extends LylaAdapterMeta,
+  T extends LylaError<M>
+>(lylaErrorProps: Omit<T, 'name'>, stack: string | undefined): T {
   const lylaError = new _LylaError()
   lylaError.name = `LylaError[${lylaErrorProps.type}]`
   if (stack) {
@@ -113,38 +120,16 @@ export function defineLylaError<T extends LylaError>(
   return Object.assign(lylaError, lylaErrorProps) as any
 }
 
-export function isLylaError(error: unknown): error is LylaError {
+export function isLylaError(error: unknown): error is LylaError<any> {
   return error instanceof _LylaError
 }
 
-export function catchError<T, E = Error>(
-  handler: LylaErrorHandler<T, E>
-): (e: any) => T {
-  return (e) => {
-    if (isLylaError(e)) {
-      return handler({ error: undefined, lylaError: e })
-    } else {
-      return handler({ error: e, lylaError: undefined })
-    }
-  }
-}
-
-export function matchError<T, E = Error>(
-  error: any,
-  matcher: LylaErrorHandler<T, E>
-): T {
-  if (isLylaError(error)) {
-    return matcher({ lylaError: error, error: undefined })
-  } else {
-    return matcher({ lylaError: undefined, error })
-  }
-}
-
-export type LylaErrorHandler<T, E = Error> = (
+export type LylaErrorHandler<
+  T,
+  E = Error,
+  M extends LylaAdapterMeta = LylaAdapterMeta
+> = (
   mergedError:
-    | { lylaError: LylaError; error: undefined }
+    | { lylaError: LylaError<M>; error: undefined }
     | { lylaError: undefined; error: E }
 ) => T
-
-export type CatchError = typeof catchError
-export type MatchError = typeof matchError

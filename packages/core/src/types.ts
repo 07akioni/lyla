@@ -1,3 +1,4 @@
+import { LylaAdapterMeta } from './adapters/type.js'
 import type { LylaResponseError } from './error.js'
 
 export type LylaMethod =
@@ -16,7 +17,7 @@ export type LylaMethod =
   | 'options'
   | 'OPTIONS'
 
-export type LylaRequestOptions = {
+export type LylaRequestOptions<M extends LylaAdapterMeta = LylaAdapterMeta> = {
   url?: string
   method?: LylaMethod
   timeout?: number
@@ -30,8 +31,8 @@ export type LylaRequestOptions = {
   /**
    * Type of `response.body`.
    */
-  responseType?: 'arraybuffer' | 'blob' | 'text'
-  body?: Blob | BufferSource | FormData | URLSearchParams | string
+  responseType?: M['responseType']
+  body?: M['responseBody']
   /**
    * JSON value to be written into the request body. It can't be used with
    * `body`.
@@ -52,8 +53,8 @@ export type LylaRequestOptions = {
      */
     onInit?: Array<
       (
-        options: LylaRequestOptions
-      ) => LylaRequestOptions | Promise<LylaRequestOptions>
+        options: LylaRequestOptions<M>
+      ) => LylaRequestOptions<M> | Promise<LylaRequestOptions<M>>
     >
     /**
      * Callbacks fired before request is sent. In this moment, request options is
@@ -61,16 +62,16 @@ export type LylaRequestOptions = {
      */
     onBeforeRequest?: Array<
       (
-        options: LylaRequestOptions
-      ) => LylaRequestOptions | Promise<LylaRequestOptions>
+        options: LylaRequestOptions<M>
+      ) => LylaRequestOptions<M> | Promise<LylaRequestOptions<M>>
     >
     /**
      * Callbacks fired after response is received.
      */
     onAfterResponse?: Array<
       (
-        reqsponse: LylaResponse<any>
-      ) => LylaResponse<any> | Promise<LylaResponse<any>>
+        reqsponse: LylaResponse<any, M>
+      ) => LylaResponse<any, M> | Promise<LylaResponse<any, M>>
     >
     /**
      * Callbacks fired when there's error while response handling. It's only
@@ -78,12 +79,15 @@ export type LylaRequestOptions = {
      * for example if user throws an error in `onAfterResponse` hook. The
      * callback won't be fired.
      */
-    onResponseError?: Array<(error: LylaResponseError) => void>
+    onResponseError?: Array<(error: LylaResponseError<M>) => void>
   }
 }
 
-export type LylaResponse<T = any> = {
-  requestOptions: LylaRequestOptions
+export type LylaResponse<
+  T = any,
+  M extends LylaAdapterMeta = LylaAdapterMeta
+> = {
+  requestOptions: LylaRequestOptions<M>
   status: number
   statusText: string
   /**
@@ -93,12 +97,16 @@ export type LylaResponse<T = any> = {
   /**
    * Response body.
    */
-  body: string | ArrayBuffer | Blob
+  body: M['responseBody']
   /**
    * JSON value of the response. If body is not valid JSON text, access the
    * field will cause an error.
    */
   json: T
+  /**
+   * Original
+   */
+  detail: M['responseDetail']
 }
 
 export type LylaProgress = {
@@ -123,35 +131,35 @@ export type LylaProgress = {
 
 export type LylaRequestHeaders = Record<string, string | number | undefined>
 
-export type Lyla = {
-  <T = any>(options: LylaRequestOptions): Promise<LylaResponse<T>>
-  extend: (options?: LylaRequestOptions) => Lyla
+export type Lyla<M extends LylaAdapterMeta = LylaAdapterMeta> = {
+  <T = any>(options: LylaRequestOptions<M>): Promise<LylaResponse<T, M>>
+  extend: (options?: LylaRequestOptions<M>) => Lyla<M>
   get: <T = any>(
     url: string,
-    options?: Omit<LylaRequestOptions, 'url' | 'method'>
-  ) => Promise<LylaResponse<T>>
+    options?: Omit<LylaRequestOptions<M>, 'url' | 'method'>
+  ) => Promise<LylaResponse<T, M>>
   post: <T = any>(
     url: string,
-    options?: Omit<LylaRequestOptions, 'url' | 'method'>
-  ) => Promise<LylaResponse<T>>
+    options?: Omit<LylaRequestOptions<M>, 'url' | 'method'>
+  ) => Promise<LylaResponse<T, M>>
   put: <T = any>(
     url: string,
-    options?: Omit<LylaRequestOptions, 'url' | 'method'>
-  ) => Promise<LylaResponse<T>>
+    options?: Omit<LylaRequestOptions<M>, 'url' | 'method'>
+  ) => Promise<LylaResponse<T, M>>
   patch: <T = any>(
     url: string,
-    options?: Omit<LylaRequestOptions, 'url' | 'method'>
-  ) => Promise<LylaResponse<T>>
+    options?: Omit<LylaRequestOptions<M>, 'url' | 'method'>
+  ) => Promise<LylaResponse<T, M>>
   head: <T = any>(
     url: string,
-    options?: Omit<LylaRequestOptions, 'url' | 'method'>
-  ) => Promise<LylaResponse<T>>
+    options?: Omit<LylaRequestOptions<M>, 'url' | 'method'>
+  ) => Promise<LylaResponse<T, M>>
   delete: <T = any>(
     url: string,
-    options?: Omit<LylaRequestOptions, 'url' | 'method'>
-  ) => Promise<LylaResponse<T>>
+    options?: Omit<LylaRequestOptions<M>, 'url' | 'method'>
+  ) => Promise<LylaResponse<T, M>>
   options: <T = any>(
     url: string,
-    options?: Omit<LylaRequestOptions, 'url' | 'method'>
-  ) => Promise<LylaResponse<T>>
+    options?: Omit<LylaRequestOptions<M>, 'url' | 'method'>
+  ) => Promise<LylaResponse<T, M>>
 }

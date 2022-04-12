@@ -1,4 +1,11 @@
-import type { LylaAdapter } from './type.js'
+import type { LylaAdapter, LylaAdapterMeta } from './type.js'
+
+export interface LylaXhrAdapterMeta extends LylaAdapterMeta {
+  networkErrorDetail: ProgressEvent<XMLHttpRequestEventTarget>
+  responseDetail: ProgressEvent<XMLHttpRequestEventTarget>
+  responseType: 'arraybuffer' | 'blob' | 'text'
+  body: XMLHttpRequestBodyInit
+}
 
 // It's possible that the raw http response headers has multiple headers with
 // same name. For example:
@@ -26,7 +33,7 @@ function createHeaders(headers: string): Record<string, string> {
   return headerMap
 }
 
-export const xhrAdapter: LylaAdapter = ({
+export const xhrAdapter: LylaAdapter<LylaXhrAdapterMeta> = ({
   url,
   method,
   headers,
@@ -79,7 +86,7 @@ export const xhrAdapter: LylaAdapter = ({
     )
   })
   xhr.addEventListener('error', (e) => {
-    onNetworkError({ e })
+    onNetworkError(e)
   })
   xhr.send(body)
   return {
