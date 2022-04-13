@@ -16,6 +16,11 @@ export type LylaMethod =
   | 'options'
   | 'OPTIONS'
 
+export type AbortSignal = {
+  addEventListener(ev: 'abort', callback: () => void): void
+  removeEventListener(ev: 'abort', callback: () => void): void
+}
+
 export type LylaRequestOptions<M extends LylaAdapterMeta = LylaAdapterMeta> = {
   url?: string
   method?: M['method']
@@ -165,9 +170,9 @@ export type Lyla<M extends LylaAdapterMeta = LylaAdapterMeta> = {
 
 export interface LylaAdapterMeta {
   method: LylaMethod
-  requestBody: XMLHttpRequestBodyInit | undefined
+  requestBody: any | undefined
   responseType: 'arraybuffer' | 'blob' | 'text'
-  responseBody: string | ArrayBuffer | Blob
+  responseBody: any
   networkErrorDetail: any
   responseDetail: any
 }
@@ -185,7 +190,7 @@ export interface LylaAdapterOptions<T extends LylaAdapterMeta> {
   onDownloadProgress: ((progress: LylaProgress) => void) | undefined
   onResponse(
     response: {
-      body: string | ArrayBuffer | Blob
+      body: T['responseBody']
       status: number
       statusText: string
       headers: Record<string, string>

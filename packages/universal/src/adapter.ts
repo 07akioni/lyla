@@ -17,8 +17,8 @@ export interface LylaAdapterMeta extends LylaCoreAdapterMeta {
     | 'options'
     | 'OPTIONS'
   networkErrorDetail: any
-  requestBody: XMLHttpRequestBodyInit
+  requestBody: any
   responseDetail: any
   responseType: 'arraybuffer' | 'blob' | 'text'
-  body: XMLHttpRequestBodyInit
+  body: any
 }

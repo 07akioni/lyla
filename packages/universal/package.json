@@ -1,15 +1,19 @@
 {
   "name": "lyla",
   "scripts": {
-    "build": "tsc -p tsconfig.cjs.json && tsc -p tsconfig.esm.json"
+    "build": "rollup -c rollup.config.js"
   },
   "main": "lib/index.js",
   "module": "es/index.js",
   "dependencies": {
-    "@lyla/core": "workspace:*",
-    "@lyla/web": "workspace:*"
+    "@lyla/core": "workspace:*"
   },
   "devDependencies": {
+    "@lyla/web": "workspace:*",
+    "@rollup/plugin-node-resolve": "^13.2.0",
+    "@rollup/plugin-typescript": "^8.3.1",
+    "rollup": "^2.70.1",
+    "tslib": "^2.3.1",
     "typescript": "^4.6.2"
   }
 }

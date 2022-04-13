@@ -1,11 +1,12 @@
 {
   "compilerOptions": {
     "declaration": true,
-    "lib": ["DOM", "ES2015", "DOM.Iterable"],
+    "lib": ["ES2017"],
     "target": "ES2017",
     "esModuleInterop": true,
     "moduleResolution": "node",
-    "strict": true
+    "strict": true,
+    "types": []
   },
-  "include": ["src", "tests", "demo"]
+  "include": ["src"]
 }

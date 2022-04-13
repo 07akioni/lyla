@@ -28,6 +28,13 @@ function isOkStatus(status: number): boolean {
   return 200 <= status && status < 300
 }
 
+declare const setTimeout: (callback: () => void, timeout?: number) => number
+
+// It exists both in node, browser, miniprogram environment
+declare const URLSearchParams: {
+  new (params: Record<string, string>): { toString: () => string }
+}
+
 function createLyla<M extends LylaAdapterMeta>(
   lylaOptions: LylaRequestOptions<M> & { adapter: LylaAdapter<M> }
 ): {

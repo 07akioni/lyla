@@ -4,5 +4,6 @@
     "outDir": "es",
     "module": "ESNext"
   },
-  "include": ["src"]
+  "include": ["src"],
+  "exclude": ["tests", "demo"]
 }
