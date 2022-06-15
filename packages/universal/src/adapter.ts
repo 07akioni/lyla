@@ -1,4 +1,4 @@
-import type { LylaAdapterMeta as LylaCoreAdapterMeta } from '@lyla/core'
+import type { LylaAdapterMeta as LylaCoreAdapterMeta } from '@lylajs/core'
 
 export interface LylaAdapterMeta extends LylaCoreAdapterMeta {
   method:

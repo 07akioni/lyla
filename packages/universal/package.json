@@ -1,19 +1,24 @@
 {
   "name": "lyla",
+  "version": "0.4.7",
   "scripts": {
-    "build": "rollup -c rollup.config.js"
+    "build": "rm -rf es lib && rollup -c rollup.config.js",
+    "prepublishOnly": "pnpm run build"
   },
   "main": "lib/index.js",
   "module": "es/index.js",
   "dependencies": {
-    "@lyla/core": "workspace:*"
+    "@lylajs/core": "workspace:*"
   },
   "devDependencies": {
-    "@lyla/web": "workspace:*",
+    "@lylajs/web": "workspace:*",
     "@rollup/plugin-node-resolve": "^13.2.0",
     "@rollup/plugin-typescript": "^8.3.1",
     "rollup": "^2.70.1",
     "tslib": "^2.3.1",
     "typescript": "^4.6.2"
+  },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org"
   }
 }

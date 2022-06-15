@@ -1,14 +1,19 @@
 {
-  "name": "@lyla/web",
+  "name": "@lylajs/web",
+  "version": "0.4.7",
   "scripts": {
-    "build": "tsc -p tsconfig.cjs.json && tsc -p tsconfig.esm.json"
+    "build": "rm -rf es lib && tsc -p tsconfig.cjs.json && tsc -p tsconfig.esm.json",
+    "prepublishOnly": "pnpm run build"
   },
   "main": "lib/index.js",
   "module": "es/index.js",
   "dependencies": {
-    "@lyla/core": "workspace:*"
+    "@lylajs/core": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^4.6.2"
+  },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org"
   }
 }
