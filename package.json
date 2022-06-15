@@ -3,6 +3,7 @@
   "private": true,
 
   "scripts": {
+    "check-type": "pnpm run -r check-type",
     "bump": "pnpm -r exec bump"
   },
   "devDependencies": {
