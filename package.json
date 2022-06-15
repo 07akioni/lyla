@@ -1,10 +1,9 @@
 {
   "name": "lyla",
   "private": true,
-  "version": "0.4.7",
 
   "scripts": {
-    "bump": "bump"
+    "bump": "pnpm -r exec bump"
   },
   "devDependencies": {
     "version-bump-prompt": "^6.1.0"
