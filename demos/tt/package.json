@@ -8,5 +8,7 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC"
+  "devDependencies": {
+    "@lylajs/tt": "^0.4.9"
+  }
 }
