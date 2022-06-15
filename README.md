@@ -1,6 +1,12 @@
 # lyla · [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT) [![ci](https://github.com/07akioni/lyla/actions/workflows/node.js.yml/badge.svg)](https://github.com/07akioni/lyla/actions/workflows/node.js.yml/badge.svg) [![npm version](https://badge.fury.io/js/lyla.svg)](https://badge.fury.io/js/lyla) [![minzipped size](https://badgen.net/bundlephobia/minzip/lyla)](https://badgen.net/bundlephobia/minzip/lyla)
 
-An HTTP client with explicit behavior & error handling for the browser.
+An group of HTTP clients with explicit behavior & error handling.
+
+| Environment               | Package       |
+| ------------------------- | ------------- |
+| web                       | `@lylajs/web` |
+| tt miniprogram            | `@lylajs/tt`  |
+| web (okay) + nodejs (wip) | `lyla`        |
 
 English · [中文](https://github.com/07akioni/lyla/blob/main/README.zh_CN.md)
 
@@ -17,6 +23,7 @@ For difference compared with other libs, see [FAQ](#faq).
 ## Installation
 
 ```bash
+# you can install `lyla` or `@lylajs/xxx`
 npm i lyla # for npm
 pnpm i lyla # for pnpm
 yarn add lyla # for yarn
@@ -25,7 +32,7 @@ yarn add lyla # for yarn
 ## Usage
 
 ```ts
-import { lyla } from 'lyla'
+import { lyla } from 'lyla' // or @lylajs/xxx
 
 const { json } = await lyla.post('https://example.com', {
   json: { foo: 'bar' }
@@ -100,14 +107,8 @@ type LylaRequestOptions = {
    * Abort signal of the request.
    */
   signal?: AbortSignal
-  onUploadProgress?: (
-    progress: LylaProgress,
-    progressEvent: ProgressEvent<XMLHttpRequestEventTarget>
-  ) => void
-  onDownloadProgress?: (
-    progress: LylaProgress,
-    progressEvent: ProgressEvent<XMLHttpRequestEventTarget>
-  ) => void
+  onUploadProgress?: (progress: LylaProgress) => void
+  onDownloadProgress?: (progress: LylaProgress) => void
   hooks?: {
     /**
      * Callbacks fired when options is passed into the request. In this moment,
@@ -160,7 +161,7 @@ type LylaResponse<T = any> = {
   /**
    * Response body.
    */
-  body: string | ArrayBuffer | Blob
+  body: PlatformRelevant
   /**
    * JSON value of the response. If body is not valid JSON text, access the
    * field will cause an error.

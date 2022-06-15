@@ -1,6 +1,12 @@
 # lyla · [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT) [![ci](https://github.com/07akioni/lyla/actions/workflows/node.js.yml/badge.svg)](https://github.com/07akioni/lyla/actions/workflows/node.js.yml/badge.svg) [![npm version](https://badge.fury.io/js/lyla.svg)](https://badge.fury.io/js/lyla) [![minzipped size](https://badgen.net/bundlephobia/minzip/lyla)](https://badgen.net/bundlephobia/minzip/lyla)
 
-一个表现可预期、错误处理可预期的浏览器 HTTP 请求库。
+一组表现可预期、错误处理可预期的浏览器 HTTP 请求库。
+
+| 环境                           | 包            |
+| ------------------------------ | ------------- |
+| web                            | `@lylajs/web` |
+| 头条小程序                     | `@lylajs/tt`  |
+| web（可用） + nodejs（未完成） | `lyla`        |
 
 [English](https://github.com/07akioni/lyla) · 中文
 
@@ -17,6 +23,7 @@
 ## 安装
 
 ```bash
+# 你可以安装 `lyla` 或 `@lylajs/xxx`
 npm i lyla # 使用 npm 安装
 pnpm i lyla # 使用 pnpm 安装
 yarn add lyla # 使用 yarn 安装
@@ -86,8 +93,8 @@ type LylaRequestOptions = {
   /**
    * `response.body` 的类型
    */
-  responseType?: 'arraybuffer' | 'blob' | 'text'
-  body?: XMLHttpRequestBodyInit
+  responseType?: 平台相关
+  body?: 平台相关
   /**
    * 需要被写入请求主体的 JSON 值，不可以同时和 body 使用
    */
@@ -98,14 +105,8 @@ type LylaRequestOptions = {
    * 请求使用的 Abort signal
    */
   signal?: AbortSignal
-  onUploadProgress?: (
-    progress: LylaProgress,
-    progressEvent: ProgressEvent<XMLHttpRequestEventTarget>
-  ) => void
-  onDownloadProgress?: (
-    progress: LylaProgress,
-    progressEvent: ProgressEvent<XMLHttpRequestEventTarget>
-  ) => void
+  onUploadProgress?: (progress: LylaProgress) => void
+  onDownloadProgress?: (progress: LylaProgress) => void
   hooks?: {
     /**
      * 请求选项被传入时的回调，此时选项还没有被转换为最终的请求参数
@@ -154,7 +155,7 @@ type LylaResponse<T = any> = {
   /**
    * 响应主体
    */
-  body: string | ArrayBuffer | Blob
+  body: 平台相关
   /**
    * 响应的 JSON 值。如果响应主体不是合法的 JSON 文本，获取这个值会抛出一个异常
    */
