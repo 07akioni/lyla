@@ -23,8 +23,8 @@ function isObject(value: any): value is object {
 export function mergeHeaders(
   target: Record<string, string>,
   source: LylaRequestHeaders | undefined
-): void {
-  if (!source) return
+): Record<string, string> {
+  if (!source) return target
   for (const [key, value] of Object.entries(source)) {
     if (value === undefined) {
       delete target[key]
@@ -32,6 +32,7 @@ export function mergeHeaders(
       target[key.toLowerCase()] = typeof value === 'string' ? value : `${value}`
     }
   }
+  return target
 }
 
 export function mergeOptions<T>(...sources: Array<Partial<T> | undefined>): T {

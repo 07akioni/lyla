@@ -2,9 +2,8 @@ export type ResponseDetail = {
   statusCode: number
   header: Record<string, string>
   data: string | object | ArrayBuffer
-  trace: string
   cookies: string[]
-  profile: {
+  profile?: {
     redirectStart: number
     redirectEnd: number
     fetchStart: number

@@ -13,6 +13,7 @@ Page({
         }
       })
       .then((resp) => {
+        console.log(resp.detail)
         console.log('resp', resp.headers, resp.body, resp.json)
         this.setData({
           respBody: JSON.stringify(resp.json)

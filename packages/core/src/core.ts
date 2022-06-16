@@ -226,7 +226,7 @@ function createLyla<M extends LylaAdapterMeta>(
           requestOptions: _options,
           status: resp.status,
           statusText: resp.statusText,
-          headers: resp.headers,
+          headers: mergeHeaders({}, resp.headers),
           body: resp.body,
           detail,
           set json(value: any) {
@@ -378,7 +378,7 @@ function createLyla<M extends LylaAdapterMeta>(
       delete: createRequestShortcut('delete'),
       options: createRequestShortcut('options'),
       trace: createRequestShortcut('trace'),
-      connect: createRequestShortcut('connect'),
+      connect: createRequestShortcut('connect')
     }),
     catchError<T, E = Error>(
       handler: LylaErrorHandler<T, E, M>
