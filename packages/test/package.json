@@ -1,5 +1,6 @@
 {
   "name": "test",
+  "version": "0.5.1",
   "scripts": {
     "test": "./tests/before-test.sh && playwright test && ./tests/after-test.sh"
   },
