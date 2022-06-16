@@ -105,13 +105,19 @@ export type LylaError<M extends LylaAdapterMeta = LylaAdapterMeta> =
   | LylaTimeoutError
   | LylaBadRequestError
 
-class _LylaError extends Error {}
+type _LylaError = Error & { __lylaError?: true }
+
+function createLylaError(): _LylaError {
+  const lylaError: _LylaError = new Error()
+  lylaError.__lylaError = true
+  return lylaError
+}
 
 export function defineLylaError<
   M extends LylaAdapterMeta,
   T extends LylaError<M>
 >(lylaErrorProps: Omit<T, 'name'>, stack: string | undefined): T {
-  const lylaError = new _LylaError()
+  const lylaError = createLylaError()
   lylaError.name = `LylaError[${lylaErrorProps.type}]`
   if (stack) {
     lylaError.stack += stack
@@ -120,7 +126,7 @@ export function defineLylaError<
 }
 
 export function isLylaError(error: unknown): error is LylaError<any> {
-  return error instanceof _LylaError
+  return typeof error === 'object' && !!error && '__lylaError' in error
 }
 
 export type LylaErrorHandler<

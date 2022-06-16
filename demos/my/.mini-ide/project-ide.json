@@ -1,3 +1,5 @@
 {
-  "enableLegacyRemoteDebug": false
+  "enableLegacyRemoteDebug": false,
+  "disableSimulatorPermissionCheck": false,
+  "enableDistFileMinify": true
 }

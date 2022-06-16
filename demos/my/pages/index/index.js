@@ -1,3 +1,5 @@
+import { lyla } from '@lylajs/my'
+
 Page({
   onLoad(query) {
     // 页面加载

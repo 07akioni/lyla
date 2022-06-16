@@ -2,7 +2,7 @@
 	"projectid": "1108100302_test",
 	"setting": {
 		"urlCheck": false,
-		"es6": false,
+		"es6": true,
 		"postcss": false,
 		"minified": true,
 		"newFeature": true,
@@ -29,6 +29,7 @@
 		"beforePreview": "",
 		"beforeUpload": ""
 	},
+	"qqLibVersion": "1.52.2",
 	"condition": {
 		"search": {
 			"current": -1,

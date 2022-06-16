@@ -8,8 +8,8 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
-    "@lylajs/qq": "^0.5.2"
+    "@lylajs/qq": "^0.5.3"
   }
 }
