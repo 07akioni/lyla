@@ -27,7 +27,6 @@ jobs:
         node-version: ${{ matrix.node-version }}
     - run: npm i -g pnpm
     - run: pnpm install
-    - run: cd packages/core
-    - run: pnpm exec playwright install
-    - run: cd server && go get
-    - run: pnpm run build-and-test
+    - run: cd packages/core && pnpm exec playwright install
+    - run: cd packages/core/server && go get
+    - run: cd packages/core && pnpm run build-and-test
