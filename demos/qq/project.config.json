@@ -2,7 +2,7 @@
 	"projectid": "1108100302_test",
 	"setting": {
 		"urlCheck": false,
-		"es6": true,
+		"es6": false,
 		"postcss": false,
 		"minified": true,
 		"newFeature": true,
@@ -24,7 +24,11 @@
 	},
 	"qqappid": "1108100302",
 	"projectname": "test",
-	"scripts": {},
+	"scripts": {
+		"beforeCompile": "",
+		"beforePreview": "",
+		"beforeUpload": ""
+	},
 	"condition": {
 		"search": {
 			"current": -1,

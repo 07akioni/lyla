@@ -9,7 +9,7 @@ import type {
   MyRequestMethod
 } from './types.js'
 
-declare const tt: {
+declare const my: {
   request: MyRequest
 }
 
@@ -37,7 +37,7 @@ export const adapter: LylaAdapter<LylaAdapterMeta> = ({
 }): {
   abort: () => void
 } => {
-  const requestTask = tt.request({
+  const requestTask = my.request({
     url,
     method,
     headers,

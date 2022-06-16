@@ -9,7 +9,7 @@ import type {
   QqRequestMethod
 } from './types.js'
 
-declare const tt: {
+declare const qq: {
   request: QqRequest
 }
 
@@ -37,7 +37,7 @@ export const adapter: LylaAdapter<LylaAdapterMeta> = ({
 }): {
   abort: () => void
 } => {
-  const requestTask = tt.request({
+  const requestTask = qq.request({
     url,
     method,
     header: headers,
