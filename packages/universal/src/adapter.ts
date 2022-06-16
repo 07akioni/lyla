@@ -16,6 +16,8 @@ export interface LylaAdapterMeta extends LylaCoreAdapterMeta {
     | 'DELETE'
     | 'options'
     | 'OPTIONS'
+    | 'connect'
+    | 'CONNECT'
   networkErrorDetail: any
   requestBody: any
   responseDetail: any

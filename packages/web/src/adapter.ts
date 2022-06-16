@@ -19,6 +19,8 @@ export interface LylaAdapterMeta extends LylaCoreAdapterMeta {
     | 'DELETE'
     | 'options'
     | 'OPTIONS'
+    | 'connect'
+    | 'CONNECT'
   networkErrorDetail: ProgressEvent<XMLHttpRequestEventTarget>
   requestBody: XMLHttpRequestBodyInit
   responseDetail: ProgressEvent<XMLHttpRequestEventTarget>

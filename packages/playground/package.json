@@ -1,0 +1,10 @@
+{
+  "name": "playground",
+  "private": "true",
+  "devDependencies": {
+    "lyla": "workspace:*",
+    "@lylajs/web": "workspace:*",
+    "@lylajs/tt": "workspace:*",
+    "@lylajs/wx": "workspace:*"
+  }
+}

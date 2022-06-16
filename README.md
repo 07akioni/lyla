@@ -64,6 +64,12 @@ const { json } = await lyla.post<MyType>('https://example.com', {
 
 ### `lyla.delete<T>(options: LylaRequestOptions): LylaResponse<T>`
 
+### `lyla.connect<T>(options: LylaRequestOptions): LylaResponse<T>`
+
+### `lyla.options<T>(options: LylaRequestOptions): LylaResponse<T>`
+
+### `lyla.trace<T>(options: LylaRequestOptions): LylaResponse<T>`
+
 #### Type `LylaRequestOptions`
 
 ```ts
