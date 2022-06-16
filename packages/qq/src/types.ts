@@ -4,7 +4,9 @@ export type ResponseDetail = {
   data: string | object | ArrayBuffer
 }
 
-export type NetworkErrorDetail = string
+export type NetworkErrorDetail = {
+  errMsg: string
+}
 
 export type QqRequestMethod =
   | 'GET'
