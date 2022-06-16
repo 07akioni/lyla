@@ -8,6 +8,5 @@ export type {
   LylaResponse,
   LylaResponseError
 } from './reexports.js'
-export {
-  lyla, catchError, matchError
-} from './instance'
+export { isLylaError, LYLA_ERROR } from './reexports.js'
+export { lyla, catchError, matchError } from './instance'

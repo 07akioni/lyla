@@ -6,6 +6,8 @@
     "lyla": "workspace:*",
     "@lylajs/web": "workspace:*",
     "@lylajs/tt": "workspace:*",
-    "@lylajs/wx": "workspace:*"
+    "@lylajs/wx": "workspace:*",
+    "@lylajs/my": "workspace:*",
+    "@lylajs/qq": "workspace:*"
   }
 }
