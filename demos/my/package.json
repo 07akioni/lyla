@@ -10,6 +10,6 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "@lylajs/my": "^0.5.3"
+    "@lylajs/my": "^0.5.4"
   }
 }
