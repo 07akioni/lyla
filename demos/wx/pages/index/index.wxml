@@ -1,4 +1,4 @@
 <!--index.wxml-->
 <view class="container">
-  Weixin
+  {{ respBody }}
 </view>
