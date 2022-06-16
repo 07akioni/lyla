@@ -1,0 +1,24 @@
+{
+  "name": "@lylajs/qq",
+  "version": "0.5.1",
+  "scripts": {
+    "check-type": "tsc -p tsconfig.cjs.json --noEmit",
+    "build": "rm -rf es lib && tsc -p tsconfig.cjs.json && tsc -p tsconfig.esm.json",
+    "prepublishOnly": "pnpm run build"
+  },
+  "files": [
+    "es",
+    "lib"
+  ],
+  "main": "lib/index.js",
+  "module": "es/index.js",
+  "dependencies": {
+    "@lylajs/core": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^4.6.2"
+  },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org"
+  }
+}
