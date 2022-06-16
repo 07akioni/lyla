@@ -4,7 +4,7 @@ var __DEFINE__ = function(modId, func, req) { var m = { exports: {}, _tempexport
 var __REQUIRE__ = function(modId, source) { if(!__MODS__[modId]) return require(source); if(!__MODS__[modId].status) { var m = __MODS__[modId].m; m._exports = m._tempexports; var desp = Object.getOwnPropertyDescriptor(m, "exports"); if (desp && desp.configurable) Object.defineProperty(m, "exports", { set: function (val) { if(typeof val === "object" && val !== m._exports) { m._exports.__proto__ = val.__proto__; Object.keys(val).forEach(function (k) { m._exports[k] = val[k]; }); } m._tempexports = val }, get: function () { return m._tempexports; } }); __MODS__[modId].status = 1; __MODS__[modId].func(__MODS__[modId].req, m, m.exports); } return __MODS__[modId].m.exports; };
 var __REQUIRE_WILDCARD__ = function(obj) { if(obj && obj.__esModule) { return obj; } else { var newObj = {}; if(obj != null) { for(var k in obj) { if (Object.prototype.hasOwnProperty.call(obj, k)) newObj[k] = obj[k]; } } newObj.default = obj; return newObj; } };
 var __REQUIRE_DEFAULT__ = function(obj) { return obj && obj.__esModule ? obj.default : obj; };
-__DEFINE__(1655364969000, function(require, module, exports) {
+__DEFINE__(1655364969007, function(require, module, exports) {
 
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.createLyla = exports.LYLA_ERROR = exports.isLylaError = exports.defineLylaError = void 0;
@@ -15,8 +15,8 @@ Object.defineProperty(exports, "LYLA_ERROR", { enumerable: true, get: function (
 var core_1 = require("./core");
 Object.defineProperty(exports, "createLyla", { enumerable: true, get: function () { return core_1.createLyla; } });
 
-}, function(modId) {var map = {"./error.js":1655364969001,"./core":1655364969002}; return __REQUIRE__(map[modId], modId); })
-__DEFINE__(1655364969001, function(require, module, exports) {
+}, function(modId) {var map = {"./error.js":1655364969008,"./core":1655364969009}; return __REQUIRE__(map[modId], modId); })
+__DEFINE__(1655364969008, function(require, module, exports) {
 
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.isLylaError = exports.defineLylaError = exports.LYLA_ERROR = void 0;
@@ -70,7 +70,7 @@ function isLylaError(error) {
 exports.isLylaError = isLylaError;
 
 }, function(modId) { var map = {}; return __REQUIRE__(map[modId], modId); })
-__DEFINE__(1655364969002, function(require, module, exports) {
+__DEFINE__(1655364969009, function(require, module, exports) {
 
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.createLyla = void 0;
@@ -221,7 +221,7 @@ function createLyla(lylaOptions) {
                     requestOptions: _options,
                     status: resp.status,
                     statusText: resp.statusText,
-                    headers: resp.headers,
+                    headers: (0, utils_js_1.mergeHeaders)({}, resp.headers),
                     body: resp.body,
                     detail,
                     set json(value) {
@@ -344,7 +344,7 @@ function createLyla(lylaOptions) {
             delete: createRequestShortcut('delete'),
             options: createRequestShortcut('options'),
             trace: createRequestShortcut('trace'),
-            connect: createRequestShortcut('connect'),
+            connect: createRequestShortcut('connect')
         }),
         catchError(handler) {
             return (e) => {
@@ -368,8 +368,8 @@ function createLyla(lylaOptions) {
 }
 exports.createLyla = createLyla;
 
-}, function(modId) { var map = {"./error.js":1655364969001,"./utils.js":1655364969003}; return __REQUIRE__(map[modId], modId); })
-__DEFINE__(1655364969003, function(require, module, exports) {
+}, function(modId) { var map = {"./error.js":1655364969008,"./utils.js":1655364969010}; return __REQUIRE__(map[modId], modId); })
+__DEFINE__(1655364969010, function(require, module, exports) {
 
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.mergeOptions = exports.mergeHeaders = exports.mergeUrl = void 0;
@@ -393,7 +393,7 @@ function isObject(value) {
 }
 function mergeHeaders(target, source) {
     if (!source)
-        return;
+        return target;
     for (const [key, value] of Object.entries(source)) {
         if (value === undefined) {
             delete target[key];
@@ -402,6 +402,7 @@ function mergeHeaders(target, source) {
             target[key.toLowerCase()] = typeof value === 'string' ? value : `${value}`;
         }
     }
+    return target;
 }
 exports.mergeHeaders = mergeHeaders;
 function mergeOptions(...sources) {
@@ -427,7 +428,7 @@ function mergeOptions(...sources) {
 exports.mergeOptions = mergeOptions;
 
 }, function(modId) { var map = {}; return __REQUIRE__(map[modId], modId); })
-return __REQUIRE__(1655364969000);
+return __REQUIRE__(1655364969007);
 })()
 //miniprogram-npm-outsideDeps=[]
 //# sourceMappingURL=index.js.map
