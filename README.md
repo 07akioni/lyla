@@ -6,6 +6,7 @@ An group of HTTP clients with explicit behavior & error handling.
 | ------------------------- | ------------- |
 | web                       | `@lylajs/web` |
 | tt miniprogram            | `@lylajs/tt`  |
+| wx miniprogram            | `@lylajs/wx`  |
 | web (okay) + nodejs (wip) | `lyla`        |
 
 English · [中文](https://github.com/07akioni/lyla/blob/main/README.zh_CN.md)

@@ -376,7 +376,9 @@ function createLyla<M extends LylaAdapterMeta>(
       patch: createRequestShortcut('patch'),
       head: createRequestShortcut('head'),
       delete: createRequestShortcut('delete'),
-      options: createRequestShortcut('options')
+      options: createRequestShortcut('options'),
+      trace: createRequestShortcut('trace'),
+      connect: createRequestShortcut('connect'),
     }),
     catchError<T, E = Error>(
       handler: LylaErrorHandler<T, E, M>

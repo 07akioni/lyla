@@ -15,6 +15,10 @@ export type LylaMethod =
   | 'DELETE'
   | 'options'
   | 'OPTIONS'
+  | 'TRACE'
+  | 'trace'
+  | 'CONNECT'
+  | 'connect'
 
 export type AbortSignal = {
   addEventListener(ev: 'abort', callback: () => void): void
