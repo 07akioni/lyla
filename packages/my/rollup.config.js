@@ -1,29 +1,23 @@
 import typescript from '@rollup/plugin-typescript'
 import nodeResolve from '@rollup/plugin-node-resolve'
+import getBabelOutputPlugin from '@rollup/plugin-babel'
 
-/**
- * @type {import('rollup').RollupOptions}
- */
-const esmConfig = {
+const es5Config = {
   input: 'src/index.ts',
   output: [
     {
-      dir: 'es',
-      format: 'esm'
-    }
-  ],
-  plugins: [typescript({ tsconfig: 'tsconfig.esm.json' }), nodeResolve()]
-}
-
-const cjsConfig = {
-  input: 'src/index.ts',
-  output: [
-    {
-      dir: 'lib',
+      dir: 'dist',
       format: 'cjs'
     }
   ],
-  plugins: [typescript({ tsconfig: 'tsconfig.cjs.json' }), nodeResolve()]
+  plugins: [
+    typescript({ tsconfig: 'tsconfig.es5.json' }),
+    nodeResolve(),
+    getBabelOutputPlugin({
+      babelHelpers: 'bundled',
+      presets: ['@babel/preset-env']
+    })
+  ]
 }
 
-export default [esmConfig, cjsConfig]
+export default [es5Config]
