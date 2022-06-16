@@ -1,9 +1,26 @@
-import { lyla } from '@lylajs/my'
+import { lyla, catchError } from '@lylajs/my/dist'
 
 Page({
   onLoad(query) {
     // 页面加载
-    console.info(`Page onLoad with query: ${JSON.stringify(query)}`);
+    lyla.get('https://randomuser.me/api/', {
+      headers: {
+        foo: 'bar'
+      }
+    }).then(resp => {
+      console.log(resp)
+      console.log(resp.json)
+    })
+    lyla.get('https://www.baidu.com').then(resp => {
+      console.log(resp.body)
+    })
+    lyla.get('xxx').catch(catchError(({
+      lylaError
+    }) => {
+      if (lylaError) {
+        console.log('lylaError.detail', lylaError.detail)
+      }
+    }))
   },
   onReady() {
     // 页面加载完成
