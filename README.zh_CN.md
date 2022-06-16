@@ -254,15 +254,17 @@ try {
 ### `LylaError` 类型
 
 ```ts
-// 这不是个精确的定义，如果需要完整的定义，请参考
-// https://github.com/07akioni/lyla/blob/main/src/error.ts
+// 这不是个精确的定义，具体类型是平台相关的，如果需要完整的定义，请参考
+// https://github.com/07akioni/lyla/blob/main/packages/core/src/error.ts
 type LylaError = {
   name: string
   message: string
   type: LYLA_ERROR
+  // Error 对应的原始 error，通常没什么用，目前只有 JSON 不合法会产生，一般来说你需要使用
+  // detail 字段
   error: Error | undefined
-  event: Event | undefined
-  response: LylaResponse | undefined
+  detail: 平台相关 // 平台产生的错误关联信息
+  response: 平台相关 // 类似于 LylaResponse | undefined
 }
 ```
 
