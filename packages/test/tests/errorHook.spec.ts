@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test'
-import { LYLA_ERROR } from '../src/error'
+import type { LYLA_ERROR as LYLA_ERROR_TYPE } from '@lylajs/web'
+import { LYLA_ERROR } from '@lylajs/web'
 import { beforeEach } from './utils'
 import './types'
 

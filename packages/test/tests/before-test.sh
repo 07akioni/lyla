@@ -1,3 +1,4 @@
+pnpm exec rollup -c rollup.config.js
 cd ./server
 go run main.go > /dev/null 2>&1 &
 echo $! > SERVER_PID

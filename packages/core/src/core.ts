@@ -39,7 +39,6 @@ function createLyla<M extends LylaAdapterMeta>(
   lylaOptions: LylaRequestOptions<M> & { adapter: LylaAdapter<M> }
 ): {
   catchError: <T, E = Error>(
-    error: any,
     matcher: LylaErrorHandler<T, E, M>
   ) => (e: any) => T
   matchError: <T, E = Error>(
@@ -114,7 +113,7 @@ function createLyla<M extends LylaAdapterMeta>(
           {
             type: LYLA_ERROR.BAD_REQUEST,
             message:
-              "`options.json` can't be used together `options.body`. If you want to use `options.json`, you should left `options.body` as `undefined`",
+              "`options.json` can't be used together with `options.body`. If you want to use `options.json`, you should left `options.body` as `undefined`",
             detail: undefined,
             error: undefined,
             response: undefined

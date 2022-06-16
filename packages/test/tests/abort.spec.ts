@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { LYLA_ERROR } from '../src/error'
+import { LYLA_ERROR } from '@lylajs/web/src'
 import { beforeEach } from './utils'
 import './types'
 

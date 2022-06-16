@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { lyla, catchError } from '../src'
+import { lyla, catchError } from '@lylajs/web'
 
 const request = lyla.extend({ baseUrl: '/api/' })
 
@@ -28,7 +28,7 @@ const handlers: Handler[] = [
         .catch(
           catchError(({ lylaError }) => {
             console.log(lylaError)
-            console.log(lylaError?.event)
+            console.log(lylaError?.detail)
           })
         )
     }
