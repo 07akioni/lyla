@@ -18,6 +18,8 @@ export interface LylaAdapterMeta extends LylaCoreAdapterMeta {
     | 'OPTIONS'
     | 'connect'
     | 'CONNECT'
+    | 'trace'
+    | 'TRACE'
   networkErrorDetail: any
   requestBody: any
   responseDetail: any

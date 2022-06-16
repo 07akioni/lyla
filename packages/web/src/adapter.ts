@@ -21,6 +21,8 @@ export interface LylaAdapterMeta extends LylaCoreAdapterMeta {
     | 'OPTIONS'
     | 'connect'
     | 'CONNECT'
+    | 'trace'
+    | 'TRACE'
   networkErrorDetail: ProgressEvent<XMLHttpRequestEventTarget>
   requestBody: XMLHttpRequestBodyInit
   responseDetail: ProgressEvent<XMLHttpRequestEventTarget>

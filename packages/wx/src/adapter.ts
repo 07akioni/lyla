@@ -1,6 +1,6 @@
 import type {
   LylaAdapter,
-  LylaAdapterMeta as LylaCoreAdapterMeta,
+  LylaAdapterMeta as LylaCoreAdapterMeta
 } from '@lylajs/core'
 import type {
   NetworkErrorDetail,

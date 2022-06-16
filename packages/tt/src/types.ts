@@ -5,9 +5,25 @@ export type ResponseDetail = {
   trace: string
 }
 
-export type NetworkErrorDetail = { errCode: number; errMsg: string; trace: string }
+export type NetworkErrorDetail = {
+  errCode: number
+  errMsg: string
+  trace: string
+}
 
-export type TtRequestMethod = 'GET' | 'POST' | 'PUT' | 'OPTIONS' | 'HEAD' | 'DELETE'
+export type TtRequestMethod =
+  | 'GET'
+  | 'POST'
+  | 'PUT'
+  | 'OPTIONS'
+  | 'HEAD'
+  | 'DELETE'
+  | 'get'
+  | 'post'
+  | 'put'
+  | 'options'
+  | 'head'
+  | 'delete'
 
 export type TtRequestOptions = {
   url: string

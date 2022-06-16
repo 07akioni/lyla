@@ -142,35 +142,13 @@ export type LylaRequestHeaders = Record<string, string | number | undefined>
 export type Lyla<M extends LylaAdapterMeta = LylaAdapterMeta> = {
   <T = any>(options: LylaRequestOptions<M>): Promise<LylaResponse<T, M>>
   extend: (options?: LylaRequestOptions<M>) => Lyla<M>
-  get: <T = any>(
+} & Record<
+  Lowercase<M['method']>,
+  <T = any>(
     url: string,
     options?: Omit<LylaRequestOptions<M>, 'url' | 'method'>
   ) => Promise<LylaResponse<T, M>>
-  post: <T = any>(
-    url: string,
-    options?: Omit<LylaRequestOptions<M>, 'url' | 'method'>
-  ) => Promise<LylaResponse<T, M>>
-  put: <T = any>(
-    url: string,
-    options?: Omit<LylaRequestOptions<M>, 'url' | 'method'>
-  ) => Promise<LylaResponse<T, M>>
-  patch: <T = any>(
-    url: string,
-    options?: Omit<LylaRequestOptions<M>, 'url' | 'method'>
-  ) => Promise<LylaResponse<T, M>>
-  head: <T = any>(
-    url: string,
-    options?: Omit<LylaRequestOptions<M>, 'url' | 'method'>
-  ) => Promise<LylaResponse<T, M>>
-  delete: <T = any>(
-    url: string,
-    options?: Omit<LylaRequestOptions<M>, 'url' | 'method'>
-  ) => Promise<LylaResponse<T, M>>
-  options: <T = any>(
-    url: string,
-    options?: Omit<LylaRequestOptions<M>, 'url' | 'method'>
-  ) => Promise<LylaResponse<T, M>>
-}
+>
 
 export interface LylaAdapterMeta {
   method: LylaMethod

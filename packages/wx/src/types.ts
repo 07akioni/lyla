@@ -43,6 +43,14 @@ export type WxRequestMethod =
   | 'DELETE'
   | 'TRACE'
   | 'CONNECT'
+  | 'get'
+  | 'post'
+  | 'put'
+  | 'options'
+  | 'head'
+  | 'delete'
+  | 'trace'
+  | 'connect'
 
 export type WxRequestOptions = {
   url: string
