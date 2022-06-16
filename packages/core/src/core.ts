@@ -167,6 +167,16 @@ function createLyla<M extends LylaAdapterMeta>(
       }
     }
 
+    const requestPromise = new Promise<LylaResponse<T, M>>(
+      (resolve, reject) => {
+        _resolve = resolve
+        _reject = (e) => {
+          cleanup()
+          reject(e)
+        }
+      }
+    )
+
     let aborted = false
     function onAbortSignalReceived() {
       if (aborted) return
@@ -299,16 +309,6 @@ function createLyla<M extends LylaAdapterMeta>(
         _resolve(response)
       }
     })
-
-    const requestPromise = new Promise<LylaResponse<T, M>>(
-      (resolve, reject) => {
-        _resolve = resolve
-        _reject = (e) => {
-          cleanup()
-          reject(e)
-        }
-      }
-    )
 
     if (timeout) {
       setTimeout(() => {
