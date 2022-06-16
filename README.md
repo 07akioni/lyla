@@ -5,8 +5,10 @@ An group of HTTP clients with explicit behavior & error handling.
 | Environment               | Package       |
 | ------------------------- | ------------- |
 | web                       | `@lylajs/web` |
-| tt miniprogram            | `@lylajs/tt`  |
-| wx miniprogram            | `@lylajs/wx`  |
+| toutiao miniprogram       | `@lylajs/tt`  |
+| weixin miniprogram        | `@lylajs/wx`  |
+| qq miniprogram            | `@lylajs/qq`  |
+| zhifubao miniprogram      | `@lylajs/my`  |
 | web (okay) + nodejs (wip) | `lyla`        |
 
 English · [中文](https://github.com/07akioni/lyla/blob/main/README.zh_CN.md)

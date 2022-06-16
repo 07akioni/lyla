@@ -7,6 +7,8 @@
 | web                            | `@lylajs/web` |
 | 头条小程序                     | `@lylajs/tt`  |
 | 微信小程序                     | `@lylajs/wx`  |
+| qq 小程序                      | `@lylajs/qq`  |
+| 支付宝小程序                   | `@lylajs/my`  |
 | web（可用） + nodejs（未完成） | `lyla`        |
 
 [English](https://github.com/07akioni/lyla) · 中文
