@@ -1,10 +1,10 @@
 {
   "name": "lyla-monorepo",
   "private": true,
-
   "scripts": {
     "check-type": "pnpm run -r check-type",
-    "bump": "pnpm -r exec bump"
+    "bump": "pnpm -r exec bump",
+    "test": "pnpm run -r build && pnpm --filter=test run test"
   },
   "devDependencies": {
     "version-bump-prompt": "^6.1.0"
