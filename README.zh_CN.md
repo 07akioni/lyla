@@ -329,6 +329,24 @@ const request = lyla.extend({
 })
 ```
 
+## 中止请求
+
+你可以使用原生的 `AbortController` 或者 `LylaAbortController` 去终止请求。
+
+需要注意的是 `LylaAbortController` 并没有实现全部 `AbortController` 的 API。
+
+```ts
+import { lyla, LylaAbortController } from 'lyla'
+
+const controller = new LylaAbortController()
+
+lyla.get('url', {
+  signal: controller.signal
+})
+
+controller.abort()
+```
+
 ## FAQ
 
 - 为什么不用 axios？

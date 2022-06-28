@@ -338,6 +338,25 @@ const request = lyla.extend({
 })
 ```
 
+## Aborting Request
+
+You can use native `AbortController` or `LylaAbortController` to abort requests.
+
+Please note that `LylaAbortController` doesn't polyfill all APIs of
+`AbortController`.
+
+```ts
+import { lyla, LylaAbortController } from 'lyla'
+
+const controller = new LylaAbortController()
+
+lyla.get('url', {
+  signal: controller.signal
+})
+
+controller.abort()
+```
+
 ## FAQ
 
 - Why not axios？
