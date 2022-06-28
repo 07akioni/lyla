@@ -8,7 +8,7 @@ import type {
   LylaResponseError as LylaCoreResponseError,
   LylaError as LylaCoreError
 } from '@lylajs/core'
-import type { LylaAdapterMeta } from './adapter'
+import type { LylaAdapterMeta } from './adapter.js'
 
 // core
 export type Lyla = LylaCore<LylaAdapterMeta>
@@ -24,4 +24,9 @@ export type LylaErrorHandler<T, E = Error> = LylaCoreErrorHandler<
 export type LylaResponseError = LylaCoreResponseError<LylaAdapterMeta>
 export type LylaError = LylaCoreError<LylaAdapterMeta>
 
-export { isLylaError, LYLA_ERROR, LylaProgress } from '@lylajs/core'
+export {
+  isLylaError,
+  LYLA_ERROR,
+  LylaProgress,
+  LylaAbortController
+} from '@lylajs/core'

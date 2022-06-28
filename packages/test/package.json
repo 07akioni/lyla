@@ -2,6 +2,7 @@
   "name": "test",
   "version": "0.5.10",
   "scripts": {
+    "check-type": "tsc -p tsconfig.json",
     "test": "./tests/before-test.sh && playwright test && ./tests/after-test.sh"
   },
   "private": true,
@@ -13,6 +14,7 @@
     "axios": "^0.27.2",
     "express": "^4.17.3",
     "rollup": "^2.70.1",
+    "typescript": "^4.6.2",
     "vite": "^2.8.6"
   }
 }

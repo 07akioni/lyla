@@ -9,4 +9,4 @@ export type {
   LylaResponse,
   LylaResponseError
 } from './reexports.js'
-export { isLylaError, LYLA_ERROR } from './reexports.js'
+export { isLylaError, LYLA_ERROR, LylaAbortController } from './reexports.js'

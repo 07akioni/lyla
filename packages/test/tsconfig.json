@@ -1,0 +1,10 @@
+{
+  "compilerOptions": {
+    "noEmit": true,
+    "moduleResolution": "node",
+    "strict": true,
+    "lib": ["DOM", "ES2015", "DOM.Iterable"],
+    "target": "ESNext"
+  },
+  "include": ["tests", "demo"]
+}

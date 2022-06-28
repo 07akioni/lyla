@@ -3,12 +3,13 @@
   "version": "0.5.10",
   "scripts": {
     "check-type": "tsc -p tsconfig.cjs.json --noEmit",
-    "build": "rm -rf es lib && tsc -p tsconfig.cjs.json && tsc -p tsconfig.esm.json",
+    "build": "rm -rf es lib dist && tsc -p tsconfig.cjs.json && tsc -p tsconfig.esm.json && rollup -c rollup.config.js",
     "prepublishOnly": "pnpm run build"
   },
   "files": [
     "es",
-    "lib"
+    "lib",
+    "dist"
   ],
   "main": "lib/index.js",
   "module": "es/index.js",
@@ -16,6 +17,12 @@
     "@lylajs/core": "workspace:*"
   },
   "devDependencies": {
+    "@babel/core": "^7.18.5",
+    "@babel/preset-env": "^7.18.2",
+    "@rollup/plugin-babel": "^5.3.1",
+    "@rollup/plugin-node-resolve": "^13.2.0",
+    "@rollup/plugin-typescript": "^8.3.1",
+    "rollup": "^2.70.1",
     "typescript": "^4.6.2"
   },
   "publishConfig": {
