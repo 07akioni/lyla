@@ -1,11 +1,11 @@
 import { expect, test } from '@playwright/test'
-import { LYLA_ERROR, LylaAbortController } from '@lylajs/web/src'
+import { LYLA_ERROR } from '@lylajs/web/src'
 import { beforeEach } from './utils'
 import './types'
 
 beforeEach(test)
-;[AbortController, LylaAbortController].forEach((Controller, index) => {
-  test('`uploadProgress` & `downloadProgress` ' + index, async ({ page }) => {
+;['native abort', 'lyla abort'].forEach((type, index) => {
+  test('`uploadProgress` & `downloadProgress` ' + type, async ({ page }) => {
     const client = await page.context().newCDPSession(page)
     await client.send('Network.emulateNetworkConditions', {
       offline: false,
@@ -14,8 +14,10 @@ beforeEach(test)
       connectionType: 'wifi',
       latency: 0
     })
-    const [errorType, up, dp] = await page.evaluate(async () => {
-      const controller = new Controller()
+    const [errorType, up, dp] = await page.evaluate(async (index) => {
+      const controller = new (
+        index === 0 ? AbortController : window.LylaAbortController
+      )()
       const up: number[] = []
       const dp: number[] = []
       setTimeout(() => {
@@ -37,7 +39,7 @@ beforeEach(test)
         return window.matchError(e, (e) => [e.lylaError?.type, up, dp] as const)
       }
       return [undefined, [], []]
-    })
+    }, index)
     await page.waitForTimeout(2000)
     expect(errorType).toEqual(LYLA_ERROR.ABORTED)
     expect(up.includes(100)).toEqual(false)

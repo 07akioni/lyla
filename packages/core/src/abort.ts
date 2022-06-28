@@ -27,5 +27,8 @@ export class LylaAbortSignal {
   __abort(reason?: any) {
     this.aborted = true
     this.reason = reason
+    this.__listeners.forEach((listener) => {
+      listener()
+    })
   }
 }
