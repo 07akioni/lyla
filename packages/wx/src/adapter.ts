@@ -7,7 +7,7 @@ import type {
   ResponseDetail,
   WxRequest,
   WxRequestMethod
-} from './types.js'
+} from './types'
 
 declare const wx: {
   request: WxRequest

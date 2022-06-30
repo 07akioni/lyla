@@ -5,8 +5,8 @@ import {
   LylaErrorHandler,
   LylaResponseError,
   LYLA_ERROR
-} from './error.js'
-import { mergeUrl, mergeHeaders, mergeOptions } from './utils.js'
+} from './error'
+import { mergeUrl, mergeHeaders, mergeOptions } from './utils'
 import type {
   LylaAbortedError,
   LylaError,
@@ -15,14 +15,14 @@ import type {
   LylaInvalidJSONError,
   LylaNetworkError,
   LylaTimeoutError
-} from './error.js'
+} from './error'
 import type {
   LylaRequestOptions,
   LylaResponse,
   Lyla,
   LylaAdapter,
   LylaAdapterMeta
-} from './types.js'
+} from './types'
 
 function isOkStatus(status: number): boolean {
   return 200 <= status && status < 300

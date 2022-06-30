@@ -8,7 +8,7 @@ import type {
   LylaResponseError as LylaCoreResponseError,
   LylaError as LylaCoreError
 } from '@lylajs/core'
-import type { LylaAdapterMeta } from './adapter.js'
+import type { LylaAdapterMeta } from './adapter'
 
 // core
 export type Lyla = LylaCore<LylaAdapterMeta>

@@ -1,4 +1,4 @@
-import type { LylaRequestHeaders } from './types.js'
+import type { LylaRequestHeaders } from './types'
 
 export function mergeUrl(baseUrl: string, relativeUrl: string): string {
   if (isAbsoluteUrl(relativeUrl)) {

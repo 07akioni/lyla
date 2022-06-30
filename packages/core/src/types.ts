@@ -1,4 +1,4 @@
-import type { LylaResponseError } from './error.js'
+import type { LylaResponseError } from './error'
 
 export type LylaMethod =
   | 'get'

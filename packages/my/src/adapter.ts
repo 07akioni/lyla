@@ -7,7 +7,7 @@ import type {
   ResponseDetail,
   MyRequest,
   MyRequestMethod
-} from './types.js'
+} from './types'
 
 declare const my: {
   request: MyRequest

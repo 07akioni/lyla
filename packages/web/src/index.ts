@@ -1,6 +1,6 @@
-export { adapter } from './adapter.js'
-export type { LylaAdapterMeta } from './adapter.js'
-export { lyla, matchError, catchError } from './instance.js'
+export { adapter } from './adapter'
+export type { LylaAdapterMeta } from './adapter'
+export { lyla, matchError, catchError } from './instance'
 export type {
   Lyla,
   LylaError,
@@ -9,5 +9,5 @@ export type {
   LylaRequestOptions,
   LylaResponse,
   LylaResponseError
-} from './reexports.js'
-export { isLylaError, LYLA_ERROR, LylaAbortController } from './reexports.js'
+} from './reexports'
+export { isLylaError, LYLA_ERROR, LylaAbortController } from './reexports'

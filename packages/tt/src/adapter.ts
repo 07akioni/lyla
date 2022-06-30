@@ -7,7 +7,7 @@ import type {
   ResponseDetail,
   TtRequest,
   TtRequestMethod
-} from './types.js'
+} from './types'
 
 declare const tt: {
   request: TtRequest

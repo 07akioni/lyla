@@ -7,7 +7,7 @@ import type {
   ResponseDetail,
   QqRequest,
   QqRequestMethod
-} from './types.js'
+} from './types'
 
 declare const qq: {
   request: QqRequest
