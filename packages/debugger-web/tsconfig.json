@@ -5,6 +5,7 @@
     "outDir": "es",
     "target": "ES6",
     "lib": ["ES2017"],
+    "types": [],
     "module": "ESNext",
     "declaration": true
   },

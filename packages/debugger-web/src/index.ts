@@ -58,7 +58,7 @@ function JsonView({
       return h(level === 0 ? 'pre' : 'span', { style: { margin: 0 } }, [
         (inArray ? indent : '') + '{\n',
         keys.map((key, index) => {
-          const isLast = index === keys.length - 1
+          const isLast: boolean = index === keys.length - 1
           let value: any = json[key]
           let type = typeof value
           const valueIsJsonObjectString =
@@ -129,7 +129,7 @@ function JsonView({
   }
 }
 
-type Request = {
+export type DebuggerRequest = {
   id: string
   url: string
   method: string
@@ -145,10 +145,10 @@ type Request = {
   timestamp: number
   time: string
   state: 'PENDING' | 'OK' | 'ERROR' | 'ERROR_WITHOUT_RESPONSE'
-  response?: Response
+  response?: DebuggerResponse
 }
 
-type Response = {
+export type DebuggerResponse = {
   id: string
   status: string
   timestamp: number
@@ -167,12 +167,12 @@ export function createLylaDebugger<
   thiryPartySetup?: (
     setRequests: (
       updater: (
-        prevRequests: Request[],
+        prevRequests: DebuggerRequest[],
         extra: {
           timestamp: number
           time: string
         }
-      ) => Request[]
+      ) => DebuggerRequest[]
     ) => void
   ) => void
 } = {}): {
@@ -181,13 +181,15 @@ export function createLylaDebugger<
     unmount: () => void
   }
 } {
-  let requestsBeforeMount: Request[] = []
-  let _setRequests: (updater: (prevState: Request[]) => Request[]) => void = (
-    updater
-  ) => {
+  let requestsBeforeMount: DebuggerRequest[] = []
+  let _setRequests: (
+    updater: (prevState: DebuggerRequest[]) => DebuggerRequest[]
+  ) => void = (updater) => {
     requestsBeforeMount = updater(requestsBeforeMount)
   }
-  const trimByCapacityOrCreateANewArray = (v: Request[]): Request[] => {
+  const trimByCapacityOrCreateANewArray = (
+    v: DebuggerRequest[]
+  ): DebuggerRequest[] => {
     if (capacity === undefined || v.length > capacity) {
       return Array.from(v)
     } else {
@@ -200,12 +202,12 @@ export function createLylaDebugger<
     thiryPartySetup(
       (
         updater: (
-          prevState: Request[],
+          prevState: DebuggerRequest[],
           extra: {
             timestamp: number
             time: string
           }
-        ) => Request[]
+        ) => DebuggerRequest[]
       ) => {
         _setRequests((prevState) => {
           const now = new Date()
@@ -297,9 +299,12 @@ export function createLylaDebugger<
   }
 
   function LylaDebugger() {
-    const [requests, setRequests] = useState<Request[]>(requestsBeforeMount)
+    const [requests, setRequests] =
+      useState<DebuggerRequest[]>(requestsBeforeMount)
     const latestId = requests[requests.length - 1]?.id
-    const [activeRequest, setActiveRequest] = useState<Request | null>(null)
+    const [activeRequest, setActiveRequest] = useState<DebuggerRequest | null>(
+      null
+    )
     const [minify, setMinify] = useState(true)
     if (_setRequests !== setRequests) {
       _setRequests = setRequests
@@ -505,7 +510,7 @@ export function createLylaDebugger<
     )
   }
 
-  function LylaDetailPanel({ request }: { request: Request }) {
+  function LylaDetailPanel({ request }: { request: DebuggerRequest }) {
     const [mode, setMode] = useState<'request' | 'response'>('request')
     const modeIsRequest = mode === 'request'
     const headers = modeIsRequest ? request.headers : request.response?.headers
