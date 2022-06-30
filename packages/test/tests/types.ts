@@ -1,4 +1,4 @@
-import { catchError, matchError, Lyla, LYLA_ERROR, LylaAbortController } from '@lylajs/web';
+import { catchError, matchError, Lyla, LylaAbortController } from '@lylajs/web'
 
 declare global {
   interface Window {
