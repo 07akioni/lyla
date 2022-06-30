@@ -47,17 +47,19 @@ function createLyla<M extends LylaAdapterMeta>(
   ) => T
   lyla: Lyla<M>
 } {
+  let _id = 0
   async function request<T = any>(
     options: LylaRequestOptions<M>
   ): Promise<LylaResponse<T, M>> {
+    const id = `${_id++}`
     if (lylaOptions?.hooks?.onInit) {
       for (const hook of lylaOptions.hooks.onInit) {
-        options = await hook(options)
+        options = await hook(options, id)
       }
     }
     if (options?.hooks?.onInit) {
       for (const hook of options.hooks.onInit) {
-        options = await hook(options)
+        options = await hook(options, id)
       }
     }
 
@@ -102,7 +104,7 @@ function createLyla<M extends LylaAdapterMeta>(
 
     if (_options.hooks?.onBeforeRequest) {
       for (const hook of _options.hooks?.onBeforeRequest) {
-        _options = await hook(_options)
+        _options = await hook(_options, id)
       }
     }
 
@@ -139,7 +141,7 @@ function createLyla<M extends LylaAdapterMeta>(
     async function handleResponseError(error: LylaResponseError<M>) {
       if (_options.hooks?.onResponseError) {
         for (const hook of _options.hooks?.onResponseError) {
-          await hook(error)
+          await hook(error, id)
         }
       }
     }
@@ -200,6 +202,7 @@ function createLyla<M extends LylaAdapterMeta>(
       signal.addEventListener('abort', onAbortSignalReceived)
     }
 
+    let networkError = false
     const adapterHandle = lylaOptions.adapter({
       url,
       method,
@@ -209,6 +212,8 @@ function createLyla<M extends LylaAdapterMeta>(
       responseType,
       withCredentials,
       onNetworkError(detail: any) {
+        networkError = true
+        cleanup()
         const error = defineLylaError<M, LylaNetworkError<M>>(
           {
             type: LYLA_ERROR.NETWORK,
@@ -226,6 +231,7 @@ function createLyla<M extends LylaAdapterMeta>(
       onUploadProgress,
       async onResponse(resp, detail) {
         if (aborted) return
+        if (networkError) return
         cleanup()
         let _json: any
         let _jsonIsSet = false
@@ -298,11 +304,12 @@ function createLyla<M extends LylaAdapterMeta>(
           )
           handleResponseError(error)
           _reject(error)
+          return
         }
 
         if (_options.hooks?.onAfterResponse) {
           for (const hook of _options.hooks.onAfterResponse) {
-            response = await hook(response)
+            response = await hook(response, id)
           }
         }
 

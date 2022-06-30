@@ -1,0 +1,10 @@
+{
+  "compilerOptions": {
+    "moduleResolution": "node",
+    "strict": true,
+    "outDir": "es",
+    "target": "ES6",
+    "lib": ["ES2017"]
+  },
+  "include": ["src"]
+}

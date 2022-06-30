@@ -61,7 +61,8 @@ export type LylaRequestOptions<M extends LylaAdapterMeta = LylaAdapterMeta> = {
      */
     onInit?: Array<
       (
-        options: LylaRequestOptions<M>
+        options: LylaRequestOptions<M>,
+        id: string
       ) => LylaRequestOptions<M> | Promise<LylaRequestOptions<M>>
     >
     /**
@@ -70,7 +71,8 @@ export type LylaRequestOptions<M extends LylaAdapterMeta = LylaAdapterMeta> = {
      */
     onBeforeRequest?: Array<
       (
-        options: LylaRequestOptions<M>
+        options: LylaRequestOptions<M>,
+        id: string
       ) => LylaRequestOptions<M> | Promise<LylaRequestOptions<M>>
     >
     /**
@@ -78,7 +80,8 @@ export type LylaRequestOptions<M extends LylaAdapterMeta = LylaAdapterMeta> = {
      */
     onAfterResponse?: Array<
       (
-        reqsponse: LylaResponse<any, M>
+        response: LylaResponse<any, M>,
+        id: string
       ) => LylaResponse<any, M> | Promise<LylaResponse<any, M>>
     >
     /**
@@ -87,7 +90,7 @@ export type LylaRequestOptions<M extends LylaAdapterMeta = LylaAdapterMeta> = {
      * for example if user throws an error in `onAfterResponse` hook. The
      * callback won't be fired.
      */
-    onResponseError?: Array<(error: LylaResponseError<M>) => void>
+    onResponseError?: Array<(error: LylaResponseError<M>, id: string) => void>
   }
 }
 

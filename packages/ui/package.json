@@ -1,0 +1,24 @@
+{
+  "name": "@lylajs/ui-web",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "vite"
+  },
+  "dependencies": {
+    "@lylajs/core": "workspace:*",
+    "preact": "^10.8.2"
+  },
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@lylajs/web": "workspace:*",
+    "axios": "^0.27.2",
+    "express": "^4.17.3",
+    "mockjs": "^1.1.0",
+    "typescript": "^4.6.2",
+    "vite": "^2.9.12",
+    "vite-plugin-mock": "^2.9.6"
+  }
+}
