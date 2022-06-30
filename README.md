@@ -142,7 +142,7 @@ type LylaRequestOptions = {
      */
     onAfterResponse?: Array<
       (
-        reqsponse: LylaResponse<any>
+        response: LylaResponse<any>
       ) => LylaResponse<any> | Promise<LylaResponse<any>>
     >
     /**
