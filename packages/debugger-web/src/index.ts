@@ -1,12 +1,23 @@
 import { h, render, VNode } from 'preact'
-import {
-  useState,
-  StateUpdater,
-  useMemo,
-  useRef,
-  useLayoutEffect
-} from 'preact/hooks'
+import { useState, useMemo, useRef, useLayoutEffect } from 'preact/hooks'
 import { LylaRequestOptions, LylaAdapterMeta } from '@lylajs/core'
+
+const saveData = (data: string, fileName: string) => {
+  const a = document.createElement('a')
+  document.body.appendChild(a)
+  a.style.cssText = 'display: none'
+  const blob = new Blob([data], { type: 'octet/stream' })
+  const url = window.URL.createObjectURL(blob)
+  a.href = url
+  a.download = fileName
+  a.click()
+  window.URL.revokeObjectURL(url)
+  document.body.removeChild(a)
+}
+
+function formatDate(date: Date) {
+  return `${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}.${date.getMilliseconds()}`
+}
 
 function JsonView({
   json,
@@ -118,9 +129,15 @@ function JsonView({
   }
 }
 
-export function createLylaUi<M extends LylaAdapterMeta = LylaAdapterMeta>(): {
+export function createLylaUi<M extends LylaAdapterMeta = LylaAdapterMeta>({
+  capacity
+}: {
+  capacity?: number
+} = {}): {
   lylaOptions: LylaRequestOptions<M>
-  mount: (el: HTMLElement) => void
+  mount: (el: HTMLElement) => {
+    unmount: () => void
+  }
 } {
   type Request = {
     id: string
@@ -128,6 +145,8 @@ export function createLylaUi<M extends LylaAdapterMeta = LylaAdapterMeta>(): {
     method: string
     headers: Record<string, any> | undefined
     json: Record<string, any> | string | number | undefined | null | boolean
+    timestamp: number
+    time: string
     response?: Response
     __status: 'pending' | 'ok' | 'error' | 'errorWithoutResponse'
   }
@@ -135,28 +154,44 @@ export function createLylaUi<M extends LylaAdapterMeta = LylaAdapterMeta>(): {
   type Response = {
     id: string
     status: string
+    timestamp: number
+    time: string
     headers: Record<string, any> | undefined
     body: string | undefined
   }
 
-  let _setRequests: StateUpdater<Request[]>
+  let requestsBeforeMount: Request[] = []
+  let _setRequests: (value: (prevState: Request[]) => Request[]) => void = (
+    updater
+  ) => {
+    requestsBeforeMount = updater(requestsBeforeMount)
+  }
+  const trimByCapacityOrCreateANewArray = (v: Request[]): Request[] => {
+    if (capacity === undefined || v.length > capacity) {
+      return Array.from(v)
+    } else {
+      return v.slice(v.length - capacity, v.length)
+    }
+  }
 
   const options: LylaRequestOptions<M> = {
     hooks: {
       onBeforeRequest: [
         (requestOptions, id) => {
           _setRequests((requests) => {
-            return requests.concat([
-              {
-                id,
-                url: requestOptions.url || '',
-                method: requestOptions.method || '',
-                headers: requestOptions.headers,
-                json: requestOptions.json,
-                response: undefined,
-                __status: 'pending'
-              }
-            ])
+            const now = new Date()
+            requests.push({
+              id,
+              url: requestOptions.url || '',
+              method: requestOptions.method || '',
+              headers: requestOptions.headers,
+              json: requestOptions.json,
+              timestamp: now.valueOf(),
+              time: formatDate(now),
+              response: undefined,
+              __status: 'pending'
+            })
+            return trimByCapacityOrCreateANewArray(requests)
           })
           return requestOptions
         }
@@ -166,9 +201,12 @@ export function createLylaUi<M extends LylaAdapterMeta = LylaAdapterMeta>(): {
           _setRequests((requests) => {
             for (const request of requests) {
               if (request.id === id) {
+                const now = new Date()
                 request.__status = 'ok'
                 request.response = {
                   id,
+                  timestamp: now.valueOf(),
+                  time: formatDate(now),
                   status: `${response.status}`,
                   headers: response.headers,
                   body: response.json
@@ -176,7 +214,7 @@ export function createLylaUi<M extends LylaAdapterMeta = LylaAdapterMeta>(): {
                 break
               }
             }
-            return Array.from(requests)
+            return trimByCapacityOrCreateANewArray(requests)
           })
           return response
         }
@@ -188,26 +226,23 @@ export function createLylaUi<M extends LylaAdapterMeta = LylaAdapterMeta>(): {
             for (const request of requests) {
               if (request.id === id) {
                 if (response) {
+                  const now = new Date()
                   request.__status = 'error'
                   request.response = {
                     id,
                     status: `${response.status}`,
                     headers: response.headers,
-                    body: response.body
+                    body: response.body,
+                    timestamp: now.valueOf(),
+                    time: formatDate(now)
                   }
                 } else {
                   request.__status = 'errorWithoutResponse'
-                  request.response = {
-                    id,
-                    status: 'error',
-                    headers: undefined,
-                    body: undefined
-                  }
                 }
                 break
               }
             }
-            return Array.from(requests)
+            return trimByCapacityOrCreateANewArray(requests)
           })
           return response
         }
@@ -216,10 +251,13 @@ export function createLylaUi<M extends LylaAdapterMeta = LylaAdapterMeta>(): {
   }
 
   function LylaDebugger() {
-    const [requests, setRequests] = useState<Request[]>([])
+    const [requests, setRequests] = useState<Request[]>(requestsBeforeMount)
+    const latestId = requests[requests.length - 1]?.id
     const [activeRequest, setActiveRequest] = useState<Request | null>(null)
-    if (!_setRequests) {
+    const [minify, setMinify] = useState(true)
+    if (_setRequests !== setRequests) {
       _setRequests = setRequests
+      requestsBeforeMount = [] // release memo
     }
     const requestListRef = useRef<HTMLElement | null>(null)
     const isAtBottomRef = useRef(true)
@@ -244,8 +282,9 @@ export function createLylaUi<M extends LylaAdapterMeta = LylaAdapterMeta>(): {
           zIndex: '9999',
           fontFamily: 'Courier',
           position: 'fixed',
+          background: '#fff',
           right: '16px',
-          left: '16px',
+          left: minify ? undefined : '16px',
           bottom: '16px',
           border: '1px solid #eee',
           borderRadius: '4px',
@@ -261,72 +300,140 @@ export function createLylaUi<M extends LylaAdapterMeta = LylaAdapterMeta>(): {
               lineHeight: '24px',
               padding: '12px 16px',
               boxSizing: 'border-box',
-              borderBottom: '1px solid #eee'
+              borderBottom: '1px solid #eee',
+              display: 'flex',
+              justifyContent: 'space-between'
             }
           },
-          ['Lyla Debugger']
-        ),
-        h(
-          'div',
-          {
-            ref: requestListRef as any,
-            style: {
-              padding: '12px 16px',
-              fontSize: '14px',
-              lineHeight: '20px',
-              overflow: 'auto',
-              maxHeight: '360px'
-            }
-          },
-          requests.length
-            ? requests.map((request) => {
-                return h(
-                  'div',
-                  {
-                    style: {
-                      display: 'flex',
-                      cursor: 'pointer'
-                    },
-                    onClick: () => {
-                      setActiveRequest(request)
-                    }
-                  },
-                  [
+          [
+            h('span', null, [
+              'Lyla Debugger',
+              minify
+                ? null
+                : [
+                    ' ',
                     h(
-                      'div',
+                      'span',
                       {
                         style: {
-                          boxSizing: 'border-box',
-                          width: '50px'
+                          fontSize: '14px',
+                          cursor: 'pointer'
+                        },
+                        onClick: () => {
+                          setRequests([])
+                          setActiveRequest(null)
                         }
                       },
-                      [request.id]
-                    ),
-                    h(
-                      'div',
-                      {
-                        style: {
-                          width: '200px'
-                        }
-                      },
-                      [request.url]
-                    ),
-                    h(
-                      'div',
-                      {
-                        style: {
-                          width: '100px'
-                        }
-                      },
-                      [request.method]
-                    ),
-                    h('div', null, [request.response?.status || '-'])
+                      ['[Clear]']
+                    )
                   ]
-                )
-              })
-            : ['None']
+            ]),
+            minify ? `[LatestID=${latestId ?? '*'}]` : null,
+            h(
+              'span',
+              {
+                style: {
+                  cursor: 'pointer'
+                },
+                onClick: () => {
+                  setMinify((value) => !value)
+                }
+              },
+              [minify ? '[+]' : '[-]']
+            )
+          ]
         ),
-        activeRequest
+        !minify &&
+          h(
+            'div',
+            {
+              ref: requestListRef as any,
+              style: {
+                padding: '12px 16px',
+                fontSize: '14px',
+                lineHeight: '20px',
+                overflow: 'auto',
+                boxSizing: 'border-box',
+                maxHeight: '264px'
+              }
+            },
+            requests.length
+              ? requests.map((request) => {
+                  return h(
+                    'div',
+                    {
+                      style: {
+                        display: 'flex',
+                        cursor: 'pointer',
+                        wordBreak: 'break-word'
+                      },
+                      onClick: () => {
+                        setActiveRequest(request)
+                      }
+                    },
+                    [
+                      h(
+                        'div',
+                        {
+                          style: {
+                            boxSizing: 'border-box',
+                            width: '10%'
+                          }
+                        },
+                        [request.id]
+                      ),
+                      h(
+                        'div',
+                        {
+                          style: {
+                            width: '45%'
+                          }
+                        },
+                        [request.url]
+                      ),
+                      h(
+                        'div',
+                        {
+                          style: {
+                            width: '10%'
+                          }
+                        },
+                        [request.method]
+                      ),
+                      h(
+                        'div',
+                        {
+                          style: {
+                            width: '10%'
+                          }
+                        },
+                        [request.response?.status || '-']
+                      ),
+                      h(
+                        'div',
+                        {
+                          style: {
+                            width: '25%'
+                          }
+                        },
+                        [request.time]
+                      )
+                    ]
+                  )
+                })
+              : [
+                  h(
+                    'span',
+                    {
+                      style: {
+                        color: '#999'
+                      }
+                    },
+                    ['None']
+                  )
+                ]
+          ),
+        !minify && activeRequest
           ? h(
               'div',
               {
@@ -335,7 +442,7 @@ export function createLylaUi<M extends LylaAdapterMeta = LylaAdapterMeta>(): {
                   fontSize: '14px',
                   lineHeight: '20px',
                   overflow: 'auto',
-                  maxHeight: '360px',
+                  maxHeight: '50vh',
                   borderTop: '1px solid #eee'
                 }
               },
@@ -360,13 +467,22 @@ export function createLylaUi<M extends LylaAdapterMeta = LylaAdapterMeta>(): {
     const responseAvailable =
       request.__status !== 'errorWithoutResponse' && request.response
     return h('div', null, [
-      h('pre', { style: { margin: 0 } }, [
-        request.id,
-        ' ',
-        request.url,
-        ' ',
-        request.method
-      ]),
+      h(
+        'pre',
+        { style: { margin: 0 } },
+        [
+          request.id,
+          request.url,
+          request.method,
+          request.response?.status,
+          request.response
+            ? `${request.response.timestamp - request.timestamp}ms`
+            : undefined
+        ]
+          .filter((v) => v !== undefined)
+          .join(' ')
+      ),
+      h('br', null),
       h('pre', { style: { margin: 0 } }, [
         h(
           'span',
@@ -407,6 +523,22 @@ export function createLylaUi<M extends LylaAdapterMeta = LylaAdapterMeta>(): {
         )
       ]),
       h('pre', { style: { margin: 0 } }, [
+        !modeIsRequest && [
+          '\n',
+          h(
+            'span',
+            {
+              style: {
+                cursor: 'pointer'
+              },
+              onClick: () => {
+                saveData(JSON.stringify(body, null, 2), `${request.id}.json`)
+              }
+            },
+            ['Download Body']
+          ),
+          '\n'
+        ],
         '\n',
         '[Headers]\n',
         headers
@@ -427,6 +559,11 @@ export function createLylaUi<M extends LylaAdapterMeta = LylaAdapterMeta>(): {
   return {
     mount: (el) => {
       render(h(LylaDebugger, null), el)
+      return {
+        unmount: () => {
+          render(null, el)
+        }
+      }
     },
     lylaOptions: options
   }

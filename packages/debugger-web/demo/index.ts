@@ -4,7 +4,9 @@ import { createLylaUi } from '../src'
 const { mount, lylaOptions } = createLylaUi<LylaAdapterMeta>()
 const lyla = _lyla.extend(lylaOptions)
 
-mount(document.querySelector('#lyla')!)
+setTimeout(() => {
+  mount(document.querySelector('#lyla')!)
+}, 3000)
 
 document.querySelector('#button1')!.addEventListener('click', () => {
   lyla
@@ -14,7 +16,7 @@ document.querySelector('#button1')!.addEventListener('click', () => {
         key: 'gigigi'
       }
     })
-    .catch((e) => {
+    .catch((e: unknown) => {
       console.log(e)
     })
 })
@@ -27,7 +29,7 @@ document.querySelector('#button2')!.addEventListener('click', () => {
         key: 'gigigi'
       }
     })
-    .catch((e) => {
+    .catch((e: unknown) => {
       console.log(e)
     })
 })

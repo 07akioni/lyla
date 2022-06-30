@@ -2,7 +2,6 @@
   "extends": "../tsconfig.json",
   "compilerOptions": {
     "moduleResolution": "node",
-    "strict": true,
     "noEmit": true,
     "lib": ["ES2015", "DOM"]
   },
