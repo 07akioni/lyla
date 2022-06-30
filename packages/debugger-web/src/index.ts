@@ -1,6 +1,6 @@
 import { h, render, VNode } from 'preact'
 import { useState, useMemo, useRef, useLayoutEffect } from 'preact/hooks'
-import { LylaRequestOptions, LylaAdapterMeta } from '@lylajs/core'
+import type { LylaRequestOptions, LylaAdapterMeta } from '@lylajs/core'
 
 const saveData = (data: string, fileName: string) => {
   const a = document.createElement('a')
@@ -129,39 +129,60 @@ function JsonView({
   }
 }
 
-export function createLylaUi<M extends LylaAdapterMeta = LylaAdapterMeta>({
-  capacity
+type Request = {
+  id: string
+  url: string
+  method: string
+  headers: Record<string, any> | undefined
+  json:
+    | Record<string, any>
+    | Array<any>
+    | string
+    | number
+    | undefined
+    | null
+    | boolean
+  timestamp: number
+  time: string
+  state: 'PENDING' | 'OK' | 'ERROR' | 'ERROR_WITHOUT_RESPONSE'
+  response?: Response
+}
+
+type Response = {
+  id: string
+  status: string
+  timestamp: number
+  time: string
+  headers: Record<string, any> | undefined
+  json: string | undefined
+}
+
+export function createLylaDebugger<
+  M extends LylaAdapterMeta = LylaAdapterMeta
+>({
+  capacity,
+  thiryPartySetup
 }: {
   capacity?: number
+  thiryPartySetup?: (
+    setRequests: (
+      updater: (
+        prevRequests: Request[],
+        extra: {
+          timestamp: number
+          time: string
+        }
+      ) => Request[]
+    ) => void
+  ) => void
 } = {}): {
   lylaOptions: LylaRequestOptions<M>
   mount: (el: HTMLElement) => {
     unmount: () => void
   }
 } {
-  type Request = {
-    id: string
-    url: string
-    method: string
-    headers: Record<string, any> | undefined
-    json: Record<string, any> | string | number | undefined | null | boolean
-    timestamp: number
-    time: string
-    response?: Response
-    __status: 'pending' | 'ok' | 'error' | 'errorWithoutResponse'
-  }
-
-  type Response = {
-    id: string
-    status: string
-    timestamp: number
-    time: string
-    headers: Record<string, any> | undefined
-    body: string | undefined
-  }
-
   let requestsBeforeMount: Request[] = []
-  let _setRequests: (value: (prevState: Request[]) => Request[]) => void = (
+  let _setRequests: (updater: (prevState: Request[]) => Request[]) => void = (
     updater
   ) => {
     requestsBeforeMount = updater(requestsBeforeMount)
@@ -172,6 +193,31 @@ export function createLylaUi<M extends LylaAdapterMeta = LylaAdapterMeta>({
     } else {
       return v.slice(v.length - capacity, v.length)
     }
+  }
+
+  // Allow thiry party setup
+  if (thiryPartySetup) {
+    thiryPartySetup(
+      (
+        updater: (
+          prevState: Request[],
+          extra: {
+            timestamp: number
+            time: string
+          }
+        ) => Request[]
+      ) => {
+        _setRequests((prevState) => {
+          const now = new Date()
+          return trimByCapacityOrCreateANewArray(
+            updater(prevState, {
+              timestamp: now.valueOf(),
+              time: formatDate(now)
+            })
+          )
+        })
+      }
+    )
   }
 
   const options: LylaRequestOptions<M> = {
@@ -189,7 +235,7 @@ export function createLylaUi<M extends LylaAdapterMeta = LylaAdapterMeta>({
               timestamp: now.valueOf(),
               time: formatDate(now),
               response: undefined,
-              __status: 'pending'
+              state: 'PENDING'
             })
             return trimByCapacityOrCreateANewArray(requests)
           })
@@ -202,14 +248,14 @@ export function createLylaUi<M extends LylaAdapterMeta = LylaAdapterMeta>({
             for (const request of requests) {
               if (request.id === id) {
                 const now = new Date()
-                request.__status = 'ok'
+                request.state = 'OK'
                 request.response = {
                   id,
                   timestamp: now.valueOf(),
                   time: formatDate(now),
                   status: `${response.status}`,
                   headers: response.headers,
-                  body: response.json
+                  json: response.json
                 }
                 break
               }
@@ -227,17 +273,17 @@ export function createLylaUi<M extends LylaAdapterMeta = LylaAdapterMeta>({
               if (request.id === id) {
                 if (response) {
                   const now = new Date()
-                  request.__status = 'error'
+                  request.state = 'ERROR'
                   request.response = {
                     id,
                     status: `${response.status}`,
                     headers: response.headers,
-                    body: response.body,
+                    json: response.json,
                     timestamp: now.valueOf(),
                     time: formatDate(now)
                   }
                 } else {
-                  request.__status = 'errorWithoutResponse'
+                  request.state = 'ERROR_WITHOUT_RESPONSE'
                 }
                 break
               }
@@ -450,7 +496,7 @@ export function createLylaUi<M extends LylaAdapterMeta = LylaAdapterMeta>({
                 h(LylaDetailPanel, {
                   key: activeRequest.id,
                   request: activeRequest,
-                  status: activeRequest.__status
+                  status: activeRequest.state
                 })
               ]
             )
@@ -463,9 +509,9 @@ export function createLylaUi<M extends LylaAdapterMeta = LylaAdapterMeta>({
     const [mode, setMode] = useState<'request' | 'response'>('request')
     const modeIsRequest = mode === 'request'
     const headers = modeIsRequest ? request.headers : request.response?.headers
-    const body = modeIsRequest ? request.json : request.response?.body
+    const body = modeIsRequest ? request.json : request.response?.json
     const responseAvailable =
-      request.__status !== 'errorWithoutResponse' && request.response
+      request.state !== 'ERROR_WITHOUT_RESPONSE' && request.response
     return h('div', null, [
       h(
         'pre',
@@ -514,7 +560,7 @@ export function createLylaUi<M extends LylaAdapterMeta = LylaAdapterMeta>({
           },
           [
             'Response',
-            request.__status === 'errorWithoutResponse'
+            request.state === 'ERROR_WITHOUT_RESPONSE'
               ? ' (Unavailable)'
               : request.response
               ? null
@@ -522,7 +568,7 @@ export function createLylaUi<M extends LylaAdapterMeta = LylaAdapterMeta>({
           ]
         )
       ]),
-      h('pre', { style: { margin: 0 } }, [
+      h('pre', { key: mode, style: { margin: 0 } }, [
         !modeIsRequest && [
           '\n',
           h(

@@ -12,6 +12,13 @@ const mocks: MockMethod[] = [
         }
       }
     }
+  },
+  {
+    url: '/api/get-null',
+    method: 'get',
+    response: () => {
+      return null
+    }
   }
 ]
 
