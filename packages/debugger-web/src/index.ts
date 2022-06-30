@@ -329,6 +329,7 @@ export function createLylaDebugger<
     return h(
       'div',
       {
+        class: 'lyla-debugger',
         style: {
           zIndex: '9999',
           fontFamily: 'Courier',

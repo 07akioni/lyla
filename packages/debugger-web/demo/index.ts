@@ -6,7 +6,11 @@ const lyla = _lyla.extend(lylaOptions)
 
 setTimeout(() => {
   mount(document.querySelector('#lyla')!)
-}, 3000)
+  // const { unmount } = mount(document.querySelector('#lyla')!)
+  // setTimeout(() => {
+  //   unmount()
+  // }, 3000)
+}, 1000)
 
 document.querySelector('#button1')!.addEventListener('click', () => {
   lyla
