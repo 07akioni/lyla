@@ -4,9 +4,12 @@
   "main": "es/index.js",
   "module": "es/index.js",
   "type": "module",
+  "files": [
+    "es"
+  ],
   "scripts": {
     "dev": "vite",
-    "build": "tsc -p tsconfig.json",
+    "build": "rm -rf es && tsc -p tsconfig.json",
     "prepublishOnly": "pnpm run build"
   },
   "dependencies": {
