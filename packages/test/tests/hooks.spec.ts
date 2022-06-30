@@ -40,6 +40,38 @@ test('`hooks` should work', async ({ page }) => {
   expect(body).toEqual('jojo')
 })
 
+test(`onResponseError`, async ({ page }) => {
+  const result = await page.evaluate(async () => {
+    const ret: string[] = []
+    try {
+      await window.lyla.post('/404', {
+        hooks: {
+          onResponseError: [
+            (error) => {
+              if (error.response && error.response.status === 404) {
+                ret.push('404')
+              }
+            }
+          ],
+          onAfterResponse: [
+            (resp) => {
+              ret.push(`shouldn't be here`)
+              return resp
+            }
+          ]
+        }
+      })
+    } catch (error) {
+      ret.push('error')
+    }
+    await new Promise(resolve => {
+      setTimeout(resolve, 300)
+    })
+    return ret
+  })
+  expect(result).toEqual(['404', 'error'])
+})
+
 test('`hooks` should work with `extend`', async ({ page }) => {
   const body = await page.evaluate(async () => {
     const lyla = window.lyla.extend({
