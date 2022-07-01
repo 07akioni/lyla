@@ -159,7 +159,7 @@ export type DebuggerResponse = {
 export function createLylaDebugger<
   M extends LylaAdapterMeta = LylaAdapterMeta
 >({
-  capacity = 300
+  capacity = 200
 }: {
   capacity?: number
 } = {}): {
@@ -186,7 +186,7 @@ export function createLylaDebugger<
   const trimByCapacityOrCreateANewArray = (
     v: DebuggerRequest[]
   ): DebuggerRequest[] => {
-    if (capacity === undefined || v.length > capacity) {
+    if (capacity === undefined || v.length <= capacity) {
       return Array.from(v)
     } else {
       return v.slice(v.length - capacity, v.length)
