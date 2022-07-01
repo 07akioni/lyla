@@ -1,6 +1,6 @@
 {
   "name": "test",
-  "version": "0.6.3",
+  "version": "0.6.4",
   "scripts": {
     "check-type": "tsc -p tsconfig.json",
     "test": "./tests/before-test.sh && playwright test && ./tests/after-test.sh"
