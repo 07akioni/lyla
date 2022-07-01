@@ -343,6 +343,7 @@ export function createLylaDebugger<
           fontFamily: 'Courier, monospace',
           position: 'fixed',
           background: '#fff',
+          color: '#222',
           right: '16px',
           fontSize: '12px',
           lineHeight: '18px',
@@ -350,7 +351,13 @@ export function createLylaDebugger<
           bottom: '16px',
           border: '1px solid #eee',
           borderRadius: '4px',
-          boxShadow: '0 4px 8px 2px rgba(0, 0, 0, .08)'
+          boxShadow: '0 4px 8px 2px rgba(0, 0, 0, .08)',
+          cursor: minify ? 'pointer' : undefined
+        },
+        onClick: () => {
+          if (minify) {
+            setMinify(false)
+          }
         }
       },
       [
@@ -397,7 +404,14 @@ export function createLylaDebugger<
                   cursor: 'pointer'
                 },
                 onClick: () => {
-                  setMinify((value) => !value)
+                  if (!minify) {
+                    // We need to delay it for preact, since seems if we set it
+                    // to true immediately, parent onClick will be triggered
+                    // with true minify value...
+                    setTimeout(() => {
+                      setMinify(true)
+                    })
+                  }
                 }
               },
               [minify ? '[+]' : '[-]']
@@ -424,7 +438,10 @@ export function createLylaDebugger<
                       style: {
                         display: 'flex',
                         cursor: 'pointer',
-                        wordBreak: 'break-all'
+                        wordBreak: 'break-all',
+                        color: request.state.startsWith('ERROR')
+                          ? '#D00'
+                          : undefined
                       },
                       onClick: () => {
                         setActiveRequest(request)
