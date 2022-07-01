@@ -458,7 +458,8 @@ export function createLylaDebugger<
                         {
                           style: {
                             boxSizing: 'border-box',
-                            width: '8%'
+                            width: '6%',
+                            paddingRight: '8px'
                           }
                         },
                         [request.id]
@@ -467,7 +468,9 @@ export function createLylaDebugger<
                         'div',
                         {
                           style: {
-                            width: '40%'
+                            boxSizing: 'border-box',
+                            width: '46%',
+                            paddingRight: '8px'
                           }
                         },
                         [request.url]
@@ -476,7 +479,9 @@ export function createLylaDebugger<
                         'div',
                         {
                           style: {
-                            width: '10%'
+                            boxSizing: 'border-box',
+                            width: '8%',
+                            paddingRight: '8px'
                           }
                         },
                         [request.method]
@@ -485,7 +490,9 @@ export function createLylaDebugger<
                         'div',
                         {
                           style: {
-                            width: '10%'
+                            boxSizing: 'border-box',
+                            width: '14%',
+                            paddingRight: '8px'
                           }
                         },
                         [request.response?.status || '-']
@@ -494,7 +501,9 @@ export function createLylaDebugger<
                         'div',
                         {
                           style: {
-                            width: '24%'
+                            boxSizing: 'border-box',
+                            width: '18%',
+                            paddingRight: '8px'
                           }
                         },
                         [request.time]
@@ -503,7 +512,9 @@ export function createLylaDebugger<
                         'div',
                         {
                           style: {
-                            width: '8%'
+                            boxSizing: 'border-box',
+                            width: '8%',
+                            paddingRight: '8px'
                           }
                         },
                         [
