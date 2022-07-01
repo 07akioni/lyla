@@ -1,6 +1,6 @@
 {
   "name": "@lylajs/debugger-web",
-  "version": "0.6.4",
+  "version": "0.6.5",
   "main": "es/index.js",
   "module": "es/index.js",
   "type": "module",
