@@ -149,7 +149,6 @@ export type DebuggerRequest = {
 }
 
 export type DebuggerResponse = {
-  id: string
   status: string
   timestamp: number
   time: string
@@ -224,7 +223,6 @@ export function createLylaDebugger<
                 const now = new Date()
                 request.state = 'OK'
                 request.response = {
-                  id,
                   timestamp: now.valueOf(),
                   time: formatDate(now),
                   status: `${response.status}`,
@@ -249,7 +247,6 @@ export function createLylaDebugger<
                   const now = new Date()
                   request.state = 'ERROR'
                   request.response = {
-                    id,
                     status: `${response.status}`,
                     headers: response.headers,
                     json: response.json,
