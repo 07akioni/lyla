@@ -18,7 +18,15 @@ document.querySelector('#button1')!.addEventListener('click', () => {
       headers: {
         foo: 'bar',
         key: 'gigigi'
-      }
+      },
+      // json: {
+      //   string: 'string',
+      //   number: 123,
+      //   null: null,
+      //   undefined: undefined,
+      //   boolean1: true,
+      //   boolean2: false
+      // }
     })
     .catch((e: unknown) => {
       console.log(e)

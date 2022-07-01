@@ -19,18 +19,36 @@ function formatDate(date: Date) {
   return `${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}.${date.getMilliseconds()}`
 }
 
+function EmptyText(): VNode {
+  return h(
+    'span',
+    {
+      style: {
+        color: '#999'
+      }
+    },
+    ['None']
+  )
+}
+
 function JsonView({
   json,
   unwrapJsonString,
   inArray = false,
   level = 0
 }: {
-  json: Record<string, any> | string | number | undefined | null | boolean
+  json:
+    | Record<string, any>
+    | string
+    | number
+    | undefined
+    | null
+    | boolean
+    | undefined
   unwrapJsonString: boolean
   inArray?: boolean
   level?: number
-}): VNode | null {
-  if (json === undefined) return null
+}): VNode {
   const [expandedKeys, setExpandedKeys] = useState<string[]>([])
   let indent = ''
   for (let i = 0; i < level; ++i) {
@@ -457,17 +475,7 @@ export function createLylaDebugger<
                     ]
                   )
                 })
-              : [
-                  h(
-                    'span',
-                    {
-                      style: {
-                        color: '#999'
-                      }
-                    },
-                    ['None']
-                  )
-                ]
+              : [h(EmptyText, null)]
           ),
         !minify && activeRequest
           ? h(
@@ -579,14 +587,16 @@ export function createLylaDebugger<
           ? Object.entries(headers).map(([key, value]) => {
               return `${key}: ${value}\n`
             })
-          : 'None\n',
+          : [h(EmptyText, null), '\n'],
         '\n',
         '[Body]'
       ]),
-      h(JsonView, {
-        json: body,
-        unwrapJsonString: true
-      })
+      body === undefined
+        ? h(EmptyText, null)
+        : h(JsonView, {
+            json: body,
+            unwrapJsonString: true
+          })
     ])
   }
 

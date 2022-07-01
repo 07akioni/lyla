@@ -8,7 +8,12 @@ const mocks: MockMethod[] = [
       return {
         code: 0,
         data: {
-          name: 'vben'
+          string: 'string',
+          number: 123,
+          null: null,
+          undefined: undefined,
+          boolean1: true,
+          boolean2: false
         }
       }
     }
