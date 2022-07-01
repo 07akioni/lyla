@@ -160,23 +160,20 @@ export type DebuggerResponse = {
 export function createLylaDebugger<
   M extends LylaAdapterMeta = LylaAdapterMeta
 >({
-  capacity = 300,
-  thiryPartySetup
+  capacity = 300
 }: {
   capacity?: number
-  thiryPartySetup?: (
-    setRequests: (
-      updater: (
-        prevRequests: DebuggerRequest[],
-        extra: {
-          timestamp: number
-          time: string
-        }
-      ) => DebuggerRequest[]
-    ) => void
-  ) => void
 } = {}): {
   lylaOptions: LylaRequestOptions<M>
+  setRequests: (
+    updater: (
+      prevRequests: DebuggerRequest[],
+      extra: {
+        timestamp: number
+        time: string
+      }
+    ) => DebuggerRequest[]
+  ) => void
   mount: (el: HTMLElement) => {
     unmount: () => void
   }
@@ -195,31 +192,6 @@ export function createLylaDebugger<
     } else {
       return v.slice(v.length - capacity, v.length)
     }
-  }
-
-  // Allow thiry party setup
-  if (thiryPartySetup) {
-    thiryPartySetup(
-      (
-        updater: (
-          prevState: DebuggerRequest[],
-          extra: {
-            timestamp: number
-            time: string
-          }
-        ) => DebuggerRequest[]
-      ) => {
-        _setRequests((prevState) => {
-          const now = new Date()
-          return trimByCapacityOrCreateANewArray(
-            updater(prevState, {
-              timestamp: now.valueOf(),
-              time: formatDate(now)
-            })
-          )
-        })
-      }
-    )
   }
 
   const options: LylaRequestOptions<M> = {
@@ -617,6 +589,25 @@ export function createLylaDebugger<
         }
       }
     },
-    lylaOptions: options
+    lylaOptions: options,
+    setRequests: (
+      updater: (
+        prevState: DebuggerRequest[],
+        extra: {
+          timestamp: number
+          time: string
+        }
+      ) => DebuggerRequest[]
+    ) => {
+      _setRequests((prevState) => {
+        const now = new Date()
+        return trimByCapacityOrCreateANewArray(
+          updater(prevState, {
+            timestamp: now.valueOf(),
+            time: formatDate(now)
+          })
+        )
+      })
+    }
   }
 }
