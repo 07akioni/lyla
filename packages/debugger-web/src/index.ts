@@ -301,10 +301,13 @@ export function createLylaDebugger<
         class: 'lyla-debugger',
         style: {
           zIndex: '9999',
-          fontFamily: 'Courier',
+          fontWeight: 400,
+          fontFamily: 'Courier, monospace',
           position: 'fixed',
           background: '#fff',
           right: '16px',
+          fontSize: '12px',
+          lineHeight: '18px',
           left: minify ? undefined : '16px',
           bottom: '16px',
           border: '1px solid #eee',
@@ -317,8 +320,8 @@ export function createLylaDebugger<
           'div',
           {
             style: {
-              fontSize: '16px',
-              lineHeight: '24px',
+              fontSize: '14px',
+              lineHeight: '20px',
               padding: '12px 16px',
               boxSizing: 'border-box',
               borderBottom: '1px solid #eee',
@@ -337,7 +340,6 @@ export function createLylaDebugger<
                       'span',
                       {
                         style: {
-                          fontSize: '14px',
                           cursor: 'pointer'
                         },
                         onClick: () => {
@@ -371,11 +373,9 @@ export function createLylaDebugger<
               ref: requestListRef as any,
               style: {
                 padding: '12px 16px',
-                fontSize: '14px',
-                lineHeight: '20px',
                 overflow: 'auto',
                 boxSizing: 'border-box',
-                maxHeight: '264px'
+                maxHeight: '240px'
               }
             },
             requests.length
@@ -386,7 +386,7 @@ export function createLylaDebugger<
                       style: {
                         display: 'flex',
                         cursor: 'pointer',
-                        wordBreak: 'break-word'
+                        wordBreak: 'break-all'
                       },
                       onClick: () => {
                         setActiveRequest(request)
@@ -398,7 +398,7 @@ export function createLylaDebugger<
                         {
                           style: {
                             boxSizing: 'border-box',
-                            width: '10%'
+                            width: '8%'
                           }
                         },
                         [request.id]
@@ -407,7 +407,7 @@ export function createLylaDebugger<
                         'div',
                         {
                           style: {
-                            width: '45%'
+                            width: '40%'
                           }
                         },
                         [request.url]
@@ -434,10 +434,25 @@ export function createLylaDebugger<
                         'div',
                         {
                           style: {
-                            width: '25%'
+                            width: '24%'
                           }
                         },
                         [request.time]
+                      ),
+                      h(
+                        'div',
+                        {
+                          style: {
+                            width: '8%'
+                          }
+                        },
+                        [
+                          request.response === undefined
+                            ? ' -'
+                            : ` ${
+                                request.response.timestamp - request.timestamp
+                              }ms`
+                        ]
                       )
                     ]
                   )
@@ -460,8 +475,6 @@ export function createLylaDebugger<
               {
                 style: {
                   padding: '12px 16px',
-                  fontSize: '14px',
-                  lineHeight: '20px',
                   overflow: 'auto',
                   maxHeight: '50vh',
                   borderTop: '1px solid #eee'
