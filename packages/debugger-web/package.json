@@ -18,6 +18,10 @@
   },
   "author": "07akioni",
   "license": "MIT",
+  "sideEffects": false,
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org"
+  },
   "devDependencies": {
     "@lylajs/web": "workspace:*",
     "axios": "^0.27.2",

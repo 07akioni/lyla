@@ -160,7 +160,7 @@ export type DebuggerResponse = {
 export function createLylaDebugger<
   M extends LylaAdapterMeta = LylaAdapterMeta
 >({
-  capacity,
+  capacity = 300,
   thiryPartySetup
 }: {
   capacity?: number
