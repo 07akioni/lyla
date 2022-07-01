@@ -19,6 +19,11 @@ function formatDate(date: Date) {
   return `${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}.${date.getMilliseconds()}`
 }
 
+const preStyle = {
+  margin: 0,
+  fontFamily: 'inherit'
+}
+
 function EmptyText(): VNode {
   return h(
     'span',
@@ -56,7 +61,7 @@ function JsonView({
   }
   if (json && typeof json === 'object') {
     if (Array.isArray(json)) {
-      return h(level === 0 ? 'pre' : 'span', { style: { margin: 0 } }, [
+      return h(level === 0 ? 'pre' : 'span', { style: preStyle }, [
         (inArray ? indent : '') + '[\n',
         json.map((v, index) => {
           return [
@@ -73,7 +78,7 @@ function JsonView({
       ])
     } else {
       const keys = Object.keys(json)
-      return h(level === 0 ? 'pre' : 'span', { style: { margin: 0 } }, [
+      return h(level === 0 ? 'pre' : 'span', { style: preStyle }, [
         (inArray ? indent : '') + '{\n',
         keys.map((key, index) => {
           const isLast: boolean = index === keys.length - 1
@@ -549,7 +554,7 @@ export function createLylaDebugger<
     return h('div', null, [
       h(
         'pre',
-        { style: { margin: 0 } },
+        { style: preStyle },
         [
           request.id,
           request.url,
@@ -563,7 +568,7 @@ export function createLylaDebugger<
           .join(' ')
       ),
       h('br', null),
-      h('pre', { style: { margin: 0 } }, [
+      h('pre', { style: preStyle }, [
         h(
           'span',
           {
@@ -602,7 +607,7 @@ export function createLylaDebugger<
           ]
         )
       ]),
-      h('pre', { key: mode, style: { margin: 0 } }, [
+      h('pre', { key: mode, style: preStyle }, [
         !modeIsRequest && [
           '\n',
           h(
