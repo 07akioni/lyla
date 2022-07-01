@@ -152,6 +152,7 @@ export type DebuggerRequest = {
   url: string
   method: string
   headers: Record<string, any> | undefined
+  body: string | undefined
   json:
     | Record<string, any>
     | Array<any>
@@ -171,7 +172,15 @@ export type DebuggerResponse = {
   timestamp: number
   time: string
   headers: Record<string, any> | undefined
-  json: string | undefined
+  json:
+    | Record<string, any>
+    | Array<any>
+    | string
+    | number
+    | undefined
+    | null
+    | boolean
+  body: string | undefined
 }
 
 export function createLylaDebugger<
@@ -222,6 +231,7 @@ export function createLylaDebugger<
               url: requestOptions.url || '',
               method: requestOptions.method || '',
               headers: requestOptions.headers,
+              body: requestOptions.body,
               json: requestOptions.json,
               timestamp: now.valueOf(),
               time: formatDate(now),
@@ -239,13 +249,18 @@ export function createLylaDebugger<
             for (const request of requests) {
               if (request.id === id) {
                 const now = new Date()
+                let json = undefined
+                try {
+                  json = response.json
+                } catch (_) {}
                 request.state = 'OK'
                 request.response = {
                   timestamp: now.valueOf(),
                   time: formatDate(now),
+                  body: response.body,
                   status: `${response.status}`,
                   headers: response.headers,
-                  json: response.json
+                  json
                 }
                 break
               }
@@ -262,12 +277,17 @@ export function createLylaDebugger<
             for (const request of requests) {
               if (request.id === id) {
                 if (response) {
+                  let json = undefined
+                  try {
+                    json = response.json
+                  } catch (_) {}
                   const now = new Date()
                   request.state = 'ERROR'
                   request.response = {
                     status: `${response.status}`,
                     headers: response.headers,
-                    json: response.json,
+                    body: response.body,
+                    json,
                     timestamp: now.valueOf(),
                     time: formatDate(now)
                   }
@@ -505,7 +525,8 @@ export function createLylaDebugger<
     const [mode, setMode] = useState<'request' | 'response'>('request')
     const modeIsRequest = mode === 'request'
     const headers = modeIsRequest ? request.headers : request.response?.headers
-    const body = modeIsRequest ? request.json : request.response?.json
+    const body = modeIsRequest ? request.body : request.response?.body
+    const json = modeIsRequest ? request.json : request.response?.json
     const responseAvailable =
       request.state !== 'ERROR_WITHOUT_RESPONSE' && request.response
     return h('div', null, [
@@ -591,10 +612,12 @@ export function createLylaDebugger<
         '\n',
         '[Body]'
       ]),
-      body === undefined
-        ? h(EmptyText, null)
+      json === undefined
+        ? !body
+          ? h(EmptyText, null)
+          : body
         : h(JsonView, {
-            json: body,
+            json,
             unwrapJsonString: true
           })
     ])

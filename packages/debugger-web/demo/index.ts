@@ -33,6 +33,21 @@ document.querySelector('#button1')!.addEventListener('click', () => {
     })
 })
 
+document.querySelector('#button4')!.addEventListener('click', () => {
+  lyla
+    .post('/api/get-non-json', {
+      headers: {
+        foo: 'bar',
+        key: 'gigigi'
+      },
+      body: 'hfeiawiuhbhjiuwefiuhawfiewu'
+    })
+    .catch((e: unknown) => {
+      console.log(e)
+    })
+})
+
+
 document.querySelector('#button3')!.addEventListener('click', () => {
   lyla
     .get('/api/get-null', {

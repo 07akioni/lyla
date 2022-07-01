@@ -24,6 +24,15 @@ const mocks: MockMethod[] = [
     response: () => {
       return null
     }
+  },
+  {
+    url: '/api/get-non-json',
+    method: 'post',
+    rawResponse: async (_, res) => {
+      res.setHeader('Content-Type', 'text/plain')
+      res.statusCode = 200
+      res.end(`hello, feafewfawgewafwefwe`)
+    }
   }
 ]
 
