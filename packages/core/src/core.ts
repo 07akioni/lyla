@@ -23,6 +23,7 @@ import type {
   LylaAdapter,
   LylaAdapterMeta
 } from './types'
+import { getStatusText } from './status'
 
 function isOkStatus(status: number): boolean {
   return 200 <= status && status < 300
@@ -237,10 +238,11 @@ function createLyla<M extends LylaAdapterMeta>(
         let _jsonIsSet = false
         let _cachedJson: any
         let _cachedJsonParsingError: TypeError
+        const statusText = getStatusText(resp.status)
         let response: LylaResponse<any, M> = {
           requestOptions: _options,
           status: resp.status,
-          statusText: resp.statusText,
+          statusText,
           headers: mergeHeaders({}, resp.headers),
           body: resp.body,
           detail,
@@ -291,7 +293,7 @@ function createLyla<M extends LylaAdapterMeta>(
         }
 
         if (!isOkStatus(resp.status)) {
-          const reason = `${resp.status} ${resp.statusText}`
+          const reason = `${resp.status} ${statusText}`
           const error = defineLylaError<M, LylaHttpError<M>>(
             {
               type: LYLA_ERROR.HTTP,

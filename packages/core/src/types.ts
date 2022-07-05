@@ -177,7 +177,6 @@ export interface LylaAdapterOptions<T extends LylaAdapterMeta> {
     response: {
       body: T['responseBody']
       status: number
-      statusText: string
       headers: Record<string, string>
     },
     detail: T['responseDetail']

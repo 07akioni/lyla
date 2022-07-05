@@ -54,7 +54,6 @@ export const adapter: LylaAdapter<LylaAdapterMeta> = ({
         {
           body: res.data as string | ArrayBuffer,
           status: res.statusCode,
-          statusText: `${res.statusCode}`,
           headers: res.header
         },
         res

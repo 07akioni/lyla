@@ -1,4 +1,4 @@
-import type {
+import {
   LylaAdapter,
   LylaAdapterMeta as LylaCoreAdapterMeta
 } from '@lylajs/core'
@@ -53,7 +53,6 @@ export const adapter: LylaAdapter<LylaAdapterMeta> = ({
         {
           body: res.data as string | ArrayBuffer,
           status: res.status,
-          statusText: `${res.status}`,
           headers: res.headers
         },
         res

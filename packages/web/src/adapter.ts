@@ -101,7 +101,6 @@ export const adapter: LylaAdapter<LylaAdapterMeta> = ({
     onResponse(
       {
         status: xhr.status,
-        statusText: xhr.statusText,
         headers: createHeaders(xhr.getAllResponseHeaders()),
         body: xhr.response
       },
