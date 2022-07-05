@@ -463,8 +463,14 @@ const handlers: Handler[] = [
   [
     'error',
     async () => {
-      lyla.get('www.baidu.com')
-      axios.get('www.baidu.com')
+      lyla.get('www.baidu.com').catch((e) => {
+        console.log(e)
+        console.log('lyla', e.stack)
+      })
+      axios.get('www.baidu.com').catch((e) => {
+        console.log(e)
+        console.log('axios', e.stack)
+      })
     }
   ],
   [
