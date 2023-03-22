@@ -310,9 +310,14 @@ function createLyla<M extends LylaAdapterMeta>(
         }
 
         if (_options.hooks?.onAfterResponse) {
-          for (const hook of _options.hooks.onAfterResponse) {
-            response = await hook(response, id)
+          try {
+            for (const hook of _options.hooks.onAfterResponse) {
+              response = await hook(response, id)
+            }
+          } catch (error) {
+            _reject(error as any)
           }
+          
         }
 
         _resolve(response)
