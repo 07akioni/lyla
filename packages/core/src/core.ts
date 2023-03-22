@@ -316,6 +316,7 @@ function createLyla<M extends LylaAdapterMeta>(
             }
           } catch (error) {
             _reject(error as any)
+            return
           }
           
         }
