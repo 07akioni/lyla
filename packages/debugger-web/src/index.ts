@@ -310,7 +310,6 @@ export function createLylaDebugger<C extends Context>({
             }
             return trimByCapacityOrCreateANewArray(requests)
           })
-          return response
         }
       ]
     }

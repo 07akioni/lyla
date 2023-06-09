@@ -18,9 +18,9 @@ test('throws error if response is not json serializable', async ({ page }) => {
       return [false, '']
     } catch (e) {
       catched = true
-      window.catchError(({ lylaError }) => {
-        lylaErrorType = lylaError?.type
-      })(e)
+      if (window.isLylaError(e)) {
+        lylaErrorType = e.type
+      }
     }
     return [catched, body, lylaErrorType]
   })
@@ -53,9 +53,9 @@ test('throws error if try getting json when `responseType` is not `text`', async
         return [false, body instanceof Blob, lylaErrorType]
       } catch (e) {
         catched = true
-        window.catchError(({ lylaError }) => {
-          lylaErrorType = lylaError?.type
-        })(e)
+        if (window.isLylaError(e)) {
+          lylaErrorType = e.type
+        }
       }
       return [catched, body instanceof Blob, lylaErrorType]
     }
@@ -77,9 +77,9 @@ test('throws error if try getting json when `responseType` is not `text`', async
         return [false, body instanceof ArrayBuffer, lylaErrorType]
       } catch (e) {
         catched = true
-        window.catchError(({ lylaError }) => {
-          lylaErrorType = lylaError?.type
-        })(e)
+        if (window.isLylaError(e)) {
+          lylaErrorType = e.type
+        }
       }
       return [catched, body instanceof ArrayBuffer, lylaErrorType]
     }
