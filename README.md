@@ -322,7 +322,7 @@ export enum LYLA_ERROR {
   /**
    * Request `options` is not valid. It's not a response error.
    */
-  BAD_REQUEST = 'BAD_REQUEST'
+  BAD_REQUEST = 'BAD_REQUEST',
   /**
    * `onAfterResponse` hook throws error.
    */

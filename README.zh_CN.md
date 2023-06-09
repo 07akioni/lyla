@@ -313,7 +313,7 @@ export enum LYLA_ERROR {
   /**
    * 请求的配置不合法，它不是一个响应异常
    */
-  BAD_REQUEST = 'BAD_REQUEST'
+  BAD_REQUEST = 'BAD_REQUEST',
   /**
    * `onAfterResponse` 回调抛了异常
    */
