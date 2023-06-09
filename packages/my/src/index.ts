@@ -5,7 +5,8 @@ export type {
   LylaProgress,
   LylaRequestOptions,
   LylaResponse,
-  LylaResponseError
+  LylaResponseError,
+  LylaDataConversionError
 } from './reexports'
 export { LylaAbortController, LYLA_ERROR } from './reexports'
 export { lyla, isLylaError, createLyla } from './instance'

@@ -3,7 +3,13 @@ import {
   isLylaError as _isLylaError,
   LylaBadRequestError,
   LylaResponseError,
-  LYLA_ERROR
+  LYLA_ERROR,
+  LylaBrokenOnAfterResponseError,
+  LylaBrokenOnResponseErrorError,
+  LylaBrokenOnInitError,
+  LylaBrokenOnBeforeRequestError,
+  LylaDataConversionError,
+  LylaBrokenOnDataConversionErrorError
 } from './error'
 import { mergeUrl, mergeHeaders, mergeOptions } from './utils'
 import type {
@@ -66,25 +72,39 @@ export function createLyla<C, M extends LylaAdapterMeta>(
             : resolvedContext
       }
     )
-    if (mergedLylaOptions?.hooks?.onInit) {
-      for (const hook of mergedLylaOptions.hooks.onInit) {
-        const maybeOptionsWithContextPromise = hook(optionsWithContext)
-        if (maybeOptionsWithContextPromise instanceof Promise) {
-          optionsWithContext = await maybeOptionsWithContextPromise
-        } else {
-          optionsWithContext = maybeOptionsWithContextPromise
+    try {
+      if (mergedLylaOptions?.hooks?.onInit) {
+        for (const hook of mergedLylaOptions.hooks.onInit) {
+          const maybeOptionsWithContextPromise = hook(optionsWithContext)
+          if (maybeOptionsWithContextPromise instanceof Promise) {
+            optionsWithContext = await maybeOptionsWithContextPromise
+          } else {
+            optionsWithContext = maybeOptionsWithContextPromise
+          }
         }
       }
-    }
-    if (options?.hooks?.onInit) {
-      for (const hook of options.hooks.onInit) {
-        const maybeOptionsWithContextPromise = hook(optionsWithContext)
-        if (maybeOptionsWithContextPromise instanceof Promise) {
-          optionsWithContext = await maybeOptionsWithContextPromise
-        } else {
-          optionsWithContext = maybeOptionsWithContextPromise
+      if (options?.hooks?.onInit) {
+        for (const hook of options.hooks.onInit) {
+          const maybeOptionsWithContextPromise = hook(optionsWithContext)
+          if (maybeOptionsWithContextPromise instanceof Promise) {
+            optionsWithContext = await maybeOptionsWithContextPromise
+          } else {
+            optionsWithContext = maybeOptionsWithContextPromise
+          }
         }
       }
+    } catch (e) {
+      throw defineLylaError<M, C, LylaBrokenOnInitError<C>>(
+        {
+          type: LYLA_ERROR.BROKEN_ON_INIT,
+          message: '`onInit` hook throws error',
+          detail: undefined,
+          error: undefined,
+          response: undefined,
+          context: optionsWithContext.context
+        },
+        undefined
+      )
     }
 
     let _options: LylaRequestOptionsWithContext<C, M> = mergeOptions(
@@ -131,13 +151,27 @@ export function createLyla<C, M extends LylaAdapterMeta>(
     }
 
     if (_options.hooks?.onBeforeRequest) {
-      for (const hook of _options.hooks?.onBeforeRequest) {
-        const maybeOptionsPromise = hook(_options)
-        if (maybeOptionsPromise instanceof Promise) {
-          _options = await maybeOptionsPromise
-        } else {
-          _options = maybeOptionsPromise
+      try {
+        for (const hook of _options.hooks?.onBeforeRequest) {
+          const maybeOptionsPromise = hook(_options)
+          if (maybeOptionsPromise instanceof Promise) {
+            _options = await maybeOptionsPromise
+          } else {
+            _options = maybeOptionsPromise
+          }
         }
+      } catch (e) {
+        throw defineLylaError<M, C, LylaBrokenOnBeforeRequestError<C>>(
+          {
+            type: LYLA_ERROR.BROKEN_ON_BEFORE_REQUEST,
+            message: '`onBeforeRequest` hook throws error',
+            detail: undefined,
+            error: undefined,
+            response: undefined,
+            context: optionsWithContext.context
+          },
+          undefined
+        )
       }
     }
 
@@ -172,13 +206,65 @@ export function createLyla<C, M extends LylaAdapterMeta>(
       onDownloadProgress
     } = _options
 
-    async function handleResponseError(error: LylaResponseError<C, M>) {
-      if (_options.hooks?.onResponseError) {
-        for (const hook of _options.hooks?.onResponseError) {
-          const maybePromise = hook(error)
-          if (maybePromise instanceof Promise) {
-            await maybePromise
+    async function handleDataConversionError(
+      error: LylaDataConversionError<C, M>,
+      context: C,
+      response: LylaResponse<any, C, M>
+    ) {
+      if (_options.hooks?.onDataConversionError) {
+        try {
+          for (const hook of _options.hooks?.onDataConversionError) {
+            const maybePromise = hook(error)
+            if (maybePromise instanceof Promise) {
+              await maybePromise
+            }
           }
+        } catch (e) {
+          _reject(
+            defineLylaError<M, C, LylaBrokenOnDataConversionErrorError<C, M>>(
+              {
+                type: LYLA_ERROR.BROKEN_ON_DATA_CONVERSION_ERROR,
+                error: e,
+                message: '`onDataConversionError` hook throws error',
+                detail: undefined,
+                response,
+                context
+              },
+              undefined
+            )
+          )
+          return
+        }
+      }
+    }
+
+    async function handleResponseError(
+      error: LylaResponseError<C, M>,
+      context: C
+    ) {
+      if (_options.hooks?.onResponseError) {
+        try {
+          for (const hook of _options.hooks?.onResponseError) {
+            const maybePromise = hook(error)
+            if (maybePromise instanceof Promise) {
+              await maybePromise
+            }
+          }
+        } catch (e) {
+          _reject(
+            defineLylaError<M, C, LylaBrokenOnResponseErrorError<C, M>>(
+              {
+                type: LYLA_ERROR.BROKEN_ON_RESPONSE_ERROR,
+                error: e,
+                message: '`onResponseError` hook throws error',
+                detail: undefined,
+                response: undefined,
+                context
+              },
+              undefined
+            )
+          )
+          return
         }
       }
     }
@@ -231,7 +317,7 @@ export function createLyla<C, M extends LylaAdapterMeta>(
         },
         stack
       )
-      handleResponseError(error)
+      handleResponseError(error, _options.context)
       _reject(error)
       adapterHandle.abort()
     }
@@ -263,7 +349,7 @@ export function createLyla<C, M extends LylaAdapterMeta>(
           },
           stack
         )
-        handleResponseError(error)
+        handleResponseError(error, _options.context)
         _reject(error)
       },
       onDownloadProgress,
@@ -303,11 +389,11 @@ export function createLyla<C, M extends LylaAdapterMeta>(
                   detail: undefined,
                   error: undefined,
                   response,
-                  context: _options.context
+                  context: response.context
                 },
                 undefined
               )
-              handleResponseError(error)
+              handleDataConversionError(error, response.context, response)
               throw error
             }
             if (_cachedJson === undefined) {
@@ -326,12 +412,12 @@ export function createLyla<C, M extends LylaAdapterMeta>(
                   message: _cachedJsonParsingError.message,
                   detail: undefined,
                   error: _cachedJsonParsingError,
-                  context: _options.context,
+                  context: response.context,
                   response
                 },
                 undefined
               )
-              handleResponseError(error)
+              handleDataConversionError(error, response.context, response)
               throw error
             }
           }
@@ -350,19 +436,36 @@ export function createLyla<C, M extends LylaAdapterMeta>(
             },
             stack
           )
-          handleResponseError(error)
+          handleResponseError(error, _options.context)
           _reject(error)
           return
         }
 
         if (_options.hooks?.onAfterResponse) {
-          for (const hook of _options.hooks.onAfterResponse) {
-            const maybeResponsePromise = hook(response)
-            if (maybeResponsePromise instanceof Promise) {
-              response = await maybeResponsePromise
-            } else {
-              response = maybeResponsePromise
+          try {
+            for (const hook of _options.hooks.onAfterResponse) {
+              const maybeResponsePromise = hook(response)
+              if (maybeResponsePromise instanceof Promise) {
+                response = await maybeResponsePromise
+              } else {
+                response = maybeResponsePromise
+              }
             }
+          } catch (error) {
+            _reject(
+              defineLylaError<M, C, LylaBrokenOnAfterResponseError<C, M>>(
+                {
+                  type: LYLA_ERROR.BROKEN_ON_AFTER_RESPONSE,
+                  message: '`onAfterResponse` hook throws error',
+                  detail: undefined,
+                  response,
+                  error,
+                  context: response.context
+                },
+                undefined
+              )
+            )
+            return
           }
         }
 
@@ -388,7 +491,7 @@ export function createLyla<C, M extends LylaAdapterMeta>(
           },
           stack
         )
-        handleResponseError(error)
+        handleResponseError(error, _options.context)
         _reject(error)
       }, timeout)
     }

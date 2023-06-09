@@ -8,7 +8,11 @@ export type {
   LylaProgress,
   Lyla
 } from './types'
-export type { LylaResponseError, LylaError } from './error'
+export type {
+  LylaResponseError,
+  LylaDataConversionError,
+  LylaError
+} from './error'
 export { defineLylaError, isLylaError, LYLA_ERROR } from './error'
 export { LylaAbortController } from './abort'
 export { createLyla } from './core'

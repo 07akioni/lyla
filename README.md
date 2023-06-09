@@ -64,7 +64,7 @@ const { json } = await lyla.post<MyType>('https://example.com', {
 function createLyla<C>(
   options: LylaRequestOptions & { context: C },
   ...overrides: LylaRequestOptions[]
-): { lyla: Lyla; isLylaError: (e: unknown) => e is LylaError } 
+): { lyla: Lyla; isLylaError: (e: unknown) => e is LylaError }
 ```
 
 ### `lyla<T>(options: LylaRequestOptions): LylaResponse<T>`
@@ -167,6 +167,12 @@ type LylaRequestOptions<C = {}> = {
      * callback won't be fired.
      */
     onResponseError?: Array<(error: LylaResponseError) => void>
+    /**
+     * Callbacks fired when data conversion (to json or parse json) is not valid.
+     */
+    onDataConversionError?: Array<
+      (error: LylaDataConversionError<C, M>) => void | Promise<void>
+    >
   }
   /**
    * Custom context of the request

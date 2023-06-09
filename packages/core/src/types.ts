@@ -1,4 +1,4 @@
-import type { LylaResponseError } from './error'
+import type { LylaDataConversionError, LylaResponseError } from './error'
 
 export type LylaMethod =
   | 'get'
@@ -97,6 +97,12 @@ export type LylaRequestOptions<
      */
     onResponseError?: Array<
       (error: LylaResponseError<C, M>) => void | Promise<void>
+    >
+    /**
+     * Callbacks fired when data conversion (to json or parse json) is not valid.
+     */
+    onDataConversionError?: Array<
+      (error: LylaDataConversionError<C, M>) => void | Promise<void>
     >
   }
 }

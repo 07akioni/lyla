@@ -161,6 +161,12 @@ type LylaRequestOptions<C = {}> = {
      * 调，例如用户在 `onAfterResponse` 回调中抛出异常不会触发该回调。
      */
     onResponseError?: Array<(error: LylaResponseError) => void>
+    /**
+     * 数据转换（转换成 json 或者解析为 json）遇到异常时的回调
+     */
+    onDataConversionError?: Array<
+      (error: LylaDataConversionError<C, M>) => void | Promise<void>
+    >
   }
   /**
    * 请求的自定义上下文
