@@ -1,17 +1,18 @@
-import { createLyla, mergeOptions } from '@lylajs/web'
+import { createLyla } from '@lylajs/web'
 import { createLylaDebugger } from '../src'
 
 type CustomContext = { id: string; foo: string }
 const { mount, lylaOptions } = createLylaDebugger<CustomContext>()
-const { lyla } = createLyla<CustomContext>({
-  ...mergeOptions(lylaOptions, {
-    baseUrl: '/foo'
-  }),
-  context: {
-    id: 'unset',
-    foo: 'unset'
-  }
-})
+const { lyla } = createLyla<CustomContext>(
+  {
+    baseUrl: '/foo',
+    context: {
+      id: 'unset',
+      foo: 'unset'
+    }
+  },
+  lylaOptions
+)
 
 setTimeout(() => {
   mount(document.querySelector('#lyla')!)

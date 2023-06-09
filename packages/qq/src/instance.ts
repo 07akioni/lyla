@@ -1,22 +1,17 @@
-import {
-  createLyla as coreCreateLyla,
-  mergeOptions as coreMergeOptions
-} from '@lylajs/core'
+import { createLyla as coreCreateLyla } from '@lylajs/core'
 import { adapter } from './adapter'
 import type {
   LylaRequestOptions,
   LylaRequestOptionsWithContext
 } from './reexports'
 
-export const { lyla, isLylaError } = coreCreateLyla({ adapter, context: {} })
+export const { lyla, isLylaError } = coreCreateLyla(adapter, {
+  context: undefined
+})
 
-export const createLyla = <C = {}>(
+export const createLyla = <C>(
   options: LylaRequestOptionsWithContext<C>,
-  defaultContext: C
+  ...overrides: LylaRequestOptions<C>[]
 ) => {
-  return coreCreateLyla(Object.assign({ adapter }, options))
+  return coreCreateLyla(adapter, options, ...overrides)
 }
-
-export const mergeOptions = coreMergeOptions as <C>(
-  ...sources: Array<Partial<LylaRequestOptions<C>> | undefined>
-) => LylaRequestOptions<C>

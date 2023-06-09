@@ -8,4 +8,4 @@ export type {
   LylaResponseError
 } from './reexports'
 export { LYLA_ERROR, LylaAbortController } from './reexports'
-export { lyla, createLyla, isLylaError, mergeOptions } from './instance'
+export { lyla, isLylaError, createLyla } from './instance'

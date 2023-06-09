@@ -139,8 +139,12 @@ test('`hooks` should work with multiple `extend`', async ({ page }) => {
         ]
       }
     }
-    const { lyla: lyla2 } = window.createLyla({
-      ...window.mergeOptions(lyla1Options, {
+    const { lyla: lyla2 } = window.createLyla(
+      {
+        context: null
+      },
+      lyla1Options,
+      {
         hooks: {
           onInit: [
             (options) => {
@@ -167,9 +171,8 @@ test('`hooks` should work with multiple `extend`', async ({ page }) => {
             }
           ]
         }
-      }),
-      context: null
-    })
+      }
+    )
     return (await lyla2.post('/gigigi')).body
   })
   expect(body).toEqual('jojo')

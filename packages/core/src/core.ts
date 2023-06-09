@@ -37,11 +37,17 @@ declare const URLSearchParams: {
 }
 
 export function createLyla<C, M extends LylaAdapterMeta>(
-  lylaOptions: LylaRequestOptionsWithContext<C, M> & { adapter: LylaAdapter<M> }
+  adapter: LylaAdapter<M>,
+  lylaOptions: LylaRequestOptionsWithContext<C, M>,
+  ...overrides: LylaRequestOptions<C, M>[]
 ): {
   isLylaError(e: unknown): e is LylaError<C, M>
   lyla: Lyla<C, M>
 } {
+  const mergedLylaOptions = mergeOptions<LylaRequestOptionsWithContext<C, M>>(
+    lylaOptions,
+    ...overrides
+  )
   async function request<T = any>(
     options: LylaRequestOptions<C, M>
   ): Promise<LylaResponse<T, C, M>> {
@@ -49,11 +55,13 @@ export function createLyla<C, M extends LylaAdapterMeta>(
       options,
       {
         context:
-          options.context === undefined ? lylaOptions.context : options.context
+          options.context === undefined
+            ? mergedLylaOptions.context
+            : options.context
       }
     )
-    if (lylaOptions?.hooks?.onInit) {
-      for (const hook of lylaOptions.hooks.onInit) {
+    if (mergedLylaOptions?.hooks?.onInit) {
+      for (const hook of mergedLylaOptions.hooks.onInit) {
         const maybeOptionsWithContextPromise = hook(optionsWithContext)
         if (maybeOptionsWithContextPromise instanceof Promise) {
           optionsWithContext = await maybeOptionsWithContextPromise
@@ -74,7 +82,7 @@ export function createLyla<C, M extends LylaAdapterMeta>(
     }
 
     let _options: LylaRequestOptionsWithContext<C, M> = mergeOptions(
-      lylaOptions,
+      mergedLylaOptions,
       optionsWithContext
     )
 
@@ -174,7 +182,7 @@ export function createLyla<C, M extends LylaAdapterMeta>(
 
     // make request headers
     const requestHeaders: Record<string, string> = {}
-    mergeHeaders(requestHeaders, lylaOptions.headers)
+    mergeHeaders(requestHeaders, mergedLylaOptions.headers)
     mergeHeaders(requestHeaders, options.headers)
     // Set 'content-type' header
     if (_options.json !== undefined) {
@@ -227,7 +235,7 @@ export function createLyla<C, M extends LylaAdapterMeta>(
     }
 
     let networkError = false
-    const adapterHandle = lylaOptions.adapter({
+    const adapterHandle = adapter({
       url,
       method,
       body,

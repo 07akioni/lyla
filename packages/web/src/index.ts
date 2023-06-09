@@ -1,6 +1,6 @@
 export { adapter } from './adapter'
 export type { LylaAdapterMeta } from './adapter'
-export { lyla, isLylaError, createLyla, mergeOptions } from './instance'
+export { lyla, isLylaError, createLyla } from './instance'
 export type {
   Lyla,
   LylaError,

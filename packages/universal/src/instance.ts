@@ -1,7 +1,4 @@
-import {
-  createLyla as coreCreateLyla,
-  mergeOptions as coreMergeOptions
-} from '@lylajs/core'
+import { createLyla as coreCreateLyla } from '@lylajs/core'
 import { adapter } from '@lylajs/web'
 import { LylaAdapterMeta } from './adapter'
 import type {
@@ -9,15 +6,16 @@ import type {
   LylaRequestOptionsWithContext
 } from './reexports'
 
-export const { lyla, isLylaError } = coreCreateLyla<{}, LylaAdapterMeta>({
+export const { lyla, isLylaError } = coreCreateLyla<undefined, LylaAdapterMeta>(
   adapter,
-  context: {}
-})
+  {
+    context: undefined
+  }
+)
 
-export const createLyla = <C>(options: LylaRequestOptionsWithContext<C>) => {
-  return coreCreateLyla(Object.assign({ adapter }, options))
+export const createLyla = <C>(
+  options: LylaRequestOptionsWithContext<C>,
+  ...overrides: LylaRequestOptions<C>[]
+) => {
+  return coreCreateLyla(adapter, options, ...overrides)
 }
-
-export const mergeOptions = coreMergeOptions as <C>(
-  ...sources: Array<Partial<LylaRequestOptions<C>> | undefined>
-) => LylaRequestOptions<C>

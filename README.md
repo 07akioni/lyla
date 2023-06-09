@@ -58,10 +58,13 @@ const { json } = await lyla.post<MyType>('https://example.com', {
 
 ## API
 
-### `createLyla(options)`
+### `createLyla(options, ...overrides)`
 
 ```ts
-function createLyla<C>(options: LylaRequestOptions & { context: C }): { lyla: Lyla, isLylaError: e => e is LylaError}
+function createLyla<C>(
+  options: LylaRequestOptions & { context: C },
+  ...overrides: LylaRequestOptions[]
+): { lyla: Lyla; isLylaError: (e: unknown) => e is LylaError } 
 ```
 
 ### `lyla<T>(options: LylaRequestOptions): LylaResponse<T>`
