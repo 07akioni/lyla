@@ -51,13 +51,19 @@ export function createLyla<C, M extends LylaAdapterMeta>(
   async function request<T = any>(
     options: LylaRequestOptions<C, M>
   ): Promise<LylaResponse<T, C, M>> {
+    const resolvedContext =
+      options.context === undefined
+        ? mergedLylaOptions.context
+        : options.context
     let optionsWithContext: LylaRequestOptionsWithContext<C, M> = Object.assign(
       options,
       {
         context:
-          options.context === undefined
-            ? mergedLylaOptions.context
-            : options.context
+          typeof resolvedContext === 'object'
+            ? (JSON.parse(
+                JSON.stringify(resolvedContext)
+              ) as typeof resolvedContext)
+            : resolvedContext
       }
     )
     if (mergedLylaOptions?.hooks?.onInit) {
