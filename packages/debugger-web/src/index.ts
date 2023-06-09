@@ -1,6 +1,6 @@
 import { h, render, VNode } from 'preact'
 import { useState, useMemo, useRef, useLayoutEffect } from 'preact/hooks'
-import type { LylaRequestOptions, LylaAdapterMeta } from '@lylajs/core'
+import type { LylaRequestOptions } from '@lylajs/web'
 
 const saveData = (data: string, fileName: string) => {
   const a = document.createElement('a')
@@ -188,14 +188,16 @@ export type DebuggerResponse = {
   body: string | undefined
 }
 
-export function createLylaDebugger<
-  M extends LylaAdapterMeta = LylaAdapterMeta
->({
+type Context = {
+  id: string
+}
+
+export function createLylaDebugger<C extends Context>({
   capacity = 200
 }: {
   capacity?: number
 } = {}): {
-  lylaOptions: LylaRequestOptions<M>
+  lylaOptions: LylaRequestOptions<C>
   setRequests: (
     updater: (
       prevRequests: DebuggerRequest[],
@@ -225,14 +227,17 @@ export function createLylaDebugger<
     }
   }
 
-  const options: LylaRequestOptions<M> = {
+  let id = 1
+  const options: LylaRequestOptions<C> = {
     hooks: {
       onBeforeRequest: [
-        (requestOptions, id) => {
+        (requestOptions) => {
+          const currentId = `${id++}`
+          requestOptions.context.id = currentId
           _setRequests((requests) => {
             const now = new Date()
             requests.push({
-              id,
+              id: currentId,
               url: requestOptions.url || '',
               method: requestOptions.method || '',
               headers: requestOptions.headers,
@@ -249,10 +254,11 @@ export function createLylaDebugger<
         }
       ],
       onAfterResponse: [
-        (response, id) => {
+        (response) => {
+          const requestId = response.context.id
           _setRequests((requests) => {
             for (const request of requests) {
-              if (request.id === id) {
+              if (request.id === requestId) {
                 const now = new Date()
                 let json = undefined
                 try {
@@ -276,11 +282,11 @@ export function createLylaDebugger<
         }
       ],
       onResponseError: [
-        (e, id) => {
-          const { response } = e
+        (e) => {
+          const { response, context } = e
           _setRequests((requests) => {
             for (const request of requests) {
-              if (request.id === id) {
+              if (request.id === context.id) {
                 if (response) {
                   let json = undefined
                   try {

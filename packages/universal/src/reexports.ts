@@ -1,27 +1,34 @@
 import type {
   LylaRequestOptions as LylaCoreRequestOptions,
   LylaResponse as LylaCoreResponse,
-  Lyla as LylaCore
+  Lyla as LylaCore,
+  LylaRequestOptionsWithContext as LylaCoreRequestOptionsWithContext
 } from '@lylajs/core'
 import type {
-  LylaErrorHandler as LylaCoreErrorHandler,
   LylaResponseError as LylaCoreResponseError,
   LylaError as LylaCoreError
 } from '@lylajs/core'
 import type { LylaAdapterMeta } from './adapter'
 
 // core
-export type Lyla = LylaCore<LylaAdapterMeta>
-export type LylaRequestOptions = LylaCoreRequestOptions<LylaAdapterMeta>
-export type LylaResponse = LylaCoreResponse<LylaAdapterMeta>
-
-// error
-export type LylaErrorHandler<T, E = Error> = LylaCoreErrorHandler<
-  T,
-  E,
+export type Lyla<C = {}> = LylaCore<C, LylaAdapterMeta>
+export type LylaRequestOptions<C = {}> = LylaCoreRequestOptions<
+  C,
   LylaAdapterMeta
 >
-export type LylaResponseError = LylaCoreResponseError<LylaAdapterMeta>
-export type LylaError = LylaCoreError<LylaAdapterMeta>
+export type LylaRequestOptionsWithContext<C = {}> =
+  LylaCoreRequestOptionsWithContext<C, LylaAdapterMeta>
+export type LylaResponse<T = any, C = {}> = LylaCoreResponse<
+  T,
+  C,
+  LylaAdapterMeta
+>
 
-export { isLylaError, LYLA_ERROR, LylaProgress, LylaAbortController } from '@lylajs/core'
+// error
+export type LylaResponseError<C = {}> = LylaCoreResponseError<
+  C,
+  LylaAdapterMeta
+>
+export type LylaError<C = {}> = LylaCoreError<C, LylaAdapterMeta>
+
+export { LYLA_ERROR, LylaProgress, LylaAbortController } from '@lylajs/core'

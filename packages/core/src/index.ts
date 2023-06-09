@@ -3,11 +3,13 @@ export type {
   LylaAdapterOptions,
   LylaAdapter,
   LylaRequestOptions,
+  LylaRequestOptionsWithContext,
   LylaResponse,
   LylaProgress,
   Lyla
 } from './types'
-export type { LylaErrorHandler, LylaResponseError, LylaError } from './error'
+export type { LylaResponseError, LylaError } from './error'
 export { defineLylaError, isLylaError, LYLA_ERROR } from './error'
 export { LylaAbortController } from './abort'
 export { createLyla } from './core'
+export { mergeOptions } from './utils'

@@ -16,9 +16,10 @@ test('cors get', async ({ page }) => {
     try {
       await window.lyla.get('http://localhost:7070/api/get-check-cookie')
     } catch (e) {
-      return window.matchError(e, ({ lylaError }) => {
-        return lylaError?.type
-      })
+      if (window.isLylaError(e)) {
+        return e.type
+      }
+      return undefined
     }
     return undefined
   })
@@ -29,7 +30,6 @@ test('cors get', async ({ page }) => {
     })
   })
 })
-
 
 test('cors post', async ({ page }) => {
   const { status } = await page.evaluate(async () => {
@@ -42,9 +42,10 @@ test('cors post', async ({ page }) => {
     try {
       await window.lyla.post('http://localhost:7070/api/post-check-cookie')
     } catch (e) {
-      return window.matchError(e, ({ lylaError }) => {
-        return lylaError?.type
-      })
+      if (window.isLylaError(e)) {
+        return e.type
+      }
+      return undefined
     }
     return undefined
   })

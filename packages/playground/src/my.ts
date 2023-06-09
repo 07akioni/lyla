@@ -1,4 +1,4 @@
-import { lyla, LYLA_ERROR, catchError } from '@lylajs/my'
+import { lyla, LYLA_ERROR } from '@lylajs/my'
 
 lyla.get
 lyla.post
@@ -21,10 +21,9 @@ lyla
     resp.detail.status
   })
   .catch(
-    catchError(({ lylaError }) => {
-      if (lylaError?.type === LYLA_ERROR.NETWORK) {
-        lylaError.detail.error
-        lylaError.detail.errorMessage
-      }
-    })
+    //   if (lylaError?.type === LYLA_ERROR.NETWORK) {
+    //     lylaError.detail.error
+    //     lylaError.detail.errorMessage
+    //   }
+    // })
   )

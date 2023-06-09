@@ -36,7 +36,10 @@ beforeEach(test)
           }
         })
       } catch (e) {
-        return window.matchError(e, (e) => [e.lylaError?.type, up, dp] as const)
+        if (window.isLylaError(e)) {
+          return [e.type, up, dp]
+        }
+        return [undefined, [] as number[], [] as number[]]
       }
       return [undefined, [], []]
     }, index)
