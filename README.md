@@ -262,6 +262,7 @@ try {
   // ...
 } catch (e) {
   if (isLylaError(e)) {
+    e.type
     // ...
   } else {
     // ...
@@ -322,6 +323,26 @@ export enum LYLA_ERROR {
    * Request `options` is not valid. It's not a response error.
    */
   BAD_REQUEST = 'BAD_REQUEST'
+  /**
+   * `onAfterResponse` hook throws error.
+   */
+  BROKEN_ON_AFTER_RESPONSE = 'BROKEN_ON_AFTER_RESPONSE',
+  /**
+   * `onBeforeRequest` hook throws error.
+   */
+  BROKEN_ON_BEFORE_REQUEST = 'BROKEN_ON_BEFORE_REQUEST',
+  /**
+   * `onInit` hook throws error.
+   */
+  BROKEN_ON_INIT = 'BROKEN_ON_INIT',
+  /**
+   * `onResponseError` hook throws error.
+   */
+  BROKEN_ON_RESPONSE_ERROR = 'BROKEN_ON_RESPONSE_ERROR',
+  /**
+   * `onDataConversionError` hook throws error.
+   */
+  BROKEN_ON_DATA_CONVERSION_ERROR = 'BROKEN_ON_DATA_CONVERSION_ERROR'
 }
 ```
 

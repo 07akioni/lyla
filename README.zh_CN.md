@@ -253,6 +253,7 @@ try {
   // ...
 } catch (e) {
   if (isLylaError(e)) {
+    e.type
     // ...
   } else {
     // ...
@@ -313,6 +314,26 @@ export enum LYLA_ERROR {
    * 请求的配置不合法，它不是一个响应异常
    */
   BAD_REQUEST = 'BAD_REQUEST'
+  /**
+   * `onAfterResponse` 回调抛了异常
+   */
+  BROKEN_ON_AFTER_RESPONSE = 'BROKEN_ON_AFTER_RESPONSE',
+  /**
+   * `onBeforeRequest` 回调抛了异常
+   */
+  BROKEN_ON_BEFORE_REQUEST = 'BROKEN_ON_BEFORE_REQUEST',
+  /**
+   * `onInit` 回调抛了异常
+   */
+  BROKEN_ON_INIT = 'BROKEN_ON_INIT',
+  /**
+   * `onResponseError` 回调抛了异常
+   */
+  BROKEN_ON_RESPONSE_ERROR = 'BROKEN_ON_RESPONSE_ERROR',
+  /**
+   * `onDataConversionError` 回调抛了异常
+   */
+  BROKEN_ON_DATA_CONVERSION_ERROR = 'BROKEN_ON_DATA_CONVERSION_ERROR'
 }
 ```
 
