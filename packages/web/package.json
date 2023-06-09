@@ -12,6 +12,7 @@
   ],
   "main": "lib/index.js",
   "module": "es/index.js",
+  "sideEffects": false,
   "dependencies": {
     "@lylajs/core": "workspace:*"
   },
