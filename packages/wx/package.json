@@ -1,6 +1,6 @@
 {
   "name": "@lylajs/wx",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "scripts": {
     "check-type": "tsc -p tsconfig.cjs.json --noEmit",
     "build": "rm -rf es lib dist && tsc -p tsconfig.cjs.json && tsc -p tsconfig.esm.json && rollup -c rollup.config.js",
