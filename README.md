@@ -358,6 +358,11 @@ const { lyla } = createLyla({
       switch error.type {
         // ...
       }
+    },
+    onDataConversionError(error) {
+       switch error.type {
+        // ...
+      }
     }
   }
 })
