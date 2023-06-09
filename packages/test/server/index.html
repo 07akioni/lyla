@@ -5,14 +5,14 @@
     <script type="module">
       import {
         lyla,
-        catchError,
-        matchError,
+        isLylaError,
         LylaAbortController,
+        mergeOptions,
         LYLA_ERROR
       } from '/es/index.js'
       window.lyla = lyla
-      window.catchError = catchError
-      window.matchError = matchError
+      window.isLylaError = isLylaError
+      window.mergeOptions = mergeOptions
       window.LylaAbortController = LylaAbortController
     </script>
   </body>

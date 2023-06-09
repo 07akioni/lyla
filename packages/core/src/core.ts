@@ -1,8 +1,7 @@
 import {
   defineLylaError,
-  isLylaError,
+  isLylaError as _isLylaError,
   LylaBadRequestError,
-  LylaErrorHandler,
   LylaResponseError,
   LYLA_ERROR
 } from './error'
@@ -21,7 +20,8 @@ import type {
   LylaResponse,
   Lyla,
   LylaAdapter,
-  LylaAdapterMeta
+  LylaAdapterMeta,
+  LylaRequestOptionsWithContext
 } from './types'
 import { getStatusText } from './status'
 
@@ -36,35 +36,47 @@ declare const URLSearchParams: {
   new (params: Record<string, string>): { toString: () => string }
 }
 
-function createLyla<M extends LylaAdapterMeta>(
-  lylaOptions: LylaRequestOptions<M> & { adapter: LylaAdapter<M> }
+export function createLyla<C, M extends LylaAdapterMeta>(
+  lylaOptions: LylaRequestOptionsWithContext<C, M> & { adapter: LylaAdapter<M> }
 ): {
-  catchError: <T, E = Error>(
-    matcher: LylaErrorHandler<T, E, M>
-  ) => (e: any) => T
-  matchError: <T, E = Error>(
-    error: any,
-    matcher: LylaErrorHandler<T, E, M>
-  ) => T
-  lyla: Lyla<M>
+  isLylaError(e: unknown): e is LylaError<C, M>
+  lyla: Lyla<C, M>
 } {
-  let _id = 0
   async function request<T = any>(
-    options: LylaRequestOptions<M>
-  ): Promise<LylaResponse<T, M>> {
-    const id = `${_id++}`
+    options: LylaRequestOptions<C, M>
+  ): Promise<LylaResponse<T, C, M>> {
+    let optionsWithContext: LylaRequestOptionsWithContext<C, M> = Object.assign(
+      options,
+      {
+        context:
+          options.context === undefined ? lylaOptions.context : options.context
+      }
+    )
     if (lylaOptions?.hooks?.onInit) {
       for (const hook of lylaOptions.hooks.onInit) {
-        options = await hook(options, id)
+        const maybeOptionsWithContextPromise = hook(optionsWithContext)
+        if (maybeOptionsWithContextPromise instanceof Promise) {
+          optionsWithContext = await maybeOptionsWithContextPromise
+        } else {
+          optionsWithContext = maybeOptionsWithContextPromise
+        }
       }
     }
     if (options?.hooks?.onInit) {
       for (const hook of options.hooks.onInit) {
-        options = await hook(options, id)
+        const maybeOptionsWithContextPromise = hook(optionsWithContext)
+        if (maybeOptionsWithContextPromise instanceof Promise) {
+          optionsWithContext = await maybeOptionsWithContextPromise
+        } else {
+          optionsWithContext = maybeOptionsWithContextPromise
+        }
       }
     }
 
-    let _options: LylaRequestOptions<M> = mergeOptions(lylaOptions, options)
+    let _options: LylaRequestOptionsWithContext<C, M> = mergeOptions(
+      lylaOptions,
+      optionsWithContext
+    )
 
     _options.method = _options.method?.toUpperCase() as any
     _options.responseType = options.responseType || 'text'
@@ -86,14 +98,15 @@ function createLyla<M extends LylaAdapterMeta>(
       )
       const queryString = urlSearchParams.toString()
       if (_options.url.includes('?')) {
-        throw defineLylaError<M, LylaBadRequestError>(
+        throw defineLylaError<M, C, LylaBadRequestError<C>>(
           {
             type: LYLA_ERROR.BAD_REQUEST,
             message:
               "`options.query` can't be set if `options.url` contains '?'",
             detail: undefined,
             error: undefined,
-            response: undefined
+            response: undefined,
+            context: _options.context
           },
           undefined
         )
@@ -105,21 +118,27 @@ function createLyla<M extends LylaAdapterMeta>(
 
     if (_options.hooks?.onBeforeRequest) {
       for (const hook of _options.hooks?.onBeforeRequest) {
-        _options = await hook(_options, id)
+        const maybeOptionsPromise = hook(_options)
+        if (maybeOptionsPromise instanceof Promise) {
+          _options = await maybeOptionsPromise
+        } else {
+          _options = maybeOptionsPromise
+        }
       }
     }
 
     // Move json data to body as string
     if (_options.json !== undefined) {
       if (_options.body !== undefined) {
-        throw defineLylaError<M, LylaBadRequestError>(
+        throw defineLylaError<M, C, LylaBadRequestError<C>>(
           {
             type: LYLA_ERROR.BAD_REQUEST,
             message:
               "`options.json` can't be used together with `options.body`. If you want to use `options.json`, you should left `options.body` as `undefined`",
             detail: undefined,
             error: undefined,
-            response: undefined
+            response: undefined,
+            context: _options.context
           },
           undefined
         )
@@ -139,16 +158,19 @@ function createLyla<M extends LylaAdapterMeta>(
       onDownloadProgress
     } = _options
 
-    async function handleResponseError(error: LylaResponseError<M>) {
+    async function handleResponseError(error: LylaResponseError<C, M>) {
       if (_options.hooks?.onResponseError) {
         for (const hook of _options.hooks?.onResponseError) {
-          await hook(error, id)
+          const maybePromise = hook(error)
+          if (maybePromise instanceof Promise) {
+            await maybePromise
+          }
         }
       }
     }
 
-    let _resolve: (value: LylaResponse<T, M>) => void
-    let _reject: (value: LylaError<M>) => void
+    let _resolve: (value: LylaResponse<T, C, M>) => void
+    let _reject: (value: LylaError<C, M>) => void
 
     // make request headers
     const requestHeaders: Record<string, string> = {}
@@ -170,7 +192,7 @@ function createLyla<M extends LylaAdapterMeta>(
       }
     }
 
-    const requestPromise = new Promise<LylaResponse<T, M>>(
+    const requestPromise = new Promise<LylaResponse<T, C, M>>(
       (resolve, reject) => {
         _resolve = resolve
         _reject = (e) => {
@@ -184,13 +206,14 @@ function createLyla<M extends LylaAdapterMeta>(
     function onAbortSignalReceived() {
       if (aborted) return
       aborted = true
-      const error = defineLylaError<M, LylaAbortedError>(
+      const error = defineLylaError<M, C, LylaAbortedError<C>>(
         {
           type: LYLA_ERROR.ABORTED,
           message: 'Request aborted',
           detail: undefined,
           error: undefined,
-          response: undefined
+          response: undefined,
+          context: _options.context
         },
         stack
       )
@@ -215,13 +238,14 @@ function createLyla<M extends LylaAdapterMeta>(
       onNetworkError(detail: any) {
         networkError = true
         cleanup()
-        const error = defineLylaError<M, LylaNetworkError<M>>(
+        const error = defineLylaError<M, C, LylaNetworkError<C, M>>(
           {
             type: LYLA_ERROR.NETWORK,
             message: 'Network error',
             detail,
             error: undefined,
-            response: undefined
+            response: undefined,
+            context: _options.context
           },
           stack
         )
@@ -239,7 +263,8 @@ function createLyla<M extends LylaAdapterMeta>(
         let _cachedJson: any
         let _cachedJsonParsingError: TypeError
         const statusText = getStatusText(resp.status)
-        let response: LylaResponse<any, M> = {
+        let response: LylaResponse<any, C, M> = {
+          context: _options.context,
           requestOptions: _options,
           status: resp.status,
           statusText,
@@ -253,13 +278,18 @@ function createLyla<M extends LylaAdapterMeta>(
           get json() {
             if (_jsonIsSet) return _json
             if (responseType !== 'text') {
-              const error = defineLylaError<M, LylaInvalidConversionError<M>>(
+              const error = defineLylaError<
+                M,
+                C,
+                LylaInvalidConversionError<C, M>
+              >(
                 {
                   type: LYLA_ERROR.INVALID_CONVERSION,
                   message: `Can not convert ${responseType} to JSON`,
                   detail: undefined,
                   error: undefined,
-                  response
+                  response,
+                  context: _options.context
                 },
                 undefined
               )
@@ -276,12 +306,13 @@ function createLyla<M extends LylaAdapterMeta>(
               return _cachedJson
             }
             if (_cachedJsonParsingError) {
-              const error = defineLylaError<M, LylaInvalidJSONError<M>>(
+              const error = defineLylaError<M, C, LylaInvalidJSONError<C, M>>(
                 {
                   type: LYLA_ERROR.INVALID_JSON,
                   message: _cachedJsonParsingError.message,
                   detail: undefined,
                   error: _cachedJsonParsingError,
+                  context: _options.context,
                   response
                 },
                 undefined
@@ -294,13 +325,14 @@ function createLyla<M extends LylaAdapterMeta>(
 
         if (!isOkStatus(resp.status)) {
           const reason = `${resp.status} ${statusText}`
-          const error = defineLylaError<M, LylaHttpError<M>>(
+          const error = defineLylaError<M, C, LylaHttpError<C, M>>(
             {
               type: LYLA_ERROR.HTTP,
               message: `Request failed with ${reason}`,
               detail: undefined,
               error: undefined,
-              response
+              response,
+              context: _options.context
             },
             stack
           )
@@ -311,7 +343,12 @@ function createLyla<M extends LylaAdapterMeta>(
 
         if (_options.hooks?.onAfterResponse) {
           for (const hook of _options.hooks.onAfterResponse) {
-            response = await hook(response, id)
+            const maybeResponsePromise = hook(response)
+            if (maybeResponsePromise instanceof Promise) {
+              response = await maybeResponsePromise
+            } else {
+              response = maybeResponsePromise
+            }
           }
         }
 
@@ -324,7 +361,7 @@ function createLyla<M extends LylaAdapterMeta>(
         if (settled) return
         adapterHandle.abort()
         aborted = true
-        const error = defineLylaError<M, LylaTimeoutError>(
+        const error = defineLylaError<M, C, LylaTimeoutError<C>>(
           {
             type: LYLA_ERROR.TIMEOUT,
             message: timeout
@@ -332,7 +369,8 @@ function createLyla<M extends LylaAdapterMeta>(
               : 'Timeout exceeded',
             detail: undefined,
             error: undefined,
-            response: undefined
+            response: undefined,
+            context: _options.context
           },
           stack
         )
@@ -341,13 +379,14 @@ function createLyla<M extends LylaAdapterMeta>(
       }, timeout)
     }
     if (method === 'GET' && body) {
-      throw defineLylaError<M, LylaBadRequestError>(
+      throw defineLylaError<M, C, LylaBadRequestError<C>>(
         {
           type: LYLA_ERROR.BAD_REQUEST,
           message: "Can not send a request with body in 'GET' method.",
           error: undefined,
           response: undefined,
-          detail: undefined
+          detail: undefined,
+          context: _options.context
         },
         undefined
       )
@@ -358,8 +397,8 @@ function createLyla<M extends LylaAdapterMeta>(
   function createRequestShortcut(method: LylaRequestOptions['method']) {
     return <T>(
       url: string,
-      options?: Omit<LylaRequestOptions<M>, 'url' | 'method'>
-    ): Promise<LylaResponse<T, M>> => {
+      options?: Omit<LylaRequestOptions<C, M>, 'url' | 'method'>
+    ): Promise<LylaResponse<T, C, M>> => {
       return request<T>({
         ...options,
         method,
@@ -368,16 +407,8 @@ function createLyla<M extends LylaAdapterMeta>(
     }
   }
 
-  function extend(options?: LylaRequestOptions<M>): Lyla<M> {
-    const extendedOptions = mergeOptions<
-      LylaRequestOptions<M> & { adapter: LylaAdapter<M> }
-    >(lylaOptions, options)
-    return createLyla<M>(extendedOptions).lyla
-  }
-
   return {
     lyla: Object.assign(request, {
-      extend,
       get: createRequestShortcut('get'),
       post: createRequestShortcut('post'),
       put: createRequestShortcut('put'),
@@ -388,28 +419,8 @@ function createLyla<M extends LylaAdapterMeta>(
       trace: createRequestShortcut('trace'),
       connect: createRequestShortcut('connect')
     }),
-    catchError<T, E = Error>(
-      handler: LylaErrorHandler<T, E, M>
-    ): (e: any) => T {
-      return (e) => {
-        if (isLylaError(e)) {
-          return handler({ error: undefined, lylaError: e })
-        } else {
-          return handler({ error: e, lylaError: undefined })
-        }
-      }
-    },
-    matchError<T, E = Error>(
-      error: any,
-      matcher: LylaErrorHandler<T, E, M>
-    ): T {
-      if (isLylaError(error)) {
-        return matcher({ lylaError: error, error: undefined })
-      } else {
-        return matcher({ lylaError: undefined, error })
-      }
+    isLylaError(e: unknown): e is LylaError<C, M> {
+      return _isLylaError(e)
     }
   }
 }
-
-export { createLyla }

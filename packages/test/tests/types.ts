@@ -1,11 +1,12 @@
-import { catchError, matchError, Lyla, LylaAbortController } from '@lylajs/web'
+import { isLylaError, mergeOptions, Lyla, LylaAbortController, createLyla } from '@lylajs/web'
 
 declare global {
   interface Window {
     lyla: Lyla
-    catchError: typeof catchError
-    matchError: typeof matchError
+    isLylaError: typeof isLylaError,
+    mergeOptions: typeof mergeOptions,
     LylaAbortController: typeof LylaAbortController
+    createLyla: typeof createLyla
   }
 }
 

@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test'
 import { beforeEach } from './utils'
 import './types'
+import { LylaRequestOptions } from '@lylajs/web'
 
 beforeEach(test)
 
@@ -64,7 +65,7 @@ test(`onResponseError`, async ({ page }) => {
     } catch (error) {
       ret.push('error')
     }
-    await new Promise(resolve => {
+    await new Promise((resolve) => {
       setTimeout(resolve, 300)
     })
     return ret
@@ -74,7 +75,8 @@ test(`onResponseError`, async ({ page }) => {
 
 test('`hooks` should work with `extend`', async ({ page }) => {
   const body = await page.evaluate(async () => {
-    const lyla = window.lyla.extend({
+    const { lyla } = window.createLyla({
+      context: null,
       hooks: {
         onInit: [
           (options) => {
@@ -109,7 +111,7 @@ test('`hooks` should work with `extend`', async ({ page }) => {
 
 test('`hooks` should work with multiple `extend`', async ({ page }) => {
   const body = await page.evaluate(async () => {
-    const lyla1 = window.lyla.extend({
+    const lyla1Options: LylaRequestOptions<null> = {
       hooks: {
         onInit: [
           (options) => {
@@ -136,34 +138,37 @@ test('`hooks` should work with multiple `extend`', async ({ page }) => {
           }
         ]
       }
-    })
-    const lyla2 = lyla1.extend({
-      hooks: {
-        onInit: [
-          (options) => {
-            if (options.url === '/gogogo') {
-              options.url = '/api/post-return-body'
+    }
+    const { lyla: lyla2 } = window.createLyla({
+      ...window.mergeOptions(lyla1Options, {
+        hooks: {
+          onInit: [
+            (options) => {
+              if (options.url === '/gogogo') {
+                options.url = '/api/post-return-body'
+              }
+              return options
             }
-            return options
-          }
-        ],
-        onBeforeRequest: [
-          (options) => {
-            if (options.json.foo === 'bar') {
-              options.json.foo = 'baz'
+          ],
+          onBeforeRequest: [
+            (options) => {
+              if (options.json.foo === 'bar') {
+                options.json.foo = 'baz'
+              }
+              return options
             }
-            return options
-          }
-        ],
-        onAfterResponse: [
-          (resp) => {
-            if ('gigi' === resp.body) {
-              resp.body = 'jojo'
+          ],
+          onAfterResponse: [
+            (resp) => {
+              if ('gigi' === resp.body) {
+                resp.body = 'jojo'
+              }
+              return resp
             }
-            return resp
-          }
-        ]
-      }
+          ]
+        }
+      }),
+      context: null
     })
     return (await lyla2.post('/gigigi')).body
   })

@@ -21,14 +21,15 @@ test('`onResponseError` hook 1', async ({ page }) => {
     setTimeout(() => {
       controller.abort()
     }, 300)
-    const lyla = window.lyla.extend({
+    const { lyla } = window.createLyla({
       hooks: {
         onResponseError: [
           (error) => {
             errorType = error.type
           }
         ]
-      }
+      },
+      context: null
     })
     try {
       await lyla.post('/api/post-return-body', {

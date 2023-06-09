@@ -25,7 +25,10 @@ export type AbortSignal = {
   removeEventListener(ev: 'abort', callback: () => void): void
 }
 
-export type LylaRequestOptions<M extends LylaAdapterMeta = LylaAdapterMeta> = {
+export type LylaRequestOptions<
+  C = any,
+  M extends LylaAdapterMeta = LylaAdapterMeta
+> = {
   url?: string
   method?: M['method']
   timeout?: number
@@ -54,6 +57,7 @@ export type LylaRequestOptions<M extends LylaAdapterMeta = LylaAdapterMeta> = {
   signal?: AbortSignal
   onUploadProgress?: (progress: LylaProgress) => void
   onDownloadProgress?: (progress: LylaProgress) => void
+  context?: C
   hooks?: {
     /**
      * Callbacks fired when options is passed into the request. In this moment,
@@ -61,9 +65,10 @@ export type LylaRequestOptions<M extends LylaAdapterMeta = LylaAdapterMeta> = {
      */
     onInit?: Array<
       (
-        options: LylaRequestOptions<M>,
-        id: string
-      ) => LylaRequestOptions<M> | Promise<LylaRequestOptions<M>>
+        options: LylaRequestOptionsWithContext<C, M>
+      ) =>
+        | LylaRequestOptionsWithContext<C, M>
+        | Promise<LylaRequestOptionsWithContext<C, M>>
     >
     /**
      * Callbacks fired before request is sent. In this moment, request options is
@@ -71,18 +76,18 @@ export type LylaRequestOptions<M extends LylaAdapterMeta = LylaAdapterMeta> = {
      */
     onBeforeRequest?: Array<
       (
-        options: LylaRequestOptions<M>,
-        id: string
-      ) => LylaRequestOptions<M> | Promise<LylaRequestOptions<M>>
+        options: LylaRequestOptionsWithContext<C, M>
+      ) =>
+        | LylaRequestOptionsWithContext<C, M>
+        | Promise<LylaRequestOptionsWithContext<C, M>>
     >
     /**
      * Callbacks fired after response is received.
      */
     onAfterResponse?: Array<
       (
-        response: LylaResponse<any, M>,
-        id: string
-      ) => LylaResponse<any, M> | Promise<LylaResponse<any, M>>
+        response: LylaResponse<any, C, M>
+      ) => LylaResponse<any, C, M> | Promise<LylaResponse<any, C, M>>
     >
     /**
      * Callbacks fired when there's error while response handling. It's only
@@ -90,15 +95,25 @@ export type LylaRequestOptions<M extends LylaAdapterMeta = LylaAdapterMeta> = {
      * for example if user throws an error in `onAfterResponse` hook. The
      * callback won't be fired.
      */
-    onResponseError?: Array<(error: LylaResponseError<M>, id: string) => void>
+    onResponseError?: Array<
+      (error: LylaResponseError<C, M>) => void | Promise<void>
+    >
   }
+}
+
+export type LylaRequestOptionsWithContext<
+  C = any,
+  M extends LylaAdapterMeta = LylaAdapterMeta
+> = Omit<LylaRequestOptions<C, M>, 'context'> & {
+  context: C
 }
 
 export type LylaResponse<
   T = any,
+  C = any,
   M extends LylaAdapterMeta = LylaAdapterMeta
 > = {
-  requestOptions: LylaRequestOptions<M>
+  requestOptions: LylaRequestOptions<C, M>
   status: number
   statusText: string
   /**
@@ -118,6 +133,10 @@ export type LylaResponse<
    * Original
    */
   detail: M['responseDetail']
+  /**
+   * context
+   */
+  context: C
 }
 
 export type LylaProgress = {
@@ -142,15 +161,14 @@ export type LylaProgress = {
 
 export type LylaRequestHeaders = Record<string, string | number | undefined>
 
-export type Lyla<M extends LylaAdapterMeta = LylaAdapterMeta> = {
-  <T = any>(options: LylaRequestOptions<M>): Promise<LylaResponse<T, M>>
-  extend: (options?: LylaRequestOptions<M>) => Lyla<M>
+export type Lyla<C = any, M extends LylaAdapterMeta = LylaAdapterMeta> = {
+  <T = any>(options: LylaRequestOptions<C, M>): Promise<LylaResponse<T, C, M>>
 } & Record<
   Lowercase<M['method']>,
   <T = any>(
     url: string,
-    options?: Omit<LylaRequestOptions<M>, 'url' | 'method'>
-  ) => Promise<LylaResponse<T, M>>
+    options?: Omit<LylaRequestOptions<C, M>, 'url' | 'method'>
+  ) => Promise<LylaResponse<T, C, M>>
 >
 
 export interface LylaAdapterMeta {

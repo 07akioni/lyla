@@ -1,8 +1,17 @@
-import { lyla as _lyla, LylaAdapterMeta } from '@lylajs/web'
+import { createLyla, mergeOptions } from '@lylajs/web'
 import { createLylaDebugger } from '../src'
 
-const { mount, lylaOptions } = createLylaDebugger<LylaAdapterMeta>()
-const lyla = _lyla.extend(lylaOptions)
+type CustomContext = { id: string; foo: string }
+const { mount, lylaOptions } = createLylaDebugger<CustomContext>()
+const { lyla } = createLyla<CustomContext>({
+  ...mergeOptions(lylaOptions, {
+    baseUrl: '/foo'
+  }),
+  context: {
+    id: 'unset',
+    foo: 'unset'
+  }
+})
 
 setTimeout(() => {
   mount(document.querySelector('#lyla')!)
@@ -18,7 +27,7 @@ document.querySelector('#button1')!.addEventListener('click', () => {
       headers: {
         foo: 'bar',
         key: 'gigigi'
-      },
+      }
       // json: {
       //   string: 'string',
       //   number: 123,
@@ -46,7 +55,6 @@ document.querySelector('#button4')!.addEventListener('click', () => {
       console.log(e)
     })
 })
-
 
 document.querySelector('#button3')!.addEventListener('click', () => {
   lyla

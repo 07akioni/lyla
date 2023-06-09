@@ -1,7 +1,10 @@
 import axios from 'axios'
-import { lyla, catchError } from '@lylajs/web'
+import { createLyla, lyla, mergeOptions } from '@lylajs/web'
 
-const request = lyla.extend({ baseUrl: '/api/' })
+const { lyla: request, isLylaError } = createLyla({
+  baseUrl: '/api/',
+  context: null
+})
 
 type Handler = [string, () => void]
 
@@ -25,12 +28,12 @@ const handlers: Handler[] = [
         .then(({ body }) => {
           console.log(body)
         })
-        .catch(
-          catchError(({ lylaError }) => {
-            console.log(lylaError)
-            console.log(lylaError?.detail)
-          })
-        )
+        .catch((e) => {
+          if (isLylaError(e)) {
+            console.log(e)
+            console.log(e?.detail)
+          }
+        })
     }
   ],
   [
@@ -192,21 +195,19 @@ const handlers: Handler[] = [
         .then(({ body }) => {
           console.log(body)
         })
-        .catch(
-          catchError((e) => {
-            if (e.lylaError) {
-              console.log(e.lylaError)
-            } else {
-              console.error(e.error)
-            }
-          })
-        )
+        .catch((e) => {
+          if (isLylaError(e)) {
+            console.log(e)
+          } else {
+            console.error(e)
+          }
+        })
     }
   ],
   [
     'hooks',
     () => {
-      const _req = request.extend({
+      const { lyla: _req } = createLyla({
         hooks: {
           onInit: [
             (options) => {
@@ -233,7 +234,8 @@ const handlers: Handler[] = [
               return resp
             }
           ]
-        }
+        },
+        context: null
       })
       _req.post('/gigigi').then((resp) => {
         console.log(resp)
@@ -335,7 +337,10 @@ const handlers: Handler[] = [
   [
     'extend test',
     async () => {
-      const extended = lyla.extend({ baseUrl: 'http://localhost:7070' })
+      const { lyla: extended } = createLyla({
+        baseUrl: 'http://localhost:7070',
+        context: null
+      })
       let resp: any
       try {
         resp = await extended.get('api/get-set-cookie')
@@ -348,12 +353,13 @@ const handlers: Handler[] = [
   [
     'extend headers',
     async () => {
-      const extended = lyla.extend({
+      const { lyla: extended } = createLyla({
         baseUrl: '/api',
         headers: {
           str: 'str',
           num: 123
-        }
+        },
+        context: null
       })
       const { headers } = await extended.post('/post-return-headers')
       console.log(headers)
@@ -362,21 +368,26 @@ const handlers: Handler[] = [
   [
     'multiple extend',
     async () => {
-      const extended1 = lyla.extend({
-        baseUrl: '/x',
-        headers: {
-          str: 'str',
-          num: 123,
-          wow: 'wow',
-          gigi: ''
-        }
-      })
-      const extended2 = extended1.extend({
-        baseUrl: '/api',
-        headers: {
-          str: undefined,
-          num: 22
-        }
+      const { lyla: extended2 } = createLyla({
+        ...mergeOptions(
+          {
+            baseUrl: '/x',
+            headers: {
+              str: 'str',
+              num: 123,
+              wow: 'wow',
+              gigi: ''
+            }
+          },
+          {
+            baseUrl: '/api',
+            headers: {
+              str: undefined,
+              num: 22
+            }
+          }
+        ),
+        context: null
       })
       const { headers } = await extended2.post('/post-return-headers', {
         headers: {
@@ -389,61 +400,67 @@ const handlers: Handler[] = [
   [
     'multiple extend hooks',
     async () => {
-      const lyla1 = lyla.extend({
-        hooks: {
-          onInit: [
-            (options) => {
-              if (options.url === '/gigigi') {
-                options.url = '/gogogo'
-              }
-              return options
+      const { lyla: lyla2 } = createLyla({
+        ...mergeOptions(
+          {
+            hooks: {
+              onInit: [
+                (options) => {
+                  if (options.url === '/gigigi') {
+                    options.url = '/gogogo'
+                  }
+                  return options
+                }
+              ],
+              onBeforeRequest: [
+                (options) => {
+                  options.json = { foo: 'bar' }
+                  return options
+                }
+              ],
+              onAfterResponse: [
+                (resp) => {
+                  if (
+                    '{"foo":"baz"}' ===
+                    (resp.body as string).replace(/\s\n/g, '')
+                  ) {
+                    resp.body = 'gigi'
+                  }
+                  return resp
+                }
+              ]
             }
-          ],
-          onBeforeRequest: [
-            (options) => {
-              options.json = { foo: 'bar' }
-              return options
+          },
+          {
+            hooks: {
+              onInit: [
+                (options) => {
+                  if (options.url === '/gogogo') {
+                    options.url = '/api/post-return-body'
+                  }
+                  return options
+                }
+              ],
+              onBeforeRequest: [
+                (options) => {
+                  if (options.json.foo === 'bar') {
+                    options.json.foo = 'baz'
+                  }
+                  return options
+                }
+              ],
+              onAfterResponse: [
+                (resp) => {
+                  if ('gigi' === resp.body) {
+                    resp.body = 'jojo'
+                  }
+                  return resp
+                }
+              ]
             }
-          ],
-          onAfterResponse: [
-            (resp) => {
-              if (
-                '{"foo":"baz"}' === (resp.body as string).replace(/\s\n/g, '')
-              ) {
-                resp.body = 'gigi'
-              }
-              return resp
-            }
-          ]
-        }
-      })
-      const lyla2 = lyla1.extend({
-        hooks: {
-          onInit: [
-            (options) => {
-              if (options.url === '/gogogo') {
-                options.url = '/api/post-return-body'
-              }
-              return options
-            }
-          ],
-          onBeforeRequest: [
-            (options) => {
-              if (options.json.foo === 'bar') {
-                options.json.foo = 'baz'
-              }
-              return options
-            }
-          ],
-          onAfterResponse: [
-            (resp) => {
-              if ('gigi' === resp.body) {
-                resp.body = 'jojo'
-              }
-              return resp
-            }
-          ]
-        }
+          }
+        ),
+        context: null
       })
       const resp = await lyla2.post('/gigigi')
       console.log(resp)
