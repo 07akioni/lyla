@@ -3,7 +3,7 @@
   "private": true,
   "scripts": {
     "check-type": "pnpm run -r check-type",
-    "bump": "pnpm -r exec bump",
+    "bump": "pnpm -r --workspace-concurrency=1 exec bump",
     "test": "pnpm run -r build && pnpm --filter=test run test"
   },
   "devDependencies": {

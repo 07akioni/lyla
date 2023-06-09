@@ -1,6 +1,6 @@
 {
   "name": "playground",
-  "version": "0.6.8",
+  "version": "1.0.0",
   "private": "true",
   "devDependencies": {
     "lyla": "workspace:*",
