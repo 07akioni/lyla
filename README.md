@@ -157,7 +157,8 @@ type LylaRequestOptions<C = {}> = {
      */
     onAfterResponse?: Array<
       (
-        response: LylaResponse<any>
+        response: LylaResponse<any>,
+        reject: (reason: unknown) => void
       ) => LylaResponse<any> | Promise<LylaResponse<any>>
     >
     /**
@@ -166,7 +167,9 @@ type LylaRequestOptions<C = {}> = {
      * for example if user throws an error in `onAfterResponse` hook. The
      * callback won't be fired.
      */
-    onResponseError?: Array<(error: LylaResponseError) => void>
+    onResponseError?: Array<
+      (error: LylaResponseError, reject: (reason: unknown) => void) => void
+    >
     /**
      * Callbacks fired when data conversion (to json or parse json) is not valid.
      */

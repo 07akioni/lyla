@@ -245,7 +245,7 @@ export function createLyla<C, M extends LylaAdapterMeta>(
       if (_options.hooks?.onResponseError) {
         try {
           for (const hook of _options.hooks?.onResponseError) {
-            const maybePromise = hook(error)
+            const maybePromise = hook(error, _customReject)
             if (maybePromise instanceof Promise) {
               await maybePromise
             }
@@ -270,7 +270,8 @@ export function createLyla<C, M extends LylaAdapterMeta>(
     }
 
     let _resolve: (value: LylaResponse<T, C, M>) => void
-    let _reject: (value: LylaError<C, M>) => void
+    let _reject: (reason: LylaError<C, M>) => void
+    let _customReject: (reason: unknown) => void
 
     // make request headers
     const requestHeaders: Record<string, string> = {}
@@ -295,9 +296,15 @@ export function createLyla<C, M extends LylaAdapterMeta>(
     const requestPromise = new Promise<LylaResponse<T, C, M>>(
       (resolve, reject) => {
         _resolve = resolve
-        _reject = (e) => {
+        _reject = (reason) => {
+          if (settled) return
           cleanup()
-          reject(e)
+          reject(reason)
+        }
+        _customReject = (reason) => {
+          if (settled) return
+          cleanup()
+          reject(reason)
         }
       }
     )
@@ -444,7 +451,7 @@ export function createLyla<C, M extends LylaAdapterMeta>(
         if (_options.hooks?.onAfterResponse) {
           try {
             for (const hook of _options.hooks.onAfterResponse) {
-              const maybeResponsePromise = hook(response)
+              const maybeResponsePromise = hook(response, _customReject)
               if (maybeResponsePromise instanceof Promise) {
                 response = await maybeResponsePromise
               } else {

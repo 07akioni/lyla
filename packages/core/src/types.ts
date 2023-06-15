@@ -86,7 +86,8 @@ export type LylaRequestOptions<
      */
     onAfterResponse?: Array<
       (
-        response: LylaResponse<any, C, M>
+        response: LylaResponse<any, C, M>,
+        reject: (reason: unknown) => void
       ) => LylaResponse<any, C, M> | Promise<LylaResponse<any, C, M>>
     >
     /**
@@ -96,7 +97,10 @@ export type LylaRequestOptions<
      * callback won't be fired.
      */
     onResponseError?: Array<
-      (error: LylaResponseError<C, M>) => void | Promise<void>
+      (
+        error: LylaResponseError<C, M>,
+        reject: (reason: unknown) => void
+      ) => void | Promise<void>
     >
     /**
      * Callbacks fired when data conversion (to json or parse json) is not valid.

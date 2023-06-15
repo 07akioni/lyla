@@ -153,14 +153,17 @@ type LylaRequestOptions<C = {}> = {
      */
     onAfterResponse?: Array<
       (
-        response: LylaResponse<any>
+        response: LylaResponse<any>,
+        reject: (reason: unknown) => void
       ) => LylaResponse<any> | Promise<LylaResponse<any>>
     >
     /**
      * 响应处理遇到异常时的回调。只会在 LylaError 产生时被触发，用户触发的异常不会触发此回
      * 调，例如用户在 `onAfterResponse` 回调中抛出异常不会触发该回调。
      */
-    onResponseError?: Array<(error: LylaResponseError) => void>
+    onResponseError?: Array<
+      (error: LylaResponseError, reject: (reason: unknown) => void) => void
+    >
     /**
      * 数据转换（转换成 json 或者解析为 json）遇到异常时的回调
      */
