@@ -193,9 +193,10 @@ const handlers: Handler[] = [
         url: 'not-found'
       })
         .then(({ body }) => {
-          console.log(body)
+          console.log('404', body)
         })
         .catch((e) => {
+          console.log('404')
           if (isLylaError(e)) {
             console.log(e)
           } else {
@@ -503,6 +504,19 @@ const handlers: Handler[] = [
       setTimeout(() => {
         abortController.abort()
       }, 1000)
+    }
+  ],
+  [
+    'get bad url',
+    async () => {
+      request.get('https://fuck.com/test').catch((err) => {
+        if (isLylaError(err)) {
+          console.log('error', err)
+          console.log('err instanceof Error', err instanceof Error)
+          console.log('err.toString', err.toString())
+          // err.error
+        }
+      })
     }
   ]
 ]

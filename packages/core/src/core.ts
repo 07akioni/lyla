@@ -286,8 +286,15 @@ export function createLyla<C, M extends LylaAdapterMeta>(
     _options.headers = requestHeaders
 
     let settled = false
+    let abortSignalListenerOff = false
     function cleanup() {
       settled = true
+      if (!abortSignalListenerOff) {
+        stopListeningAbortSignal()
+      }
+    }
+    function stopListeningAbortSignal() {
+      abortSignalListenerOff = true
       if (signal) {
         signal.removeEventListener('abort', onAbortSignalReceived)
       }
@@ -344,7 +351,7 @@ export function createLyla<C, M extends LylaAdapterMeta>(
       withCredentials,
       onNetworkError(detail: any) {
         networkError = true
-        cleanup()
+        stopListeningAbortSignal()
         const error = defineLylaError<M, C, LylaNetworkError<C, M>>(
           {
             type: LYLA_ERROR.NETWORK,
@@ -364,7 +371,7 @@ export function createLyla<C, M extends LylaAdapterMeta>(
       async onResponse(resp, detail) {
         if (aborted) return
         if (networkError) return
-        cleanup()
+        stopListeningAbortSignal()
         let _json: any
         let _jsonIsSet = false
         let _cachedJson: any
