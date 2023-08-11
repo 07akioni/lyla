@@ -1,6 +1,6 @@
 {
   "name": "lyla",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "scripts": {
     "check-type": "tsc -p tsconfig.cjs.json --noEmit",
     "build": "rm -rf es lib && rollup -c rollup.config.js",
