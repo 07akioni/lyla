@@ -1,6 +1,6 @@
 import {
   LylaAdapter,
-  LylaAdapterMeta as LylaCoreAdapterMeta
+  LylaAdapterMeta as LylaCoreAdapterMeta,
 } from '@lylajs/core'
 import type {
   NetworkErrorDetail,
@@ -19,6 +19,8 @@ export interface LylaAdapterMeta extends LylaCoreAdapterMeta {
   responseDetail: ResponseDetail
   responseType: 'arraybuffer' | 'text'
   requestBody: string | ArrayBuffer
+  progressDetail: never
+  originalRequest: never
 }
 
 export const adapter: LylaAdapter<LylaAdapterMeta> = ({

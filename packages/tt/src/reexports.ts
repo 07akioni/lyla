@@ -2,7 +2,8 @@ import type {
   LylaRequestOptions as LylaCoreRequestOptions,
   LylaResponse as LylaCoreResponse,
   Lyla as LylaCore,
-  LylaRequestOptionsWithContext as LylaCoreRequestOptionsWithContext
+  LylaRequestOptionsWithContext as LylaCoreRequestOptionsWithContext,
+  LylaProgress as LylaCoreProgress
 } from '@lylajs/core'
 import type {
   LylaResponseError as LylaCoreResponseError,
@@ -34,4 +35,6 @@ export type LylaDataConversionError<C = undefined> =
   LylaCoreDataConversionError<C, LylaAdapterMeta>
 export type LylaError<C = undefined> = LylaCoreError<C, LylaAdapterMeta>
 
-export { LYLA_ERROR, LylaProgress, LylaAbortController } from '@lylajs/core'
+export type LylaProgress = LylaCoreProgress<LylaAdapterMeta>
+
+export { LYLA_ERROR, LylaAbortController } from '@lylajs/core'

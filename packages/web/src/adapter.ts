@@ -26,8 +26,9 @@ export interface LylaAdapterMeta extends LylaCoreAdapterMeta {
   networkErrorDetail: ProgressEvent<XMLHttpRequestEventTarget>
   requestBody: XMLHttpRequestBodyInit
   responseDetail: ProgressEvent<XMLHttpRequestEventTarget>
+  progressDetail: ProgressEvent<XMLHttpRequestEventTarget>
   responseType: 'arraybuffer' | 'blob' | 'text'
-  body: XMLHttpRequestBodyInit
+  originalRequest: XMLHttpRequest
 }
 
 // It's possible that the raw http response headers has multiple headers with
@@ -83,7 +84,9 @@ export const adapter: LylaAdapter<LylaAdapterMeta> = ({
         lengthComputable: e.lengthComputable,
         percent: e.lengthComputable ? (e.loaded / e.total) * 100 : 0,
         loaded: e.loaded,
-        total: e.total
+        total: e.total,
+        detail: e,
+        originalRequest: xhr
       })
     })
   }
@@ -93,7 +96,9 @@ export const adapter: LylaAdapter<LylaAdapterMeta> = ({
         lengthComputable: e.lengthComputable,
         percent: e.lengthComputable ? (e.loaded / e.total) * 100 : 0,
         loaded: e.loaded,
-        total: e.total
+        total: e.total,
+        detail: e,
+        originalRequest: xhr
       })
     })
   }

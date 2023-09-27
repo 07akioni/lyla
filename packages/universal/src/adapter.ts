@@ -24,5 +24,6 @@ export interface LylaAdapterMeta extends LylaCoreAdapterMeta {
   requestBody: any
   responseDetail: any
   responseType: 'arraybuffer' | 'blob' | 'text'
-  body: any
+  progressDetail: any;
+  originalRequest: any;
 }

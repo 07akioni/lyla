@@ -43,7 +43,7 @@ export type LylaRequestOptions<
    * Type of `response.body`.
    */
   responseType?: M['responseType']
-  body?: M['responseBody']
+  body?: M['requestBody']
   /**
    * JSON value to be written into the request body. It can't be used with
    * `body`.
@@ -55,8 +55,8 @@ export type LylaRequestOptions<
    * Abort signal of the request.
    */
   signal?: AbortSignal
-  onUploadProgress?: (progress: LylaProgress) => void
-  onDownloadProgress?: (progress: LylaProgress) => void
+  onUploadProgress?: (progress: LylaProgress<M>) => void
+  onDownloadProgress?: (progress: LylaProgress<M>) => void
   context?: C
   hooks?: {
     /**
@@ -149,7 +149,7 @@ export type LylaResponse<
   context: C
 }
 
-export type LylaProgress = {
+export type LylaProgress<M extends LylaAdapterMeta = LylaAdapterMeta> = {
   /**
    * Percentage of the progress. From 0 to 100.
    */
@@ -167,6 +167,14 @@ export type LylaProgress = {
    * Whether the total bytes of the progress is computable.
    */
   lengthComputable: boolean
+  /**
+   * Detail message of progress
+   */
+  detail: M['progressDetail']
+  /**
+   * Original request
+   */
+  originalRequest: M['originalRequest']
 }
 
 export type LylaRequestHeaders = Record<string, string | number | undefined>
@@ -188,6 +196,8 @@ export interface LylaAdapterMeta {
   responseBody: any
   networkErrorDetail: any
   responseDetail: any
+  progressDetail: any
+  originalRequest: any
 }
 
 export interface LylaAdapterOptions<T extends LylaAdapterMeta> {
@@ -199,8 +209,8 @@ export interface LylaAdapterOptions<T extends LylaAdapterMeta> {
   responseType: T['responseType']
   withCredentials: boolean
   onNetworkError(detail: T['networkErrorDetail']): void
-  onUploadProgress: ((progress: LylaProgress) => void) | undefined
-  onDownloadProgress: ((progress: LylaProgress) => void) | undefined
+  onUploadProgress: ((progress: LylaProgress<T>) => void) | undefined
+  onDownloadProgress: ((progress: LylaProgress<T>) => void) | undefined
   onResponse(
     response: {
       body: T['responseBody']
