@@ -241,7 +241,7 @@ export function createLylaDebugger<C extends Context>({
               url: requestOptions.url || '',
               method: requestOptions.method || '',
               headers: requestOptions.headers,
-              body: requestOptions.body,
+              body: requestOptions.body as string,
               json: requestOptions.json,
               timestamp: now.valueOf(),
               time: formatDate(now),

@@ -14,7 +14,7 @@
   },
   "dependencies": {
     "@lylajs/core": "workspace:*",
-    "preact": "^10.8.2"
+    "preact": "~10.8.2"
   },
   "author": "07akioni",
   "license": "MIT",
