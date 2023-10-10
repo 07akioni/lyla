@@ -62,6 +62,7 @@ export function createLyla<C, M extends LylaAdapterMeta>(
         ? mergedLylaOptions.context
         : options.context
     let optionsWithContext: LylaRequestOptionsWithContext<C, M> = Object.assign(
+      {},
       options,
       {
         context:
@@ -276,7 +277,7 @@ export function createLyla<C, M extends LylaAdapterMeta>(
     // make request headers
     const requestHeaders: Record<string, string> = {}
     mergeHeaders(requestHeaders, mergedLylaOptions.headers)
-    mergeHeaders(requestHeaders, options.headers)
+    mergeHeaders(requestHeaders, _options.headers)
     // Set 'content-type' header
     if (_options.json !== undefined) {
       requestHeaders['content-type'] =

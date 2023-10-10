@@ -41,6 +41,26 @@ test('`hooks` should work', async ({ page }) => {
   expect(body).toEqual('jojo')
 })
 
+test('onBeforeRequest should modify headers', async ({ page }) => {
+  const headers = await page.evaluate(async () => {
+    const { headers } = await window.lyla.post('/api/post-return-headers', {
+      hooks: {
+        onBeforeRequest: [
+          (options) => {
+            options.headers = {
+              ...options.headers,
+              'x-foo': 'bar'
+            }
+            return options
+          }
+        ]
+      }
+    })
+    return headers
+  })
+  expect(headers['x-foo']).toEqual('bar')
+})
+
 test(`onResponseError`, async ({ page }) => {
   const result = await page.evaluate(async () => {
     const ret: string[] = []
