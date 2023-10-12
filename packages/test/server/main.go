@@ -184,6 +184,15 @@ func DemoRoutes(r *gin.Engine) {
 	})
 }
 
+func ErrorTestRoutes(r *gin.Engine) {
+	r.POST("/api/error", func(c *gin.Context) {
+		c.Header("Content-Type", "application/json")
+		c.JSON(500, gin.H{
+			"key": "value",
+		})
+	})
+}
+
 func StaticRoutes(r *gin.Engine) {
 	r.Static("/es", "../es")
 	r.StaticFile("/", "./index.html")
@@ -212,6 +221,8 @@ func main() {
 	PatchTestRoutes(r)
 	HeadTestRoutes(r)
 	PutTestRoutes(r)
+
+	ErrorTestRoutes(r)
 
 	r.Use(func(c *gin.Context) {
 		fmt.Println("[request.url]", c.Request.URL)
