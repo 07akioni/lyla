@@ -1,4 +1,4 @@
-import type { LylaDataConversionError, LylaResponseError } from './error'
+import type { LylaDataConversionError, LylaError, LylaResponseError } from './error'
 
 export type LylaMethod =
   | 'get'
@@ -187,7 +187,9 @@ export type Lyla<C = any, M extends LylaAdapterMeta = LylaAdapterMeta> = {
     url: string,
     options?: Omit<LylaRequestOptions<C, M>, 'url' | 'method'>
   ) => Promise<LylaResponse<T, C, M>>
->
+> & {
+    errorType: LylaError<C, M>
+  }
 
 export interface LylaAdapterMeta {
   method: LylaMethod
