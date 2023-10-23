@@ -1,4 +1,8 @@
-import type { LylaAdapterMeta, LylaResponse } from './types'
+import type {
+  LylaAdapterMeta,
+  LylaRequestOptionsWithContext,
+  LylaResponse
+} from './types'
 
 export enum LYLA_ERROR {
   /**
@@ -62,6 +66,7 @@ export interface LylaBrokenOnAfterResponseError<
   detail: undefined
   response: LylaResponse<any, C, M>
   context: C
+  requestOptions: LylaRequestOptionsWithContext<C, M>
 }
 
 export interface LylaBrokenOnResponseErrorError<
@@ -73,6 +78,7 @@ export interface LylaBrokenOnResponseErrorError<
   detail: undefined
   response: LylaResponse<any, C, M> | undefined
   context: C
+  requestOptions: LylaRequestOptionsWithContext<C, M>
 }
 
 export interface LylaBrokenOnDataConversionErrorError<
@@ -84,30 +90,43 @@ export interface LylaBrokenOnDataConversionErrorError<
   detail: undefined
   response: LylaResponse<any, C, M>
   context: C
+  requestOptions: LylaRequestOptionsWithContext<C, M>
 }
 
-export interface LylaBrokenOnBeforeRequestError<C> extends Error {
+export interface LylaBrokenOnBeforeRequestError<
+  C,
+  M extends LylaAdapterMeta = LylaAdapterMeta
+> extends Error {
   type: LYLA_ERROR.BROKEN_ON_BEFORE_REQUEST
   error: unknown
   detail: undefined
   response: undefined
   context: C
+  requestOptions: LylaRequestOptionsWithContext<C, M>
 }
 
-export interface LylaBrokenOnInitError<C> extends Error {
+export interface LylaBrokenOnInitError<
+  C,
+  M extends LylaAdapterMeta = LylaAdapterMeta
+> extends Error {
   type: LYLA_ERROR.BROKEN_ON_INIT
   error: unknown
   detail: undefined
   response: undefined
   context: C
+  requestOptions: LylaRequestOptionsWithContext<C, M>
 }
 
-export interface LylaTimeoutError<C> extends Error {
+export interface LylaTimeoutError<
+  C,
+  M extends LylaAdapterMeta = LylaAdapterMeta
+> extends Error {
   type: LYLA_ERROR.TIMEOUT
   error: undefined
   detail: undefined
   response: undefined
   context: C
+  requestOptions: LylaRequestOptionsWithContext<C, M>
 }
 
 export interface LylaInvalidConversionError<
@@ -119,6 +138,7 @@ export interface LylaInvalidConversionError<
   detail: undefined
   response: LylaResponse<any, C, M>
   context: C
+  requestOptions: LylaRequestOptionsWithContext<C, M>
 }
 
 export interface LylaHttpError<C, M extends LylaAdapterMeta = LylaAdapterMeta>
@@ -128,6 +148,7 @@ export interface LylaHttpError<C, M extends LylaAdapterMeta = LylaAdapterMeta>
   detail: undefined
   response: LylaResponse<any, C, M>
   context: C
+  requestOptions: LylaRequestOptionsWithContext<C, M>
 }
 
 export interface LylaNetworkError<
@@ -139,6 +160,7 @@ export interface LylaNetworkError<
   detail: M['networkErrorDetail']
   response: undefined
   context: C
+  requestOptions: LylaRequestOptionsWithContext<C, M>
 }
 
 export interface LylaInvalidJSONError<
@@ -150,22 +172,31 @@ export interface LylaInvalidJSONError<
   detail: undefined
   response: LylaResponse<any, C, M>
   context: C
+  requestOptions: LylaRequestOptionsWithContext<C, M>
 }
 
-export interface LylaAbortedError<C> extends Error {
+export interface LylaAbortedError<
+  C,
+  M extends LylaAdapterMeta = LylaAdapterMeta
+> extends Error {
   type: LYLA_ERROR.ABORTED
   error: undefined
   detail: undefined
   response: undefined
   context: C
+  requestOptions: LylaRequestOptionsWithContext<C, M>
 }
 
-export interface LylaBadRequestError<C> extends Error {
+export interface LylaBadRequestError<
+  C,
+  M extends LylaAdapterMeta = LylaAdapterMeta
+> extends Error {
   type: LYLA_ERROR.BAD_REQUEST
   error: undefined
   detail: undefined
   response: undefined
   context: C
+  requestOptions: LylaRequestOptionsWithContext<C, M>
 }
 
 export type LylaDataConversionError<
@@ -179,21 +210,21 @@ export type LylaResponseError<
 > =
   | LylaNetworkError<C, M>
   | LylaHttpError<C, M>
-  | LylaAbortedError<C>
-  | LylaTimeoutError<C>
+  | LylaAbortedError<C, M>
+  | LylaTimeoutError<C, M>
 
 export type LylaError<C = any, M extends LylaAdapterMeta = LylaAdapterMeta> =
   | LylaNetworkError<C, M>
   | LylaHttpError<C, M>
   | LylaInvalidJSONError<C, M>
   | LylaInvalidConversionError<C, M>
-  | LylaAbortedError<C>
-  | LylaTimeoutError<C>
-  | LylaBadRequestError<C>
+  | LylaAbortedError<C, M>
+  | LylaTimeoutError<C, M>
+  | LylaBadRequestError<C, M>
   | LylaBrokenOnAfterResponseError<C, M>
   | LylaBrokenOnResponseErrorError<C, M>
-  | LylaBrokenOnInitError<C>
-  | LylaBrokenOnBeforeRequestError<C>
+  | LylaBrokenOnInitError<C, M>
+  | LylaBrokenOnBeforeRequestError<C, M>
   | LylaBrokenOnDataConversionErrorError<C, M>
 
 type _LylaError = Error & { __lylaError?: true }

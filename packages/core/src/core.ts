@@ -96,14 +96,15 @@ export function createLyla<C, M extends LylaAdapterMeta>(
         }
       }
     } catch (e) {
-      throw defineLylaError<M, C, LylaBrokenOnInitError<C>>(
+      throw defineLylaError<M, C, LylaBrokenOnInitError<C, M>>(
         {
           type: LYLA_ERROR.BROKEN_ON_INIT,
           message: '`onInit` hook throws error',
           detail: undefined,
           error: undefined,
           response: undefined,
-          context: optionsWithContext.context
+          context: optionsWithContext.context,
+          requestOptions: optionsWithContext
         },
         undefined
       )
@@ -134,7 +135,7 @@ export function createLyla<C, M extends LylaAdapterMeta>(
       )
       const queryString = urlSearchParams.toString()
       if (_options.url.includes('?')) {
-        throw defineLylaError<M, C, LylaBadRequestError<C>>(
+        throw defineLylaError<M, C, LylaBadRequestError<C, M>>(
           {
             type: LYLA_ERROR.BAD_REQUEST,
             message:
@@ -142,7 +143,8 @@ export function createLyla<C, M extends LylaAdapterMeta>(
             detail: undefined,
             error: undefined,
             response: undefined,
-            context: _options.context
+            context: _options.context,
+            requestOptions: _options
           },
           undefined
         )
@@ -163,14 +165,15 @@ export function createLyla<C, M extends LylaAdapterMeta>(
           }
         }
       } catch (e) {
-        throw defineLylaError<M, C, LylaBrokenOnBeforeRequestError<C>>(
+        throw defineLylaError<M, C, LylaBrokenOnBeforeRequestError<C, M>>(
           {
             type: LYLA_ERROR.BROKEN_ON_BEFORE_REQUEST,
             message: '`onBeforeRequest` hook throws error',
             detail: undefined,
             error: undefined,
             response: undefined,
-            context: optionsWithContext.context
+            context: optionsWithContext.context,
+            requestOptions: _options
           },
           undefined
         )
@@ -180,7 +183,7 @@ export function createLyla<C, M extends LylaAdapterMeta>(
     // Move json data to body as string
     if (_options.json !== undefined) {
       if (_options.body !== undefined) {
-        throw defineLylaError<M, C, LylaBadRequestError<C>>(
+        throw defineLylaError<M, C, LylaBadRequestError<C, M>>(
           {
             type: LYLA_ERROR.BAD_REQUEST,
             message:
@@ -188,7 +191,8 @@ export function createLyla<C, M extends LylaAdapterMeta>(
             detail: undefined,
             error: undefined,
             response: undefined,
-            context: _options.context
+            context: _options.context,
+            requestOptions: _options
           },
           undefined
         )
@@ -230,7 +234,8 @@ export function createLyla<C, M extends LylaAdapterMeta>(
                 message: '`onDataConversionError` hook throws error',
                 detail: undefined,
                 response,
-                context
+                context,
+                requestOptions: _options
               },
               undefined
             )
@@ -261,7 +266,8 @@ export function createLyla<C, M extends LylaAdapterMeta>(
                 message: '`onResponseError` hook throws error',
                 detail: undefined,
                 response: undefined,
-                context
+                context,
+                requestOptions: _options
               },
               undefined
             )
@@ -322,14 +328,15 @@ export function createLyla<C, M extends LylaAdapterMeta>(
     function onAbortSignalReceived() {
       if (aborted) return
       aborted = true
-      const error = defineLylaError<M, C, LylaAbortedError<C>>(
+      const error = defineLylaError<M, C, LylaAbortedError<C, M>>(
         {
           type: LYLA_ERROR.ABORTED,
           message: 'Request aborted',
           detail: undefined,
           error: undefined,
           response: undefined,
-          context: _options.context
+          context: _options.context,
+          requestOptions: _options
         },
         stack
       )
@@ -361,7 +368,8 @@ export function createLyla<C, M extends LylaAdapterMeta>(
             detail,
             error: undefined,
             response: undefined,
-            context: _options.context
+            context: _options.context,
+            requestOptions: _options
           },
           stack
         )
@@ -405,7 +413,8 @@ export function createLyla<C, M extends LylaAdapterMeta>(
                   detail: undefined,
                   error: undefined,
                   response,
-                  context: response.context
+                  context: response.context,
+                  requestOptions: _options
                 },
                 undefined
               )
@@ -429,7 +438,8 @@ export function createLyla<C, M extends LylaAdapterMeta>(
                   detail: undefined,
                   error: _cachedJsonParsingError,
                   context: response.context,
-                  response
+                  response,
+                  requestOptions: _options
                 },
                 undefined
               )
@@ -448,7 +458,8 @@ export function createLyla<C, M extends LylaAdapterMeta>(
               detail: undefined,
               error: undefined,
               response,
-              context: _options.context
+              context: _options.context,
+              requestOptions: _options
             },
             stack
           )
@@ -476,7 +487,8 @@ export function createLyla<C, M extends LylaAdapterMeta>(
                   detail: undefined,
                   response,
                   error,
-                  context: response.context
+                  context: response.context,
+                  requestOptions: _options
                 },
                 undefined
               )
@@ -494,7 +506,7 @@ export function createLyla<C, M extends LylaAdapterMeta>(
         if (settled) return
         adapterHandle.abort()
         aborted = true
-        const error = defineLylaError<M, C, LylaTimeoutError<C>>(
+        const error = defineLylaError<M, C, LylaTimeoutError<C, M>>(
           {
             type: LYLA_ERROR.TIMEOUT,
             message: timeout
@@ -503,7 +515,8 @@ export function createLyla<C, M extends LylaAdapterMeta>(
             detail: undefined,
             error: undefined,
             response: undefined,
-            context: _options.context
+            context: _options.context,
+            requestOptions: _options
           },
           stack
         )
@@ -512,14 +525,15 @@ export function createLyla<C, M extends LylaAdapterMeta>(
       }, timeout)
     }
     if (method === 'GET' && body) {
-      throw defineLylaError<M, C, LylaBadRequestError<C>>(
+      throw defineLylaError<M, C, LylaBadRequestError<C, M>>(
         {
           type: LYLA_ERROR.BAD_REQUEST,
           message: "Can not send a request with body in 'GET' method.",
           error: undefined,
           response: undefined,
           detail: undefined,
-          context: _options.context
+          context: _options.context,
+          requestOptions: _options
         },
         undefined
       )
