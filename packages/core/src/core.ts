@@ -49,6 +49,7 @@ export function createLyla<C, M extends LylaAdapterMeta>(
 ): {
   isLylaError(e: unknown): e is LylaError<C, M>
   lyla: Lyla<C, M>
+  errorType: LylaError<C, M>
 } {
   const mergedLylaOptions = mergeOptions<LylaRequestOptionsWithContext<C, M>>(
     lylaOptions,
@@ -553,6 +554,13 @@ export function createLyla<C, M extends LylaAdapterMeta>(
     }),
     isLylaError(e: unknown): e is LylaError<C, M> {
       return _isLylaError(e)
+    },
+    get errorType() {
+      // @ts-expect-error Since we don't include any libs, the error is expected
+      console.error(
+        "[@lylajs/core]: `errorType` shouldn't be accessed in runtime, you should only use it like `typeof lylaInstance.errorType`"
+      )
+      return {} as LylaError<C, M>
     }
   }
 }
