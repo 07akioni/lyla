@@ -565,10 +565,6 @@ export function createLyla<C, M extends LylaAdapterMeta>(
       trace: createRequestShortcut('trace'),
       connect: createRequestShortcut('connect'),
       get errorType() {
-        // @ts-expect-error Since we don't include any libs, the error is expected
-        console.error(
-          "[@lylajs/core]: `errorType` shouldn't be accessed in runtime, you should only use it like `typeof lylaInstance.errorType`"
-        )
         return {} as LylaError<C, M>
       }
     }),
