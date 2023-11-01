@@ -1,4 +1,8 @@
-import type { LylaDataConversionError, LylaError, LylaResponseError } from './error'
+import type {
+  LylaDataConversionError,
+  LylaError,
+  LylaResponseError
+} from './error'
 
 export type LylaMethod =
   | 'get'
@@ -49,7 +53,7 @@ export type LylaRequestOptions<
    * `body`.
    */
   json?: any
-  query?: Record<string, string | number>
+  query?: Record<string, string | number | boolean | undefined | null>
   baseUrl?: string
   /**
    * Abort signal of the request.

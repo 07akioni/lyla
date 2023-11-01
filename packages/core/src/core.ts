@@ -129,9 +129,13 @@ export function createLyla<C, M extends LylaAdapterMeta>(
 
     // Resolve query string, patch it to URL
     if (_options.query) {
-      const urlSearchParams = new URLSearchParams(
-        _options.query as Record<string, string>
-      )
+      const resolvedQuery: Record<string, string> = {}
+      for (const key in _options.query) {
+        const v = _options.query[key]
+        if (v === undefined || v === null) continue
+        resolvedQuery[key] = v.toString()
+      }
+      const urlSearchParams = new URLSearchParams(resolvedQuery)
       const queryString = urlSearchParams.toString()
       if (_options.url.includes('?')) {
         throw defineLylaError<M, C, LylaBadRequestError<C, M>>(
