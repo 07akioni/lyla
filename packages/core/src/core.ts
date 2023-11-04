@@ -100,7 +100,7 @@ export function createLyla<C, M extends LylaAdapterMeta>(
           type: LYLA_ERROR.BROKEN_ON_INIT,
           message: '`onInit` hook throws error',
           detail: undefined,
-          error: undefined,
+          error: e,
           response: undefined,
           context: optionsWithContext.context,
           requestOptions: optionsWithContext
@@ -173,7 +173,7 @@ export function createLyla<C, M extends LylaAdapterMeta>(
             type: LYLA_ERROR.BROKEN_ON_BEFORE_REQUEST,
             message: '`onBeforeRequest` hook throws error',
             detail: undefined,
-            error: undefined,
+            error: e,
             response: undefined,
             context: optionsWithContext.context,
             requestOptions: _options
