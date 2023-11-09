@@ -255,7 +255,7 @@ export function defineLylaError<
   M extends LylaAdapterMeta,
   C,
   T extends LylaError<C, M>
->(lylaErrorProps: Omit<T, 'name'>, stack: string | undefined): T {
+>(lylaErrorProps: Omit<T, 'name' | 'spread'>, stack: string | undefined): T {
   const lylaError = createLylaError()
   lylaError.name = `LylaError[${lylaErrorProps.type}]`
   if (stack) {
