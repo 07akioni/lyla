@@ -67,6 +67,7 @@ export interface LylaBrokenOnAfterResponseError<
   response: LylaResponse<any, C, M>
   context: C
   requestOptions: LylaRequestOptionsWithContext<C, M>
+  spread: () => Omit<LylaBrokenOnAfterResponseError<C, M>, 'spread'>
 }
 
 export interface LylaBrokenOnResponseErrorError<
@@ -79,6 +80,7 @@ export interface LylaBrokenOnResponseErrorError<
   response: LylaResponse<any, C, M> | undefined
   context: C
   requestOptions: LylaRequestOptionsWithContext<C, M>
+  spread: () => Omit<LylaBrokenOnResponseErrorError<C, M>, 'spread'>
 }
 
 export interface LylaBrokenOnNonResponseErrorError<
@@ -91,6 +93,7 @@ export interface LylaBrokenOnNonResponseErrorError<
   response: undefined
   context: C
   requestOptions: LylaRequestOptionsWithContext<C, M>
+  spread: () => Omit<LylaBrokenOnNonResponseErrorError<C, M>, 'spread'>
 }
 
 export interface LylaBrokenOnBeforeRequestError<
@@ -103,6 +106,7 @@ export interface LylaBrokenOnBeforeRequestError<
   response: undefined
   context: C
   requestOptions: LylaRequestOptionsWithContext<C, M>
+  spread: () => Omit<LylaBrokenOnBeforeRequestError<C, M>, 'spread'>
 }
 
 export interface LylaBrokenOnInitError<
@@ -115,6 +119,7 @@ export interface LylaBrokenOnInitError<
   response: undefined
   context: C
   requestOptions: LylaRequestOptionsWithContext<C, M>
+  spread: () => Omit<LylaBrokenOnInitError<C, M>, 'spread'>
 }
 
 export interface LylaTimeoutError<
@@ -127,6 +132,7 @@ export interface LylaTimeoutError<
   response: undefined
   context: C
   requestOptions: LylaRequestOptionsWithContext<C, M>
+  spread: () => Omit<LylaTimeoutError<C, M>, 'spread'>
 }
 
 export interface LylaInvalidConversionError<
@@ -139,6 +145,7 @@ export interface LylaInvalidConversionError<
   response: LylaResponse<any, C, M>
   context: C
   requestOptions: LylaRequestOptionsWithContext<C, M>
+  spread: () => Omit<LylaInvalidConversionError<C, M>, 'spread'>
 }
 
 export interface LylaHttpError<C, M extends LylaAdapterMeta = LylaAdapterMeta>
@@ -149,6 +156,7 @@ export interface LylaHttpError<C, M extends LylaAdapterMeta = LylaAdapterMeta>
   response: LylaResponse<any, C, M>
   context: C
   requestOptions: LylaRequestOptionsWithContext<C, M>
+  spread: () => Omit<LylaHttpError<C, M>, 'spread'>
 }
 
 export interface LylaNetworkError<
@@ -161,6 +169,7 @@ export interface LylaNetworkError<
   response: undefined
   context: C
   requestOptions: LylaRequestOptionsWithContext<C, M>
+  spread: () => Omit<LylaNetworkError<C, M>, 'spread'>
 }
 
 export interface LylaInvalidJSONError<
@@ -173,6 +182,7 @@ export interface LylaInvalidJSONError<
   response: LylaResponse<any, C, M>
   context: C
   requestOptions: LylaRequestOptionsWithContext<C, M>
+  spread: () => Omit<LylaInvalidJSONError<C, M>, 'spread'>
 }
 
 export interface LylaAbortedError<
@@ -185,6 +195,7 @@ export interface LylaAbortedError<
   response: undefined
   context: C
   requestOptions: LylaRequestOptionsWithContext<C, M>
+  spread: () => Omit<LylaAbortedError<C, M>, 'spread'>
 }
 
 export interface LylaBadRequestError<
@@ -197,6 +208,7 @@ export interface LylaBadRequestError<
   response: undefined
   context: C
   requestOptions: LylaRequestOptionsWithContext<C, M>
+  spread: () => Omit<LylaBadRequestError<C, M>, 'spread'>
 }
 
 export type LylaDataConversionError<
@@ -249,7 +261,27 @@ export function defineLylaError<
   if (stack) {
     lylaError.stack += stack
   }
-  return Object.assign(lylaError, lylaErrorProps) as any
+  Object.assign(lylaError, lylaErrorProps)
+  const spread: LylaError<C, M>['spread'] = () => {
+    const currentLylaError = lylaError as LylaError<C, M>
+    return {
+      // Error props
+      name: currentLylaError.name,
+      message: currentLylaError.message,
+      stack: currentLylaError.stack,
+      // Other props
+      type: currentLylaError.type,
+      error: currentLylaError.error,
+      detail: currentLylaError.detail,
+      context: currentLylaError.context,
+      response: currentLylaError.response,
+      requestOptions: currentLylaError.requestOptions,
+      // special prop
+      __lylaError: true
+    } satisfies Omit<LylaError<C, M>, 'spread'> & { __lylaError: true } as any
+  }
+  ;(lylaError as LylaError<C, M>).spread = spread
+  return lylaError as any
 }
 
 export function isLylaError(error: unknown): error is LylaError<any, any> {
