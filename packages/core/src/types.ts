@@ -1,6 +1,6 @@
 import type {
-  LylaDataConversionError,
   LylaError,
+  LylaNonResponseError,
   LylaResponseError
 } from './error'
 
@@ -107,10 +107,10 @@ export type LylaRequestOptions<
       ) => void | Promise<void>
     >
     /**
-     * Callbacks fired when data conversion (to json or parse json) is not valid.
+     * Callbacks fired when a non-response error occurs.
      */
-    onDataConversionError?: Array<
-      (error: LylaDataConversionError<C, M>) => void | Promise<void>
+    onNonResponseError?: Array<
+      (error: LylaNonResponseError<C, M>) => void | Promise<void>
     >
   }
 }

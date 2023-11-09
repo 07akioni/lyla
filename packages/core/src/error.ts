@@ -52,9 +52,9 @@ export enum LYLA_ERROR {
    */
   BROKEN_ON_RESPONSE_ERROR = 'BROKEN_ON_RESPONSE_ERROR',
   /**
-   * `onDataConversionError` hook throws error.
+   * `onNonResponseError` hook throws error.
    */
-  BROKEN_ON_DATA_CONVERSION_ERROR = 'BROKEN_ON_DATA_CONVERSION_ERROR'
+  BROKEN_ON_NON_RESPONSE_ERROR = 'BROKEN_ON_NON_RESPONSE_ERROR'
 }
 
 export interface LylaBrokenOnAfterResponseError<
@@ -81,14 +81,14 @@ export interface LylaBrokenOnResponseErrorError<
   requestOptions: LylaRequestOptionsWithContext<C, M>
 }
 
-export interface LylaBrokenOnDataConversionErrorError<
+export interface LylaBrokenOnNonResponseErrorError<
   C,
   M extends LylaAdapterMeta = LylaAdapterMeta
 > extends Error {
-  type: LYLA_ERROR.BROKEN_ON_DATA_CONVERSION_ERROR
+  type: LYLA_ERROR.BROKEN_ON_NON_RESPONSE_ERROR
   error: unknown
   detail: undefined
-  response: LylaResponse<any, C, M>
+  response: undefined
   context: C
   requestOptions: LylaRequestOptionsWithContext<C, M>
 }
@@ -213,11 +213,10 @@ export type LylaResponseError<
   | LylaAbortedError<C, M>
   | LylaTimeoutError<C, M>
 
-export type LylaError<C = any, M extends LylaAdapterMeta = LylaAdapterMeta> =
-  | LylaNetworkError<C, M>
-  | LylaHttpError<C, M>
-  | LylaInvalidJSONError<C, M>
-  | LylaInvalidConversionError<C, M>
+export type LylaNonResponseError<
+  C = any,
+  M extends LylaAdapterMeta = LylaAdapterMeta
+> =
   | LylaAbortedError<C, M>
   | LylaTimeoutError<C, M>
   | LylaBadRequestError<C, M>
@@ -225,7 +224,12 @@ export type LylaError<C = any, M extends LylaAdapterMeta = LylaAdapterMeta> =
   | LylaBrokenOnResponseErrorError<C, M>
   | LylaBrokenOnInitError<C, M>
   | LylaBrokenOnBeforeRequestError<C, M>
-  | LylaBrokenOnDataConversionErrorError<C, M>
+  | LylaDataConversionError<C, M>
+
+export type LylaError<C = any, M extends LylaAdapterMeta = LylaAdapterMeta> =
+  | LylaResponseError<C, M>
+  | LylaNonResponseError<C, M>
+  | LylaBrokenOnNonResponseErrorError<C, M>
 
 type _LylaError = Error & { __lylaError?: true }
 

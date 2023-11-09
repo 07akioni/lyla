@@ -162,13 +162,13 @@ type LylaRequestOptions<C = {}> = {
      * 调，例如用户在 `onAfterResponse` 回调中抛出异常不会触发该回调。
      */
     onResponseError?: Array<
-      (error: LylaResponseError, reject: (reason: unknown) => void) => void
+      (error: LylaResponseError<C, M>, reject: (reason: unknown) => void) => void
     >
     /**
-     * 数据转换（转换成 json 或者解析为 json）遇到异常时的回调
+     * 任何非 onResponseError 触发的错误都会触发次回调（除了 BROKEN_ON_NON_RESPONSE_ERROR）
      */
-    onDataConversionError?: Array<
-      (error: LylaDataConversionError<C, M>) => void | Promise<void>
+    onNonResponseError?: Array<
+      (error: LylaNonResponseError<C, M>) => void | Promise<void>
     >
   }
   /**

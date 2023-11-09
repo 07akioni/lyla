@@ -8,7 +8,7 @@ import type {
 import type {
   LylaResponseError as LylaCoreResponseError,
   LylaError as LylaCoreError,
-  LylaDataConversionError as LylaCoreDataConversionError
+  LylaNonResponseError as LylaCoreNonResponseError
 } from '@lylajs/core'
 import type { LylaAdapterMeta } from './adapter'
 
@@ -31,10 +31,12 @@ export type LylaResponseError<C = undefined> = LylaCoreResponseError<
   C,
   LylaAdapterMeta
 >
-export type LylaDataConversionError<C = undefined> =
-  LylaCoreDataConversionError<C, LylaAdapterMeta>
+export type LylaNonResponseError<C = undefined> = LylaCoreNonResponseError<
+  C,
+  LylaAdapterMeta
+>
 export type LylaError<C = undefined> = LylaCoreError<C, LylaAdapterMeta>
 
 export type LylaProgress = LylaCoreProgress<LylaAdapterMeta>
 
-export { LYLA_ERROR,  LylaAbortController } from '@lylajs/core'
+export { LYLA_ERROR, LylaAbortController } from '@lylajs/core'

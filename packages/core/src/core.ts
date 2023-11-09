@@ -7,18 +7,18 @@ import {
   LylaBrokenOnAfterResponseError,
   LylaBrokenOnResponseErrorError,
   LylaBrokenOnInitError,
-  LylaBrokenOnBeforeRequestError,
-  LylaDataConversionError,
-  LylaBrokenOnDataConversionErrorError
+  LylaBrokenOnBeforeRequestError
 } from './error'
 import { mergeUrl, mergeHeaders, mergeOptions } from './utils'
 import type {
   LylaAbortedError,
+  LylaBrokenOnNonResponseErrorError,
   LylaError,
   LylaHttpError,
   LylaInvalidConversionError,
   LylaInvalidJSONError,
   LylaNetworkError,
+  LylaNonResponseError,
   LylaTimeoutError
 } from './error'
 import type {
@@ -73,6 +73,34 @@ export function createLyla<C, M extends LylaAdapterMeta>(
             : resolvedContext
       }
     )
+    async function handleNonResponseError(error: LylaNonResponseError<C, M>) {
+      if (_options.hooks?.onNonResponseError) {
+        try {
+          for (const hook of _options.hooks?.onNonResponseError) {
+            const maybePromise = hook(error)
+            if (maybePromise instanceof Promise) {
+              await maybePromise
+            }
+          }
+        } catch (e) {
+          _reject(
+            defineLylaError<M, C, LylaBrokenOnNonResponseErrorError<C, M>>(
+              {
+                type: LYLA_ERROR.BROKEN_ON_NON_RESPONSE_ERROR,
+                error: e,
+                message: '`onNonResponseError` hook throws error',
+                detail: undefined,
+                response: undefined,
+                context: error.context,
+                requestOptions: _options
+              },
+              undefined
+            )
+          )
+          return
+        }
+      }
+    }
     try {
       if (mergedLylaOptions?.hooks?.onInit) {
         for (const hook of mergedLylaOptions.hooks.onInit) {
@@ -95,7 +123,11 @@ export function createLyla<C, M extends LylaAdapterMeta>(
         }
       }
     } catch (e) {
-      throw defineLylaError<M, C, LylaBrokenOnInitError<C, M>>(
+      const brokenOnInitError = defineLylaError<
+        M,
+        C,
+        LylaBrokenOnInitError<C, M>
+      >(
         {
           type: LYLA_ERROR.BROKEN_ON_INIT,
           message: '`onInit` hook throws error',
@@ -107,6 +139,8 @@ export function createLyla<C, M extends LylaAdapterMeta>(
         },
         undefined
       )
+      handleNonResponseError(brokenOnInitError)
+      throw brokenOnInitError
     }
 
     let _options: LylaRequestOptionsWithContext<C, M> = mergeOptions(
@@ -138,7 +172,11 @@ export function createLyla<C, M extends LylaAdapterMeta>(
       const urlSearchParams = new URLSearchParams(resolvedQuery)
       const queryString = urlSearchParams.toString()
       if (_options.url.includes('?')) {
-        throw defineLylaError<M, C, LylaBadRequestError<C, M>>(
+        const badRequestError = defineLylaError<
+          M,
+          C,
+          LylaBadRequestError<C, M>
+        >(
           {
             type: LYLA_ERROR.BAD_REQUEST,
             message:
@@ -151,6 +189,8 @@ export function createLyla<C, M extends LylaAdapterMeta>(
           },
           undefined
         )
+        handleNonResponseError(badRequestError)
+        throw badRequestError
       }
       if (queryString.length) {
         _options.url = _options.url + '?' + queryString
@@ -168,7 +208,11 @@ export function createLyla<C, M extends LylaAdapterMeta>(
           }
         }
       } catch (e) {
-        throw defineLylaError<M, C, LylaBrokenOnBeforeRequestError<C, M>>(
+        const brokenOnBeforeRequestError = defineLylaError<
+          M,
+          C,
+          LylaBrokenOnBeforeRequestError<C, M>
+        >(
           {
             type: LYLA_ERROR.BROKEN_ON_BEFORE_REQUEST,
             message: '`onBeforeRequest` hook throws error',
@@ -180,13 +224,19 @@ export function createLyla<C, M extends LylaAdapterMeta>(
           },
           undefined
         )
+        handleNonResponseError(brokenOnBeforeRequestError)
+        throw brokenOnBeforeRequestError
       }
     }
 
     // Move json data to body as string
     if (_options.json !== undefined) {
       if (_options.body !== undefined) {
-        throw defineLylaError<M, C, LylaBadRequestError<C, M>>(
+        const badRequestError = defineLylaError<
+          M,
+          C,
+          LylaBadRequestError<C, M>
+        >(
           {
             type: LYLA_ERROR.BAD_REQUEST,
             message:
@@ -199,6 +249,8 @@ export function createLyla<C, M extends LylaAdapterMeta>(
           },
           undefined
         )
+        handleNonResponseError(badRequestError)
+        throw badRequestError
       }
       _options.body = JSON.stringify(_options.json)
     }
@@ -215,43 +267,7 @@ export function createLyla<C, M extends LylaAdapterMeta>(
       onDownloadProgress
     } = _options
 
-    async function handleDataConversionError(
-      error: LylaDataConversionError<C, M>,
-      context: C,
-      response: LylaResponse<any, C, M>
-    ) {
-      if (_options.hooks?.onDataConversionError) {
-        try {
-          for (const hook of _options.hooks?.onDataConversionError) {
-            const maybePromise = hook(error)
-            if (maybePromise instanceof Promise) {
-              await maybePromise
-            }
-          }
-        } catch (e) {
-          _reject(
-            defineLylaError<M, C, LylaBrokenOnDataConversionErrorError<C, M>>(
-              {
-                type: LYLA_ERROR.BROKEN_ON_DATA_CONVERSION_ERROR,
-                error: e,
-                message: '`onDataConversionError` hook throws error',
-                detail: undefined,
-                response,
-                context,
-                requestOptions: _options
-              },
-              undefined
-            )
-          )
-          return
-        }
-      }
-    }
-
-    async function handleResponseError(
-      error: LylaResponseError<C, M>,
-      context: C
-    ) {
+    async function handleResponseError(error: LylaResponseError<C, M>) {
       if (_options.hooks?.onResponseError) {
         try {
           for (const hook of _options.hooks?.onResponseError) {
@@ -261,20 +277,24 @@ export function createLyla<C, M extends LylaAdapterMeta>(
             }
           }
         } catch (e) {
-          _reject(
-            defineLylaError<M, C, LylaBrokenOnResponseErrorError<C, M>>(
-              {
-                type: LYLA_ERROR.BROKEN_ON_RESPONSE_ERROR,
-                error: e,
-                message: '`onResponseError` hook throws error',
-                detail: undefined,
-                response: undefined,
-                context,
-                requestOptions: _options
-              },
-              undefined
-            )
+          const brokenOnResponseErrorError = defineLylaError<
+            M,
+            C,
+            LylaBrokenOnResponseErrorError<C, M>
+          >(
+            {
+              type: LYLA_ERROR.BROKEN_ON_RESPONSE_ERROR,
+              error: e,
+              message: '`onResponseError` hook throws error',
+              detail: undefined,
+              response: undefined,
+              context: error.context,
+              requestOptions: _options
+            },
+            undefined
           )
+          handleNonResponseError(brokenOnResponseErrorError)
+          _reject(brokenOnResponseErrorError)
           return
         }
       }
@@ -331,7 +351,7 @@ export function createLyla<C, M extends LylaAdapterMeta>(
     function onAbortSignalReceived() {
       if (aborted) return
       aborted = true
-      const error = defineLylaError<M, C, LylaAbortedError<C, M>>(
+      const abortError = defineLylaError<M, C, LylaAbortedError<C, M>>(
         {
           type: LYLA_ERROR.ABORTED,
           message: 'Request aborted',
@@ -343,8 +363,8 @@ export function createLyla<C, M extends LylaAdapterMeta>(
         },
         stack
       )
-      handleResponseError(error, _options.context)
-      _reject(error)
+      handleResponseError(abortError)
+      _reject(abortError)
       adapterHandle.abort()
     }
 
@@ -352,7 +372,7 @@ export function createLyla<C, M extends LylaAdapterMeta>(
       signal.addEventListener('abort', onAbortSignalReceived)
     }
 
-    let networkError = false
+    let hasNetworkError = false
     const adapterHandle = adapter({
       url,
       method,
@@ -362,9 +382,9 @@ export function createLyla<C, M extends LylaAdapterMeta>(
       responseType,
       withCredentials,
       onNetworkError(detail: any) {
-        networkError = true
+        hasNetworkError = true
         stopListeningAbortSignal()
-        const error = defineLylaError<M, C, LylaNetworkError<C, M>>(
+        const networkError = defineLylaError<M, C, LylaNetworkError<C, M>>(
           {
             type: LYLA_ERROR.NETWORK,
             message: 'Network error',
@@ -376,14 +396,14 @@ export function createLyla<C, M extends LylaAdapterMeta>(
           },
           stack
         )
-        handleResponseError(error, _options.context)
-        _reject(error)
+        handleResponseError(networkError)
+        _reject(networkError)
       },
       onDownloadProgress,
       onUploadProgress,
       async onResponse(resp, detail) {
         if (aborted) return
-        if (networkError) return
+        if (hasNetworkError) return
         stopListeningAbortSignal()
         let _json: any
         let _jsonIsSet = false
@@ -405,7 +425,7 @@ export function createLyla<C, M extends LylaAdapterMeta>(
           get json() {
             if (_jsonIsSet) return _json
             if (responseType !== 'text') {
-              const error = defineLylaError<
+              const dataConversionError = defineLylaError<
                 M,
                 C,
                 LylaInvalidConversionError<C, M>
@@ -421,8 +441,8 @@ export function createLyla<C, M extends LylaAdapterMeta>(
                 },
                 undefined
               )
-              handleDataConversionError(error, response.context, response)
-              throw error
+              handleNonResponseError(dataConversionError)
+              throw dataConversionError
             }
             if (_cachedJson === undefined) {
               try {
@@ -434,7 +454,11 @@ export function createLyla<C, M extends LylaAdapterMeta>(
               return _cachedJson
             }
             if (_cachedJsonParsingError) {
-              const error = defineLylaError<M, C, LylaInvalidJSONError<C, M>>(
+              const dataConversionError = defineLylaError<
+                M,
+                C,
+                LylaInvalidJSONError<C, M>
+              >(
                 {
                   type: LYLA_ERROR.INVALID_JSON,
                   message: _cachedJsonParsingError.message,
@@ -446,15 +470,15 @@ export function createLyla<C, M extends LylaAdapterMeta>(
                 },
                 undefined
               )
-              handleDataConversionError(error, response.context, response)
-              throw error
+              handleNonResponseError(dataConversionError)
+              throw dataConversionError
             }
           }
         }
 
         if (!isOkStatus(resp.status)) {
           const reason = `${resp.status} ${statusText}`
-          const error = defineLylaError<M, C, LylaHttpError<C, M>>(
+          const httpError = defineLylaError<M, C, LylaHttpError<C, M>>(
             {
               type: LYLA_ERROR.HTTP,
               message: `Request failed with ${reason}`,
@@ -466,8 +490,8 @@ export function createLyla<C, M extends LylaAdapterMeta>(
             },
             stack
           )
-          handleResponseError(error, _options.context)
-          _reject(error)
+          handleResponseError(httpError)
+          _reject(httpError)
           return
         }
 
@@ -482,20 +506,24 @@ export function createLyla<C, M extends LylaAdapterMeta>(
               }
             }
           } catch (error) {
-            _reject(
-              defineLylaError<M, C, LylaBrokenOnAfterResponseError<C, M>>(
-                {
-                  type: LYLA_ERROR.BROKEN_ON_AFTER_RESPONSE,
-                  message: '`onAfterResponse` hook throws error',
-                  detail: undefined,
-                  response,
-                  error,
-                  context: response.context,
-                  requestOptions: _options
-                },
-                undefined
-              )
+            const brokenOnAfterResponseErrorError = defineLylaError<
+              M,
+              C,
+              LylaBrokenOnAfterResponseError<C, M>
+            >(
+              {
+                type: LYLA_ERROR.BROKEN_ON_AFTER_RESPONSE,
+                message: '`onAfterResponse` hook throws error',
+                detail: undefined,
+                response,
+                error,
+                context: response.context,
+                requestOptions: _options
+              },
+              undefined
             )
+            handleNonResponseError(brokenOnAfterResponseErrorError)
+            _reject(brokenOnAfterResponseErrorError)
             return
           }
         }
@@ -509,7 +537,7 @@ export function createLyla<C, M extends LylaAdapterMeta>(
         if (settled) return
         adapterHandle.abort()
         aborted = true
-        const error = defineLylaError<M, C, LylaTimeoutError<C, M>>(
+        const timeoutError = defineLylaError<M, C, LylaTimeoutError<C, M>>(
           {
             type: LYLA_ERROR.TIMEOUT,
             message: timeout
@@ -523,12 +551,12 @@ export function createLyla<C, M extends LylaAdapterMeta>(
           },
           stack
         )
-        handleResponseError(error, _options.context)
-        _reject(error)
+        handleResponseError(timeoutError)
+        _reject(timeoutError)
       }, timeout)
     }
     if (method === 'GET' && body) {
-      throw defineLylaError<M, C, LylaBadRequestError<C, M>>(
+      const badRequestError = defineLylaError<M, C, LylaBadRequestError<C, M>>(
         {
           type: LYLA_ERROR.BAD_REQUEST,
           message: "Can not send a request with body in 'GET' method.",
@@ -540,6 +568,8 @@ export function createLyla<C, M extends LylaAdapterMeta>(
         },
         undefined
       )
+      handleNonResponseError(badRequestError)
+      throw badRequestError
     }
     return requestPromise
   }

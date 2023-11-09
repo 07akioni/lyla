@@ -168,13 +168,13 @@ type LylaRequestOptions<C = {}> = {
      * callback won't be fired.
      */
     onResponseError?: Array<
-      (error: LylaResponseError, reject: (reason: unknown) => void) => void
+      (error: LylaResponseError<C, M>, reject: (reason: unknown) => void) => void
     >
     /**
-     * Callbacks fired when data conversion (to json or parse json) is not valid.
+     * Callbacks fired when a non-response error occurs (except BROKEN_ON_NON_RESPONSE_ERROR)
      */
-    onDataConversionError?: Array<
-      (error: LylaDataConversionError<C, M>) => void | Promise<void>
+    onNonResponseError?: Array<
+      (error: LylaNonResponseError<C, M>) => void | Promise<void>
     >
   }
   /**
@@ -343,9 +343,9 @@ export enum LYLA_ERROR {
    */
   BROKEN_ON_RESPONSE_ERROR = 'BROKEN_ON_RESPONSE_ERROR',
   /**
-   * `onDataConversionError` hook throws error.
+   * `onNonResponseError` hook throws error.
    */
-  BROKEN_ON_DATA_CONVERSION_ERROR = 'BROKEN_ON_DATA_CONVERSION_ERROR'
+  BROKEN_ON_NON_RESPONSE_ERROR = 'BROKEN_ON_NON_RESPONSE_ERROR'
 }
 ```
 
@@ -362,7 +362,7 @@ const { lyla } = createLyla({
         // ...
       }
     },
-    onDataConversionError(error) {
+    onNonResponseError(error) {
        switch error.type {
         // ...
       }

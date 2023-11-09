@@ -10,7 +10,7 @@ export type {
 } from './types'
 export type {
   LylaResponseError,
-  LylaDataConversionError,
+  LylaNonResponseError,
   LylaError
 } from './error'
 export { defineLylaError, isLylaError, LYLA_ERROR } from './error'
