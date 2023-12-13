@@ -17,6 +17,7 @@
   "scripts": {
     "check-type": "tsc -p tsconfig.cjs.json --noEmit",
     "build": "rm -rf es lib && tsc -p tsconfig.cjs.json && tsc -p tsconfig.esm.json",
+    "watch": "tsc -w -p tsconfig.cjs.json",
     "release": "pnpm run build-and-test && pnpm publish",
     "test:type": "tsc --noEmit",
     "prepublishOnly": "pnpm run build"

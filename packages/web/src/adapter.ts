@@ -49,7 +49,7 @@ function createHeaders(headers: string): Record<string, string> {
 
   headerPairs.forEach(function (line) {
     const parts = line.split(':')
-    const header = (parts[0] || '').trim()
+    const header = (parts[0] || '').trim().toLowerCase()
     const value = (parts[1] || '').trim()
     headerMap[header] = value
   })

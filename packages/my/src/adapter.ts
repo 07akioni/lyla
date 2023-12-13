@@ -1,6 +1,7 @@
 import {
   LylaAdapter,
   LylaAdapterMeta as LylaCoreAdapterMeta,
+  headersKeyToLowerCase,
 } from '@lylajs/core'
 import type {
   NetworkErrorDetail,
@@ -55,7 +56,7 @@ export const adapter: LylaAdapter<LylaAdapterMeta> = ({
         {
           body: res.data as string | ArrayBuffer,
           status: res.status,
-          headers: res.headers
+          headers: headersKeyToLowerCase(res.headers)
         },
         res
       )

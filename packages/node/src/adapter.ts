@@ -4,13 +4,15 @@ import {
 } from '@lylajs/core'
 import { ClientRequest, request as httpRequest } from 'http'
 import { request as httpsRequest } from 'https'
-import { Readable } from 'stream'
+import { Readable, pipeline } from 'stream'
+import { AxiosTransformStream } from './utils'
 
 const transformNodeJsHeaders = (
   reaponseHeaders: NodeJS.Dict<string | string[]>
 ): Record<string, string> => {
   const headers: Record<string, string> = {}
-  for (const key in reaponseHeaders) {
+  for (const _key in reaponseHeaders) {
+    const key = _key.toLowerCase()
     const value = reaponseHeaders[key]
     if (Array.isArray(value)) {
       headers[key] = value.join(', ')
@@ -45,7 +47,7 @@ export interface LylaAdapterMeta extends LylaCoreAdapterMeta {
   requestBody: string | Buffer | Uint8Array
   responseDetail: any
   progressDetail: null
-  responseType: 'text' // TODO, buffer, arraybuffer, blob
+  responseType: 'text' | 'arraybuffer' | 'blob'
   originalRequest: ClientRequest
 }
 
@@ -62,7 +64,8 @@ export const adapter: LylaAdapter<LylaAdapterMeta> = ({
 }): {
   abort: () => void
 } => {
-  // TODO: url parser error
+  // Since baseurl exits, it won't throw an error.
+  // We don't parse it in @lylajs/core since url can be a relative path after resolution.
   const parsedUrl = new URL(url, 'http://localhost')
 
   let requestBodyStream: Readable | null = null
@@ -73,21 +76,28 @@ export const adapter: LylaAdapter<LylaAdapterMeta> = ({
   if (body) {
     if (typeof body === 'string') {
       headers['Content-Length'] = `${(contentLength = Buffer.byteLength(body))}`
-      requestBodyStream = Readable.from(body)
+      requestBodyStream = Readable.from(body, {
+        objectMode: false
+      })
     } else if (Buffer.isBuffer(body)) {
       headers['Content-Length'] = `${(contentLength = body.length)}`
-      requestBodyStream = Readable.from(body)
+      requestBodyStream = Readable.from(body, {
+        objectMode: false
+      })
     } else if (body instanceof Uint8Array) {
       headers['Content-Length'] = `${(contentLength = body.byteLength)}`
-      requestBodyStream = Readable.from(body)
+      requestBodyStream = Readable.from(body, {
+        objectMode: false
+      })
     }
   }
 
   const clientRequest = (
-    parsedUrl.protocol === 'http' ? httpRequest : httpsRequest
+    parsedUrl.protocol === 'http:' ? httpRequest : httpsRequest
   )(
     {
       hostname: parsedUrl.hostname,
+      port: parsedUrl.port,
       method,
       headers,
       path: parsedUrl.pathname + parsedUrl.search,
@@ -121,24 +131,34 @@ export const adapter: LylaAdapter<LylaAdapterMeta> = ({
         }
       })
       incomingMessage.on('end', () => {
-        if (!incomingMessage.complete) {
+        if (incomingMessage.complete) {
+          const contentEncoding =
+            incomingMessage.headers['content-encoding'] || 'utf8'
           onResponse(
             {
               status: incomingMessage.statusCode || 0,
-              // TODO: headers 的 case 问题，感觉最好 key 统一转化为小写
               headers: transformNodeJsHeaders(incomingMessage.headers),
-              // TODO: content-encoding
               body:
                 responseType === 'text'
-                  ? Buffer.concat(buffers).toString('utf8')
-                  : ''
+                  ? Buffer.concat(buffers).toString(
+                      contentEncoding as BufferEncoding
+                    )
+                  : responseType === 'blob'
+                  ? new Blob(buffers)
+                  : responseType === 'arraybuffer'
+                  ? (Buffer.concat(buffers).buffer satisfies ArrayBuffer)
+                  : null
             },
             null
           )
         } else {
-          // TODO: error handling
           // https://nodejs.org/api/http.html#messagecomplete
-          clientRequest.abort()
+          // Since data is incomplete, we view it as network error
+          onNetworkError(
+            new Error(
+              'The connection was terminated while the response was still being sent'
+            )
+          )
         }
       })
     }
@@ -148,9 +168,23 @@ export const adapter: LylaAdapter<LylaAdapterMeta> = ({
     onNetworkError(e)
   })
 
-  if (onUploadProgress && requestBodyStream) {
+  const chunkedRequestBodyStream =
+    requestBodyStream && onUploadProgress
+      ? pipeline(
+          [
+            requestBodyStream,
+            new AxiosTransformStream({
+              length: contentLength,
+              maxRate: undefined
+            })
+          ],
+          () => undefined
+        )
+      : null
+
+  if (onUploadProgress && chunkedRequestBodyStream) {
     let loaded = 0
-    requestBodyStream.on('data', (chunk) => {
+    chunkedRequestBodyStream.on('data', (chunk) => {
       loaded += chunk.length
       onUploadProgress({
         lengthComputable: true,
@@ -163,27 +197,32 @@ export const adapter: LylaAdapter<LylaAdapterMeta> = ({
     })
   }
 
-  if (requestBodyStream) {
+  const mergedRequestBodyStream = chunkedRequestBodyStream || requestBodyStream
+
+  if (mergedRequestBodyStream) {
     let ended = false
     let errored = false
 
-    requestBodyStream.on('end', () => {
-      ended = true
+    mergedRequestBodyStream.on('data', (chunk) => {
+      clientRequest.write(chunk)
     })
 
-    requestBodyStream.once('error', (err) => {
+    mergedRequestBodyStream.on('error', (err) => {
       errored = true
       clientRequest.destroy(err)
     })
 
-    requestBodyStream.on('close', () => {
+    mergedRequestBodyStream.on('end', () => {
+      ended = true
+      clientRequest.end()
+    })
+
+    mergedRequestBodyStream.on('close', () => {
       if (!ended && !errored) {
-        // TODO: error handling
+        // View stream destroy as abortion
         clientRequest.abort()
       }
     })
-
-    requestBodyStream.pipe(clientRequest)
   } else {
     clientRequest.end()
   }

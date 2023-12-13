@@ -2,14 +2,15 @@
 
 一组表现可预期、错误处理可预期的浏览器 HTTP 请求库。
 
-| 环境                           | 包            |
-| ------------------------------ | ------------- |
-| web                            | `@lylajs/web` |
-| 头条小程序                     | `@lylajs/tt`  |
-| 微信小程序                     | `@lylajs/wx`  |
-| qq 小程序                      | `@lylajs/qq`  |
-| 支付宝小程序                   | `@lylajs/my`  |
-| web（可用） + nodejs（未完成） | `lyla`        |
+| 环境                           | 包             |
+| ------------------------------ | -------------- |
+| web                            | `@lylajs/web`  |
+| node                           | `@lylajs/node` |
+| 头条小程序                     | `@lylajs/tt`   |
+| 微信小程序                     | `@lylajs/wx`   |
+| qq 小程序                      | `@lylajs/qq`   |
+| 支付宝小程序                   | `@lylajs/my`   |
+| web（可用） + nodejs（未完成） | `lyla`         |
 
 [English](https://github.com/07akioni/lyla) · 中文
 
@@ -162,7 +163,10 @@ type LylaRequestOptions<C = {}> = {
      * 调，例如用户在 `onAfterResponse` 回调中抛出异常不会触发该回调。
      */
     onResponseError?: Array<
-      (error: LylaResponseError<C, M>, reject: (reason: unknown) => void) => void
+      (
+        error: LylaResponseError<C, M>,
+        reject: (reason: unknown) => void
+      ) => void
     >
     /**
      * 任何非 onResponseError 触发的错误都会触发次回调（除了 BROKEN_ON_NON_RESPONSE_ERROR）

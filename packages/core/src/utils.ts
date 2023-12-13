@@ -54,3 +54,14 @@ export function mergeOptions<T>(...sources: Array<Partial<T> | undefined>): T {
   }
   return merged
 }
+
+export function headersKeyToLowerCase(
+  _headers: Record<string, string> | null | undefined
+) {
+  if (!_headers) return {}
+  const headers: Record<string, string> = {}
+  for (const key in _headers) {
+    headers[key.toLowerCase()] = _headers[key]
+  }
+  return headers
+}
