@@ -3,6 +3,7 @@
     "declaration": true,
     "lib": ["ES2017"],
     "target": "ES2017",
+    "types": ["node"],
     "esModuleInterop": true,
     "moduleResolution": "node",
     "allowJs": true,

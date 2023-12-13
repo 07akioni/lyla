@@ -1,5 +1,6 @@
 import type { LylaAdapterMeta as LylaCoreAdapterMeta } from '@lylajs/core'
 
+// TODO: percise type
 export interface LylaAdapterMeta extends LylaCoreAdapterMeta {
   method:
     | 'get'
@@ -20,10 +21,10 @@ export interface LylaAdapterMeta extends LylaCoreAdapterMeta {
     | 'CONNECT'
     | 'trace'
     | 'TRACE'
-  networkErrorDetail: any
+  networkErrorDetail: unknown
   requestBody: any
-  responseDetail: any
+  responseDetail: unknown
   responseType: 'arraybuffer' | 'blob' | 'text'
-  progressDetail: any;
-  originalRequest: any;
+  progressDetail: unknown
+  originalRequest: unknown
 }

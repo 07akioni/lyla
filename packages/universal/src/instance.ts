@@ -1,10 +1,15 @@
 import { createLyla as coreCreateLyla } from '@lylajs/core'
-import { adapter } from '@lylajs/web'
 import { LylaAdapterMeta } from './adapter'
 import type {
   LylaRequestOptions,
   LylaRequestOptionsWithContext
 } from './reexports'
+
+const adapter: any =
+  // @ts-expect-error
+  typeof window === 'undefined'
+    ? (require('@lylajs/node') as typeof import('@lylajs/node')).adapter
+    : (require('@lylajs/web') as typeof import('@lylajs/web')).adapter
 
 export const { lyla, isLylaError } = coreCreateLyla<undefined, LylaAdapterMeta>(
   adapter,

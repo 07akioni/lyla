@@ -1,4 +1,5 @@
-import { lyla, LylaResponse, isLylaError, LYLA_ERROR } from '@lylajs/node'
+// @vitest-environment node
+import { lyla, LylaResponse, isLylaError, LYLA_ERROR } from 'lyla'
 import { describe, expect, it } from 'vitest'
 
 describe('node basic', () => {
