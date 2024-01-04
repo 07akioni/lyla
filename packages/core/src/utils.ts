@@ -65,3 +65,14 @@ export function headersKeyToLowerCase(
   }
   return headers
 }
+
+
+export function isJSON(str: any) {
+  if (typeof str === 'string' && str) {
+    if (Object.prototype.toString.call(JSON.parse(str)) === '[object Object]') {
+      return true;
+    }
+    return false;
+  }
+  return false
+}

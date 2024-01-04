@@ -16,4 +16,4 @@ export type {
 export { defineLylaError, isLylaError, LYLA_ERROR } from './error'
 export { LylaAbortController } from './abort'
 export { createLyla } from './core'
-export { headersKeyToLowerCase } from './utils'
+export { headersKeyToLowerCase, isJSON } from './utils'
