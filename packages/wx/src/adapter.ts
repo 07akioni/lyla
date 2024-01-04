@@ -2,7 +2,7 @@ import type {
   LylaAdapter,
   LylaAdapterMeta as LylaCoreAdapterMeta
 } from '@lylajs/core'
-import { headersKeyToLowerCase } from '@lylajs/core'
+import { headersKeyToLowerCase, isJSON } from '@lylajs/core'
 import type {
   NetworkErrorDetail,
   ResponseDetail,
@@ -44,7 +44,8 @@ export const adapter: LylaAdapter<LylaAdapterMeta> = ({
     url,
     method,
     header: headers,
-    data: body,
+    // @ts-ignore 此处判断了是否为json
+    data: isJSON(body) ? JSON.parse(body) : body,
     responseType,
     // https://developers.weixin.qq.com/miniprogram/dev/api/network/request/wx.request.html
     // Docs said if it's not json, response data won't be transformed to json.
