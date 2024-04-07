@@ -403,7 +403,7 @@ export function createLyla<C, M extends LylaAdapterMeta>(
         onDownloadProgress?.({ ...progress, requestOptions: _options })
       },
       onUploadProgress: (progress) => {
-        onDownloadProgress?.({ ...progress, requestOptions: _options })
+        onUploadProgress?.({ ...progress, requestOptions: _options })
       },
       async onResponse(resp, detail) {
         if (aborted) return
