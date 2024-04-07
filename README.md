@@ -63,8 +63,8 @@ const { json } = await lyla.post<MyType>('https://example.com', {
 
 ```ts
 function createLyla<C>(
-  options: LylaRequestOptions & { context: C },
-  ...overrides: LylaRequestOptions[]
+  options: LylaRequestOptions<C> & { context: C },
+  ...overrides: LylaRequestOptions<C>[]
 ): { lyla: Lyla; isLylaError: (e: unknown) => e is LylaError }
 ```
 
@@ -91,7 +91,7 @@ function createLyla<C>(
 #### Type `LylaRequestOptions`
 
 ```ts
-type LylaRequestOptions<C = {}> = {
+type LylaRequestOptions<C = undefined> = {
   url?: string
   method?:
     | 'get'
@@ -132,8 +132,8 @@ type LylaRequestOptions<C = {}> = {
    * Abort signal of the request.
    */
   signal?: AbortSignal
-  onUploadProgress?: (progress: LylaProgress) => void
-  onDownloadProgress?: (progress: LylaProgress) => void
+  onUploadProgress?: (progress: LylaProgress<C>) => void
+  onDownloadProgress?: (progress: LylaProgress<C>) => void
   hooks?: {
     /**
      * Callbacks fired when options is passed into the request. In this moment,
@@ -141,8 +141,8 @@ type LylaRequestOptions<C = {}> = {
      */
     onInit?: Array<
       (
-        options: LylaRequestOptions
-      ) => LylaRequestOptions | Promise<LylaRequestOptions>
+        options: LylaRequestOptions<C>
+      ) => LylaRequestOptions<C> | Promise<LylaRequestOptions<C>>
     >
     /**
      * Callbacks fired before request is sent. In this moment, request options is
@@ -150,8 +150,8 @@ type LylaRequestOptions<C = {}> = {
      */
     onBeforeRequest?: Array<
       (
-        options: LylaRequestOptions
-      ) => LylaRequestOptions | Promise<LylaRequestOptions>
+        options: LylaRequestOptions<C>
+      ) => LylaRequestOptions<C> | Promise<LylaRequestOptions<C>>
     >
     /**
      * Callbacks fired after response is received.
@@ -191,8 +191,8 @@ type LylaRequestOptions<C = {}> = {
 #### Type `LylaResponse`
 
 ```ts
-type LylaResponse<T = any, C = {}> = {
-  requestOptions: LylaRequestOptions
+type LylaResponse<T = any, C = undefined> = {
+  requestOptions: LylaRequestOptions<C>
   status: number
   statusText: string
   /**
@@ -218,7 +218,7 @@ type LylaResponse<T = any, C = {}> = {
 #### Type `LylaProgress`
 
 ```ts
-type LylaProgress = {
+type LylaProgress<C> = {
   /**
    * Percentage of the progress. From 0 to 100.
    */
@@ -236,6 +236,10 @@ type LylaProgress = {
    * Whether the total bytes of the progress is computable.
    */
   lengthComputable: boolean
+  /**
+   * Request options of the request.
+   */
+  requestOptions: LylaRequestOptions<C>
 }
 ```
 
@@ -282,7 +286,7 @@ try {
 ```ts
 // This is not a percise definition, it platform relavant. For full definition,
 // see https://github.com/07akioni/lyla/blob/main/packages/core/src/error.ts
-type LylaError<C = {}> = {
+type LylaError<C = undefined> = {
   name: string
   message: string
   type: LYLA_ERROR

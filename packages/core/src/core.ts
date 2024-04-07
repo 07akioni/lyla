@@ -399,8 +399,12 @@ export function createLyla<C, M extends LylaAdapterMeta>(
         handleResponseError(networkError)
         _reject(networkError)
       },
-      onDownloadProgress,
-      onUploadProgress,
+      onDownloadProgress: (progress) => {
+        onDownloadProgress?.({ ...progress, requestOptions: _options })
+      },
+      onUploadProgress: (progress) => {
+        onDownloadProgress?.({ ...progress, requestOptions: _options })
+      },
       async onResponse(resp, detail) {
         if (aborted) return
         if (hasNetworkError) return

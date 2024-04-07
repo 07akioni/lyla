@@ -37,6 +37,6 @@ export type LylaNonResponseError<C = undefined> = LylaCoreNonResponseError<
 >
 export type LylaError<C = undefined> = LylaCoreError<C, LylaAdapterMeta>
 
-export type LylaProgress = LylaCoreProgress<LylaAdapterMeta>
+export type LylaProgress<C = undefined> = LylaCoreProgress<C, LylaAdapterMeta>
 
 export { LYLA_ERROR, LylaAbortController } from '@lylajs/core'

@@ -63,8 +63,8 @@ const { json } = await lyla.post<MyType>('https://example.com', {
 
 ```ts
 function createLyla<C>(
-  options: LylaRequestOptions & { context: C },
-  ...overrides: LylaRequestOptions[]
+  options: LylaRequestOptions<C> & { context: C },
+  ...overrides: LylaRequestOptions<C>[]
 ): { lyla: Lyla; isLylaError: (e: unknown) => e is LylaError }
 ```
 
@@ -91,7 +91,7 @@ function createLyla<C>(
 #### `LylaRequestOptions` 类型
 
 ```ts
-type LylaRequestOptions<C = {}> = {
+type LylaRequestOptions<C = undefined> = {
   url?: string
   method?:
     | 'get'
@@ -130,24 +130,24 @@ type LylaRequestOptions<C = {}> = {
    * 请求使用的 Abort signal
    */
   signal?: AbortSignal
-  onUploadProgress?: (progress: LylaProgress) => void
-  onDownloadProgress?: (progress: LylaProgress) => void
+  onUploadProgress?: (progress: LylaProgress<C>) => void
+  onDownloadProgress?: (progress: LylaProgress<C>) => void
   hooks?: {
     /**
      * 请求选项被传入时的回调，此时选项还没有被转换为最终的请求参数
      */
     onInit?: Array<
       (
-        options: LylaRequestOptions
-      ) => LylaRequestOptions | Promise<LylaRequestOptions>
+        options: LylaRequestOptions<C>
+      ) => LylaRequestOptions<C> | Promise<LylaRequestOptions<C>>
     >
     /**
      * 请求发送之前的回调，此时选项已经被转换为最终的请求参数
      */
     onBeforeRequest?: Array<
       (
-        options: LylaRequestOptions
-      ) => LylaRequestOptions | Promise<LylaRequestOptions>
+        options: LylaRequestOptions<C>
+      ) => LylaRequestOptions<C> | Promise<LylaRequestOptions<C>>
     >
     /**
      * 收到响应之后的回调
@@ -185,8 +185,8 @@ type LylaRequestOptions<C = {}> = {
 #### `LylaResponse` 类型
 
 ```ts
-type LylaResponse<T = any, C = {}> = {
-  requestOptions: LylaRequestOptions
+type LylaResponse<T = any, C = undefined> = {
+  requestOptions: LylaRequestOptions<C>
   status: number
   statusText: string
   /**
@@ -211,7 +211,7 @@ type LylaResponse<T = any, C = {}> = {
 #### `LylaProgress` 类型
 
 ```ts
-type LylaProgress = {
+type LylaProgress<C> = {
   /**
    * 进度百分比，从 0 到 100
    */
@@ -228,6 +228,10 @@ type LylaProgress = {
    * 进度需要加载的总字节数是否可以获取到
    */
   lengthComputable: boolean
+  /**
+   * 发送的请求配置
+   */
+  requestOptions: LylaRequestOptions<C>
 }
 ```
 
@@ -273,7 +277,7 @@ try {
 ```ts
 // 这不是个精确的定义，具体类型是平台相关的，如果需要完整的定义，请参考
 // https://github.com/07akioni/lyla/blob/main/packages/core/src/error.ts
-type LylaError<C = {}> = {
+type LylaError<C = undefined> = {
   name: string
   message: string
   type: LYLA_ERROR

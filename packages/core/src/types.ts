@@ -59,8 +59,8 @@ export type LylaRequestOptions<
    * Abort signal of the request.
    */
   signal?: AbortSignal
-  onUploadProgress?: (progress: LylaProgress<M>) => void
-  onDownloadProgress?: (progress: LylaProgress<M>) => void
+  onUploadProgress?: (progress: LylaProgress<C, M>) => void
+  onDownloadProgress?: (progress: LylaProgress<C, M>) => void
   context?: C
   hooks?: {
     /**
@@ -153,7 +153,7 @@ export type LylaResponse<
   context: C
 }
 
-export type LylaProgress<M extends LylaAdapterMeta = LylaAdapterMeta> = {
+export type LylaProgress<C, M extends LylaAdapterMeta = LylaAdapterMeta> = {
   /**
    * Percentage of the progress. From 0 to 100.
    */
@@ -179,6 +179,7 @@ export type LylaProgress<M extends LylaAdapterMeta = LylaAdapterMeta> = {
    * Original request
    */
   originalRequest: M['originalRequest']
+  requestOptions: LylaRequestOptions<C, M>
 }
 
 export type LylaRequestHeaders = Record<string, string | number | undefined>
@@ -215,8 +216,12 @@ export interface LylaAdapterOptions<T extends LylaAdapterMeta> {
   responseType: T['responseType']
   withCredentials: boolean
   onNetworkError(detail: T['networkErrorDetail']): void
-  onUploadProgress: ((progress: LylaProgress<T>) => void) | undefined
-  onDownloadProgress: ((progress: LylaProgress<T>) => void) | undefined
+  onUploadProgress:
+    | ((progress: Omit<LylaProgress<T>, 'requestOptions'>) => void)
+    | undefined
+  onDownloadProgress:
+    | ((progress: Omit<LylaProgress<T>, 'requestOptions'>) => void)
+    | undefined
   onResponse(
     response: {
       body: T['responseBody']
