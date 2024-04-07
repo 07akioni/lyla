@@ -179,7 +179,7 @@ export type LylaProgress<C, M extends LylaAdapterMeta = LylaAdapterMeta> = {
    * Original request
    */
   originalRequest: M['originalRequest']
-  requestOptions: LylaRequestOptions<C, M>
+  requestOptions: LylaRequestOptionsWithContext<C, M>
 }
 
 export type LylaRequestHeaders = Record<string, string | number | undefined>
