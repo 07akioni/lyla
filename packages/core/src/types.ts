@@ -224,16 +224,16 @@ export interface LylaAdapterOptions<T extends LylaAdapterMeta> {
   url: string
   method: T['method']
   headers: Record<string, string>
-  body: T['requestBody']
+  body: T['requestBody'] | undefined
   json: object | undefined
   responseType: T['responseType']
   withCredentials: boolean
   onNetworkError(detail: T['networkErrorDetail']): void
   onUploadProgress:
-    | ((progress: Omit<LylaProgress<T>, 'requestOptions'>) => void)
+    | ((progress: Omit<LylaProgress<unknown, T>, 'requestOptions'>) => void)
     | undefined
   onDownloadProgress:
-    | ((progress: Omit<LylaProgress<T>, 'requestOptions'>) => void)
+    | ((progress: Omit<LylaProgress<unknown, T>, 'requestOptions'>) => void)
     | undefined
   onHeadersReceived(
     headers: Record<string, string>,

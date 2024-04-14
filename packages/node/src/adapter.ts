@@ -49,7 +49,7 @@ export interface LylaAdapterMeta extends LylaCoreAdapterMeta {
     | 'TRACE'
   networkErrorDetail: Error
   requestBody: string | Buffer | Uint8Array
-  responseDetail: any
+  responseDetail: null
   progressDetail: null
   responseType: 'text' | 'arraybuffer' | 'blob'
   originalRequest: ClientRequest

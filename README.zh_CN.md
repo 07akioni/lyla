@@ -152,7 +152,7 @@ type LylaRequestOptions<C = undefined> = {
     /**
      * 收到 headers 之后的回调
      *
-     * 仅在 @lyla/web @lyla/node 和 lyla 中可用
+     * 仅在 @lylajs/web @lylajs/node 和 lyla 中可用
      */
     onHeadersReceived?: Array<
       (

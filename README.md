@@ -156,7 +156,7 @@ type LylaRequestOptions<C = undefined> = {
     /**
      * Callbacks fired after headers are received.
      *
-     * only work in @lyla/web @lyla/node and lyla
+     * only work in @lylajs/web @lylajs/node and lyla
      */
     onHeadersReceived?: Array<
       (
