@@ -1,18 +1,18 @@
 # lyla · [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT) [![ci](https://github.com/07akioni/lyla/actions/workflows/node.js.yml/badge.svg)](https://github.com/07akioni/lyla/actions/workflows/node.js.yml/badge.svg) [![npm version](https://badge.fury.io/js/lyla.svg)](https://badge.fury.io/js/lyla) [![minzipped size](https://badgen.net/bundlephobia/minzip/lyla)](https://badgen.net/bundlephobia/minzip/lyla)
 
-一组表现可预期、错误处理可预期的浏览器 HTTP 请求库。
+一个类型完善的、表现可预期、错误处理可预期的浏览器 HTTP 请求库。
 
 > [!IMPORTANT]  
 >  如果你只需要浏览器环境支持，你应该使用 `@lylajs/web` 而不是 `lyla`。
 
-| 环境         | 包             | 备注                                         |
-| ------------ | -------------- | -------------------------------------------- |
-| web          | `@lylajs/web`  |                                              |
-| node         | `@lylajs/node` |                                              |
-| 头条小程序   | `@lylajs/tt`   |                                              |
-| 微信小程序   | `@lylajs/wx`   |                                              |
-| qq 小程序    | `@lylajs/qq`   |                                              |
-| 支付宝小程序 | `@lylajs/my`   |                                              |
+| 环境         | 包             | 备注                                           |
+| ------------ | -------------- | ---------------------------------------------- |
+| web          | `@lylajs/web`  |                                                |
+| node         | `@lylajs/node` |                                                |
+| 头条小程序   | `@lylajs/tt`   |                                                |
+| 微信小程序   | `@lylajs/wx`   |                                                |
+| qq 小程序    | `@lylajs/qq`   |                                                |
+| 支付宝小程序 | `@lylajs/my`   |                                                |
 | web + nodejs | `lyla`         | 除非你有明确的跨端同构需求，请不要使用这个包。 |
 
 [English](https://github.com/07akioni/lyla) · 中文
