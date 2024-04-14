@@ -371,7 +371,7 @@ export enum LYLA_ERROR {
   /**
    * `onNonResponseError` hook throws error.
    */
-  BROKEN_ON_NON_RESPONSE_ERROR = 'BROKEN_ON_NON_RESPONSE_ERROR'
+  BROKEN_ON_NON_RESPONSE_ERROR = 'BROKEN_ON_NON_RESPONSE_ERROR',
   /**
    * `onHeadersReceived` hook throws error.
    */

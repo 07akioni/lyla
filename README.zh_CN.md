@@ -362,7 +362,7 @@ export enum LYLA_ERROR {
   /**
    * `onDataConversionError` 回调抛了异常
    */
-  BROKEN_ON_DATA_CONVERSION_ERROR = 'BROKEN_ON_DATA_CONVERSION_ERROR'
+  BROKEN_ON_DATA_CONVERSION_ERROR = 'BROKEN_ON_DATA_CONVERSION_ERROR',
   /**
    * `onHeadersReceived` 回调抛了异常
    */
