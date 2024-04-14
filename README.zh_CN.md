@@ -2,15 +2,18 @@
 
 一组表现可预期、错误处理可预期的浏览器 HTTP 请求库。
 
-| 环境         | 包             |
-| ------------ | -------------- |
-| web          | `@lylajs/web`  |
-| node         | `@lylajs/node` |
-| 头条小程序   | `@lylajs/tt`   |
-| 微信小程序   | `@lylajs/wx`   |
-| qq 小程序    | `@lylajs/qq`   |
-| 支付宝小程序 | `@lylajs/my`   |
-| web + nodejs | `lyla`         |
+> [!IMPORTANT]  
+>  如果你只需要浏览器环境支持，你应该使用 `@lylajs/web` 而不是 `lyla`。
+
+| 环境         | 包             | 备注                                         |
+| ------------ | -------------- | -------------------------------------------- |
+| web          | `@lylajs/web`  |                                              |
+| node         | `@lylajs/node` |                                              |
+| 头条小程序   | `@lylajs/tt`   |                                              |
+| 微信小程序   | `@lylajs/wx`   |                                              |
+| qq 小程序    | `@lylajs/qq`   |                                              |
+| 支付宝小程序 | `@lylajs/my`   |                                              |
+| web + nodejs | `lyla`         | 除非你有明确的跨端同构需求，请不要使用这个包。 |
 
 [English](https://github.com/07akioni/lyla) · 中文
 

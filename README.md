@@ -2,15 +2,18 @@
 
 An group of HTTP clients with explicit behavior & error handling.
 
-| Environment          | Package        |
-| -------------------- | -------------- |
-| web                  | `@lylajs/web`  |
-| node                 | `@lylajs/node` |
-| toutiao miniprogram  | `@lylajs/tt`   |
-| weixin miniprogram   | `@lylajs/wx`   |
-| qq miniprogram       | `@lylajs/qq`   |
-| zhifubao miniprogram | `@lylajs/my`   |
-| web + nodejs         | `lyla`         |
+> [!IMPORTANT]  
+> If you only want support browser environment, you should use package `@lylajs/web` instead of `lyla`.
+
+| Environment          | Package        | Note                                                                                            |
+| -------------------- | -------------- | ----------------------------------------------------------------------------------------------- |
+| web                  | `@lylajs/web`  |                                                                                                 |
+| node                 | `@lylajs/node` |                                                                                                 |
+| toutiao miniprogram  | `@lylajs/tt`   |                                                                                                 |
+| weixin miniprogram   | `@lylajs/wx`   |                                                                                                 |
+| qq miniprogram       | `@lylajs/qq`   |                                                                                                 |
+| zhifubao miniprogram | `@lylajs/my`   |                                                                                                 |
+| web + nodejs         | `lyla`         | Unless you have explicit cross-platform isomorphic requirements, please don't use this package. |
 
 English · [中文](https://github.com/07akioni/lyla/blob/main/README.zh_CN.md)
 
