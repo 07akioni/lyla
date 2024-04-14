@@ -2,15 +2,15 @@
 
 一组表现可预期、错误处理可预期的浏览器 HTTP 请求库。
 
-| 环境                           | 包             |
-| ------------------------------ | -------------- |
-| web                            | `@lylajs/web`  |
-| node                           | `@lylajs/node` |
-| 头条小程序                     | `@lylajs/tt`   |
-| 微信小程序                     | `@lylajs/wx`   |
-| qq 小程序                      | `@lylajs/qq`   |
-| 支付宝小程序                   | `@lylajs/my`   |
-| web（可用） + nodejs（未完成） | `lyla`         |
+| 环境         | 包             |
+| ------------ | -------------- |
+| web          | `@lylajs/web`  |
+| node         | `@lylajs/node` |
+| 头条小程序   | `@lylajs/tt`   |
+| 微信小程序   | `@lylajs/wx`   |
+| qq 小程序    | `@lylajs/qq`   |
+| 支付宝小程序 | `@lylajs/my`   |
+| web + nodejs | `lyla`         |
 
 [English](https://github.com/07akioni/lyla) · 中文
 
