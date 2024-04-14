@@ -12,6 +12,7 @@ import {
 import { mergeUrl, mergeHeaders, mergeOptions } from './utils'
 import type {
   LylaAbortedError,
+  LylaBrokenOnHeadersReceivedError,
   LylaBrokenOnNonResponseErrorError,
   LylaError,
   LylaHttpError,
@@ -404,6 +405,40 @@ export function createLyla<C, M extends LylaAdapterMeta>(
       },
       onUploadProgress: (progress) => {
         onUploadProgress?.({ ...progress, requestOptions: _options })
+      },
+      onHeadersReceived: (headers, originalRequest) => {
+        if (aborted) return
+        if (hasNetworkError) return
+        if (_options.hooks?.onHeadersReceived) {
+          try {
+            for (const hook of _options.hooks.onHeadersReceived) {
+              hook(
+                { headers, requestOptions: _options, originalRequest },
+                _customReject
+              )
+            }
+          } catch (error) {
+            const brokenOnHeadersReceived = defineLylaError<
+              M,
+              C,
+              LylaBrokenOnHeadersReceivedError<C, M>
+            >(
+              {
+                type: LYLA_ERROR.BROKEN_ON_HEADERS_RECEIVED,
+                message: '`onHeadersReceived` hook throws error',
+                detail: undefined,
+                response: undefined,
+                error,
+                context: _options.context,
+                requestOptions: _options
+              },
+              undefined
+            )
+            handleNonResponseError(brokenOnHeadersReceived)
+            _reject(brokenOnHeadersReceived)
+            return
+          }
+        }
       },
       async onResponse(resp, detail) {
         if (aborted) return

@@ -67,7 +67,8 @@ export const adapter: LylaAdapter<LylaAdapterMeta> = ({
   onDownloadProgress,
   onUploadProgress,
   onResponse,
-  onNetworkError
+  onNetworkError,
+  onHeadersReceived
 }): {
   abort: () => void
 } => {
@@ -102,16 +103,30 @@ export const adapter: LylaAdapter<LylaAdapterMeta> = ({
       })
     })
   }
+  let responseHeaders: Record<string, string> | null = null
+  let ensureResponseHeaders = (): Record<string, string> => {
+    if (responseHeaders === null) {
+      responseHeaders = createHeaders(xhr.getAllResponseHeaders())
+    }
+    return responseHeaders
+  }
   xhr.addEventListener('loadend', (e) => {
     onResponse(
       {
         status: xhr.status,
-        headers: createHeaders(xhr.getAllResponseHeaders()),
+        headers: ensureResponseHeaders(),
         body: xhr.response
       },
       e
     )
   })
+  const _onHeadersReceived = () => {
+    if (xhr.readyState === xhr.HEADERS_RECEIVED) {
+      onHeadersReceived(ensureResponseHeaders(), xhr)
+    }
+    xhr.removeEventListener('readystatechange', _onHeadersReceived)
+  }
+  xhr.addEventListener('readystatechange', _onHeadersReceived)
   xhr.addEventListener('error', (e) => {
     onNetworkError(e)
   })

@@ -197,3 +197,30 @@ test('`hooks` should work with multiple `extend`', async ({ page }) => {
   })
   expect(body).toEqual('jojo')
 })
+
+test('`onHeadersReceived` should work', async ({ page }) => {
+  const [headers, orders, foo] = await page.evaluate(async () => {
+    let headers: Record<string, string> = {}
+    let orders: number[] = []
+    let { lyla } = window.createLyla<{ foo: string }>({ context: { foo: '' } })
+    const { context } = await lyla.post('/api/post-return-headers', {
+      headers: {
+        'x-foo': 'bar'
+      },
+      hooks: {
+        onHeadersReceived: [
+          ({ headers: _headers, requestOptions }) => {
+            orders.push(1)
+            headers = _headers
+            requestOptions.context.foo = 'gigigi'
+          }
+        ]
+      }
+    })
+    orders.push(2)
+    return [headers, orders, context.foo]
+  })
+  expect(headers['x-foo']).toEqual('bar')
+  expect(orders).toEqual([1, 2])
+  expect(foo).toEqual('gigigi')
+})

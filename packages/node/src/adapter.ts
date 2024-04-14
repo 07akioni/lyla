@@ -2,7 +2,11 @@ import {
   LylaAdapter,
   LylaAdapterMeta as LylaCoreAdapterMeta
 } from '@lylajs/core'
-import { ClientRequest, request as httpRequest } from 'http'
+import {
+  ClientRequest,
+  IncomingHttpHeaders,
+  request as httpRequest
+} from 'http'
 import { request as httpsRequest } from 'https'
 import { Readable, pipeline } from 'stream'
 import { AxiosTransformStream } from './utils'
@@ -57,6 +61,7 @@ export const adapter: LylaAdapter<LylaAdapterMeta> = ({
   headers: _headers,
   body,
   responseType,
+  onHeadersReceived,
   onDownloadProgress,
   onUploadProgress,
   onResponse,
@@ -92,6 +97,16 @@ export const adapter: LylaAdapter<LylaAdapterMeta> = ({
     }
   }
 
+  let responseHeaders: Record<string, string> | null = null
+  function ensureResponseHeaders(
+    incomingHttpHeaders: IncomingHttpHeaders
+  ): Record<string, string> {
+    if (responseHeaders === null) {
+      responseHeaders = transformNodeJsHeaders(incomingHttpHeaders)
+    }
+    return responseHeaders
+  }
+
   const clientRequest = (
     parsedUrl.protocol === 'http:' ? httpRequest : httpsRequest
   )(
@@ -104,6 +119,10 @@ export const adapter: LylaAdapter<LylaAdapterMeta> = ({
       protocol: parsedUrl.protocol
     },
     (incomingMessage) => {
+      onHeadersReceived(
+        ensureResponseHeaders(incomingMessage.headers),
+        clientRequest
+      )
       const rawResponseContentLength = incomingMessage.headers['content-length']
       const responseContentLength =
         typeof rawResponseContentLength === 'string' &&
@@ -137,7 +156,7 @@ export const adapter: LylaAdapter<LylaAdapterMeta> = ({
           onResponse(
             {
               status: incomingMessage.statusCode || 0,
-              headers: transformNodeJsHeaders(incomingMessage.headers),
+              headers: ensureResponseHeaders(incomingMessage.headers),
               body:
                 responseType === 'text'
                   ? Buffer.concat(buffers).toString(

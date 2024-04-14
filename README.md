@@ -154,6 +154,21 @@ type LylaRequestOptions<C = undefined> = {
       ) => LylaRequestOptions<C> | Promise<LylaRequestOptions<C>>
     >
     /**
+     * Callbacks fired after headers are received.
+     *
+     * only work in @lyla/web @lyla/node and lyla
+     */
+    onHeadersReceived?: Array<
+      (
+        payload: {
+          headers: Record<string, string>
+          originalRequest: M['originalRequest']
+          requestOptions: LylaRequestOptionsWithContext<C, M>
+        },
+        reject: (reason: unknown) => void
+      ) => void
+    >
+    /**
      * Callbacks fired after response is received.
      */
     onAfterResponse?: Array<
@@ -354,6 +369,10 @@ export enum LYLA_ERROR {
    * `onNonResponseError` hook throws error.
    */
   BROKEN_ON_NON_RESPONSE_ERROR = 'BROKEN_ON_NON_RESPONSE_ERROR'
+  /**
+   * `onHeadersReceived` hook throws error.
+   */
+  BROKEN_ON_HEADERS_RECEIVED = 'BROKEN_ON_HEADERS_RECEIVED'
 }
 ```
 

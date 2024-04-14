@@ -150,6 +150,21 @@ type LylaRequestOptions<C = undefined> = {
       ) => LylaRequestOptions<C> | Promise<LylaRequestOptions<C>>
     >
     /**
+     * 收到 headers 之后的回调
+     *
+     * 仅在 @lyla/web @lyla/node 和 lyla 中可用
+     */
+    onHeadersReceived?: Array<
+      (
+        payload: {
+          headers: Record<string, string>
+          originalRequest: M['originalRequest']
+          requestOptions: LylaRequestOptionsWithContext<C, M>
+        },
+        reject: (reason: unknown) => void
+      ) => void
+    >
+    /**
      * 收到响应之后的回调
      */
     onAfterResponse?: Array<
@@ -345,6 +360,10 @@ export enum LYLA_ERROR {
    * `onDataConversionError` 回调抛了异常
    */
   BROKEN_ON_DATA_CONVERSION_ERROR = 'BROKEN_ON_DATA_CONVERSION_ERROR'
+  /**
+   * `onHeadersReceived` 回调抛了异常
+   */
+  BROKEN_ON_HEADERS_RECEIVED = 'BROKEN_ON_HEADERS_RECEIVED'
 }
 ```
 

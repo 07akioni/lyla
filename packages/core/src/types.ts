@@ -86,6 +86,19 @@ export type LylaRequestOptions<
         | Promise<LylaRequestOptionsWithContext<C, M>>
     >
     /**
+     * Callbacks fired after headers are received.
+     */
+    onHeadersReceived?: Array<
+      (
+        payload: {
+          headers: Record<string, string>
+          originalRequest: M['originalRequest']
+          requestOptions: LylaRequestOptionsWithContext<C, M>
+        },
+        reject: (reason: unknown) => void
+      ) => void
+    >
+    /**
      * Callbacks fired after response is received.
      */
     onAfterResponse?: Array<
@@ -222,6 +235,10 @@ export interface LylaAdapterOptions<T extends LylaAdapterMeta> {
   onDownloadProgress:
     | ((progress: Omit<LylaProgress<T>, 'requestOptions'>) => void)
     | undefined
+  onHeadersReceived(
+    headers: Record<string, string>,
+    originalRequest: T['originalRequest']
+  ): void
   onResponse(
     response: {
       body: T['responseBody']

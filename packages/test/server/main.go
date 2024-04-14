@@ -206,7 +206,7 @@ func main() {
 	StaticRoutes(r)
 
 	corsRoutes.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:8080", "http://localhost:3000"},
+		AllowOrigins:     []string{"http://localhost:8091", "http://localhost:3000"},
 		AllowMethods:     []string{"GET", "POST"},
 		ExposeHeaders:    []string{"X-Cors", "Set-Cookie"},
 		AllowCredentials: true,
@@ -241,8 +241,8 @@ func main() {
 	DemoRoutes(r)
 
 	if len(os.Args) >= 2 && os.Args[1] == "cors" {
-		corsRoutes.Run(":7070")
+		corsRoutes.Run(":8092")
 	} else {
-		r.Run() // 8080
+		r.Run(":8091") // 8091
 	}
 }

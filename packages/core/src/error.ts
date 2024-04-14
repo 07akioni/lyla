@@ -54,7 +54,24 @@ export enum LYLA_ERROR {
   /**
    * `onNonResponseError` hook throws error.
    */
-  BROKEN_ON_NON_RESPONSE_ERROR = 'BROKEN_ON_NON_RESPONSE_ERROR'
+  BROKEN_ON_NON_RESPONSE_ERROR = 'BROKEN_ON_NON_RESPONSE_ERROR',
+  /**
+   * `onHeadersReceived` hook throws error.
+   */
+  BROKEN_ON_HEADERS_RECEIVED = 'BROKEN_ON_HEADERS_RECEIVED'
+}
+
+export interface LylaBrokenOnHeadersReceivedError<
+  C,
+  M extends LylaAdapterMeta = LylaAdapterMeta
+> extends Error {
+  type: LYLA_ERROR.BROKEN_ON_HEADERS_RECEIVED
+  error: unknown
+  detail: undefined
+  response: undefined
+  context: C
+  requestOptions: LylaRequestOptionsWithContext<C, M>
+  spread: () => Omit<LylaBrokenOnHeadersReceivedError<C, M>, 'spread'>
 }
 
 export interface LylaBrokenOnAfterResponseError<
@@ -236,6 +253,7 @@ export type LylaNonResponseError<
   | LylaBrokenOnResponseErrorError<C, M>
   | LylaBrokenOnInitError<C, M>
   | LylaBrokenOnBeforeRequestError<C, M>
+  | LylaBrokenOnHeadersReceivedError<C, M>
   | LylaDataConversionError<C, M>
 
 export type LylaError<C = any, M extends LylaAdapterMeta = LylaAdapterMeta> =

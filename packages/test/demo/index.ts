@@ -46,7 +46,7 @@ const handlers: Handler[] = [
         console.log(body)
       })
       axios
-        .get('http://localhost:7070', {
+        .get('http://localhost:8092', {
           baseURL: 'http://localhost:3000',
           responseType: 'json'
         })
@@ -246,7 +246,7 @@ const handlers: Handler[] = [
   [
     'cors set cookie',
     async () => {
-      const resp = await lyla.get('http://localhost:7070/api/get-set-cookie', {
+      const resp = await lyla.get('http://localhost:8092/api/get-set-cookie', {
         withCredentials: true
       })
       console.log(resp)
@@ -256,7 +256,7 @@ const handlers: Handler[] = [
     'cors get with credentials',
     async () => {
       const resp = await lyla.get(
-        'http://localhost:7070/api/get-return-headers',
+        'http://localhost:8092/api/get-return-headers',
         { withCredentials: true }
       )
       console.log(resp)
@@ -266,7 +266,7 @@ const handlers: Handler[] = [
     'cors get without credentials',
     async () => {
       const resp = await lyla.get(
-        'http://localhost:7070/api/get-return-headers'
+        'http://localhost:8092/api/get-return-headers'
       )
       console.log(resp)
     }
@@ -275,7 +275,7 @@ const handlers: Handler[] = [
     'cors post cookie',
     async () => {
       const resp = await lyla.post(
-        'http://localhost:7070/api/post-set-cookie',
+        'http://localhost:8092/api/post-set-cookie',
         { withCredentials: true }
       )
       console.log(resp)
@@ -285,7 +285,7 @@ const handlers: Handler[] = [
     'cors post with credentials',
     async () => {
       const resp = await lyla.post(
-        'http://localhost:7070/api/post-return-headers',
+        'http://localhost:8092/api/post-return-headers',
         { withCredentials: true }
       )
       console.log(resp)
@@ -295,7 +295,7 @@ const handlers: Handler[] = [
     'cors post without credentials',
     async () => {
       const resp = await lyla.post(
-        'http://localhost:7070/api/post-return-headers'
+        'http://localhost:8092/api/post-return-headers'
       )
       console.log(resp)
     }
@@ -319,7 +319,7 @@ const handlers: Handler[] = [
     'test',
     async () => {
       try {
-        await lyla.get('http://localhost:7070/api/get-check-cookie')
+        await lyla.get('http://localhost:8092/api/get-check-cookie')
       } catch (e) {
         debugger
       }
@@ -339,7 +339,7 @@ const handlers: Handler[] = [
     'extend test',
     async () => {
       const { lyla: extended } = createLyla({
-        baseUrl: 'http://localhost:7070',
+        baseUrl: 'http://localhost:8092',
         context: null
       })
       let resp: any
@@ -466,10 +466,10 @@ const handlers: Handler[] = [
     'same headers',
     async () => {
       const { headers } = await lyla.get(
-        'http://localhost:8080/api/get-set-same-header'
+        'http://localhost:8091/api/get-set-same-header'
       )
       console.log(headers)
-      const resp = await fetch('http://localhost:8080/api/get-set-same-header')
+      const resp = await fetch('http://localhost:8091/api/get-set-same-header')
       console.log([...resp.headers.entries()])
     }
   ],

@@ -4,13 +4,13 @@ import { describe, expect, it } from 'vitest'
 
 describe('node basic', () => {
   it('/api/get-text', async () => {
-    const resp = await lyla.get('http://localhost:8080/api/get-text')
+    const resp = await lyla.get('http://localhost:8091/api/get-text')
     expect(resp.status).toBe(200)
     expect(resp.body).toBe('hello world')
   })
 
   it('/api/get-json', async () => {
-    const resp = await lyla.get('http://localhost:8080/api/get-json')
+    const resp = await lyla.get('http://localhost:8091/api/get-json')
     expect(resp.status).toBe(200)
     expect(resp.json).toStrictEqual({
       key: 'value'
@@ -19,7 +19,7 @@ describe('node basic', () => {
 
   it('/api/get-return-headers', async () => {
     const resp = await lyla.get(
-      'http://localhost:8080/api/get-return-headers',
+      'http://localhost:8091/api/get-return-headers',
       {
         headers: {
           foo: 'bar',
@@ -32,25 +32,25 @@ describe('node basic', () => {
   })
 
   it('/api/get-set-cookie', async () => {
-    const resp = await lyla.get('http://localhost:8080/api/get-set-cookie', {})
+    const resp = await lyla.get('http://localhost:8091/api/get-set-cookie', {})
     expect(resp.headers['set-cookie']).toBe('foo-get=bar')
     expect(resp.headers['x-cors']).toBe('amazing')
   })
 
   it('/api/get-headers', async () => {
-    const resp = await lyla.get('http://localhost:8080/api/get-headers')
+    const resp = await lyla.get('http://localhost:8091/api/get-headers')
     expect(resp.headers['x-upper']).toBe('X-UPPER')
     expect(resp.headers['x-lower']).toBe('x-lower')
   })
 
   it('/api/post-text', async () => {
-    const resp = await lyla.post('http://localhost:8080/api/post-text')
+    const resp = await lyla.post('http://localhost:8091/api/post-text')
     expect(resp.status).toBe(200)
     expect(resp.body).toBe('hello world')
   })
 
   it('/api/post-json', async () => {
-    const resp = await lyla.post('http://localhost:8080/api/post-json')
+    const resp = await lyla.post('http://localhost:8091/api/post-json')
     expect(resp.status).toBe(200)
     expect(resp.json).toStrictEqual({
       key: 'value'
@@ -59,7 +59,7 @@ describe('node basic', () => {
 
   it('/api/post-return-headers', async () => {
     const resp = await lyla.post(
-      'http://localhost:8080/api/post-return-headers',
+      'http://localhost:8091/api/post-return-headers',
       {
         headers: {
           foo: 'bar',
@@ -72,7 +72,7 @@ describe('node basic', () => {
   })
 
   it('/api/post-return-body', async () => {
-    const resp = await lyla.post('http://localhost:8080/api/post-return-body', {
+    const resp = await lyla.post('http://localhost:8091/api/post-return-body', {
       json: {
         foo: 'bar'
       }
@@ -84,7 +84,7 @@ describe('node basic', () => {
     let resp: LylaResponse | null = null
     let error: Error | null = null
     try {
-      resp = await lyla.post('http://localhost:8080/api/error')
+      resp = await lyla.post('http://localhost:8091/api/error')
     } catch (e) {
       error = e
       expect(isLylaError(e)).toBe(true)
@@ -103,7 +103,7 @@ describe('node progress', () => {
   it('text `uploadProgress` & `downloadProgress`', async () => {
     const up: number[] = []
     const dp: number[] = []
-    await lyla.post('http://localhost:8080/api/post-return-body', {
+    await lyla.post('http://localhost:8091/api/post-return-body', {
       responseType: 'text',
       body: Array(2000000).fill('xxxx').join(''),
       onUploadProgress(e) {
@@ -120,7 +120,7 @@ describe('node progress', () => {
   it('buffer `uploadProgress` & `downloadProgress`', async () => {
     const up: number[] = []
     const dp: number[] = []
-    await lyla.post('http://localhost:8080/api/post-return-body', {
+    await lyla.post('http://localhost:8091/api/post-return-body', {
       responseType: 'text',
       body: Buffer.from(Array(2000000).fill('xxxx').join('')),
       onUploadProgress(e) {

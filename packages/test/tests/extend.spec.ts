@@ -7,22 +7,22 @@ beforeEach(test)
 test('`extend` should work', async ({ page }) => {
   let text = await page.evaluate(async () => {
     const { lyla: extended } = window.createLyla({
-      baseUrl: 'http://localhost:7070',
+      baseUrl: 'http://localhost:8092',
       context: null
     })
     await extended.get('api/get-set-cookie')
     await extended.get('/api/get-set-cookie')
-    return (await extended.get('http://localhost:8080/api/get-text')).body
+    return (await extended.get('http://localhost:8091/api/get-text')).body
   })
   expect(text).toEqual('hello world')
   text = await page.evaluate(async () => {
     const { lyla: extended } = window.createLyla({
-      baseUrl: 'http://localhost:7070/',
+      baseUrl: 'http://localhost:8092/',
       context: null
     })
     await extended.get('api/get-set-cookie')
     await extended.get('/api/get-set-cookie')
-    return (await extended.get('http://localhost:8080/api/get-text')).body
+    return (await extended.get('http://localhost:8091/api/get-text')).body
   })
   expect(text).toEqual('hello world')
 })
@@ -69,15 +69,15 @@ test('`headers` extended can be overrided', async ({ page }) => {
 test('`baseUrl` extended can be overrided', async ({ page }) => {
   await page.evaluate(async () => {
     const { lyla: extended } = window.createLyla({
-      baseUrl: 'http://localhost:8080',
+      baseUrl: 'http://localhost:8091',
       context: null
     })
     await extended.get('api/get-set-cookie', {
-      baseUrl: 'http://localhost:7070',
+      baseUrl: 'http://localhost:8092',
       withCredentials: true
     })
     await extended.get('api/get-check-cookie', {
-      baseUrl: 'http://localhost:7070',
+      baseUrl: 'http://localhost:8092',
       withCredentials: true
     })
   })
