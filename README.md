@@ -3,7 +3,7 @@
 A fully typed HTTP client with explicit behavior & error handling.
 
 > [!IMPORTANT]  
-> If you only want support browser environment, you should use package `@lylajs/web` instead of `lyla`.
+> If you only want to support browser environment, you should use package `@lylajs/web` instead of `lyla`.
 
 | Environment          | Package        | Note                                                                                            |
 | -------------------- | -------------- | ----------------------------------------------------------------------------------------------- |
