@@ -470,5 +470,6 @@ lyla.get('/foo').then((response) => {
   - axios can't access an typed context object in request processes.
 - Why not ky？
   - ky is based on fetch, it can't support upload progress.
+  - ky is based on fetch, it can't access headers before response is fully resolved.
   - ky's Response data type can't be typed.
   - ky can't access an typed context object in request processes.

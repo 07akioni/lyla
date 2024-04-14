@@ -460,5 +460,6 @@ lyla.get('/foo').then((response) => {
   - axios 无法在请求链路中传递一个有类型的上下文对象
 - 为什么不用 ky？
   - ky 基于 fetch，无法支持上传进度
+  - ky 基于 fetch，无法在请求完全结束前获取到相应的 headers
   - ky 的 Response 响应数据无法指定特定类型
   - ky 无法在请求链路中传递一个有类型的上下文对象
