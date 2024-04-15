@@ -393,7 +393,7 @@ const { lyla } = createLyla({
         // ...
       }
     },
-    onDataConversionError(error) {
+    onNonResponseError(error) {
        switch error.type {
         // ...
       }
