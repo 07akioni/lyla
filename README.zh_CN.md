@@ -39,6 +39,11 @@ yarn add @lylajs/web # 使用 yarn 安装
 
 ## 使用
 
+> [!IMPORTANT]  
+> lyla 使用 **`json`** 字段来配置请求数据，而不是 `body`！此外，lyla 中**没有** `data` 字段。
+>
+> `body` 字段用于设置请求的原始主体，例如 `string` 或 `Blob`，这不是常见的情况。
+
 ```ts
 import { createLyla } from '@lylajs/web'
 

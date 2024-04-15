@@ -39,6 +39,11 @@ yarn add @lylajs/web # for yarn
 
 ## Usage
 
+> [!IMPORTANT]  
+> Lyla use **`json`** field to config request data, not `body`! Also, there's **no** `data` field in lyla.
+>
+> `body` field is used to set raw body of the request such as `string` or `Blob`, which is not a common case.
+
 ```ts
 import { createLyla } from '@lylajs/web'
 
