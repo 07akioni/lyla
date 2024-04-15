@@ -594,7 +594,7 @@ export function createLyla<C, M extends LylaAdapterMeta>(
         _reject(timeoutError)
       }, timeout)
     }
-    if (method === 'GET' && body) {
+    if (!_options.allowGetBody && method === 'GET' && body) {
       const badRequestError = defineLylaError<M, C, LylaBadRequestError<C, M>>(
         {
           type: LYLA_ERROR.BAD_REQUEST,

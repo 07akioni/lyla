@@ -62,6 +62,11 @@ export type LylaRequestOptions<
   onUploadProgress?: (progress: LylaProgress<C, M>) => void
   onDownloadProgress?: (progress: LylaProgress<C, M>) => void
   context?: C
+  /**
+   * Whether to allow get request with body. Default is false.
+   * It's not recommended to use GET request with body.
+   */
+  allowGetBody?: boolean
   hooks?: {
     /**
      * Callbacks fired when options is passed into the request. In this moment,

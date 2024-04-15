@@ -135,6 +135,11 @@ type LylaRequestOptions<C = undefined> = {
   signal?: AbortSignal
   onUploadProgress?: (progress: LylaProgress<C>) => void
   onDownloadProgress?: (progress: LylaProgress<C>) => void
+  /**
+   * 是否允许 GET 请求携带 body，默认为 false
+   * 不推荐使用此选项，这并不符合 HTTP 的规范，除非你没有任何其他办法，请不要使用此选项
+   */
+  allowGetBody?: boolean
   hooks?: {
     /**
      * 请求选项被传入时的回调，此时选项还没有被转换为最终的请求参数
