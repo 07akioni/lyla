@@ -48,10 +48,10 @@ export const adapter: LylaAdapter<LylaAdapterMeta> = ({
   responseType,
   onResponse,
   onNetworkError,
-  extraOptions
+  extraOptions,
+  withCredentials,
   // Not used, just leave it here
   // json,
-  // withCredentials,
   // onDownloadProgress,
   // onUploadProgress,
 }): {
@@ -61,6 +61,7 @@ export const adapter: LylaAdapter<LylaAdapterMeta> = ({
     url,
     method,
     header: headers,
+    withCredentials,
     ...extraOptions,
     data: body,
     responseType,
