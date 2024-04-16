@@ -1,5 +1,5 @@
 {
-  "name": "@lylajs/uni",
+  "name": "@lylajs/uni-app",
   "version": "1.11.1",
   "scripts": {
     "check-type": "tsc -p tsconfig.cjs.json --noEmit",

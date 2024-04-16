@@ -22,6 +22,7 @@ export interface LylaAdapterMeta extends LylaCoreAdapterMeta {
   requestBody: string | ArrayBuffer
   progressDetail: never
   originalRequest: never
+  extraOptions: never
 }
 
 export const adapter: LylaAdapter<LylaAdapterMeta> = ({

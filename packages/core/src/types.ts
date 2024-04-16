@@ -131,6 +131,7 @@ export type LylaRequestOptions<
       (error: LylaNonResponseError<C, M>) => void | Promise<void>
     >
   }
+  extraOptions?: M['extraOptions']
 }
 
 export type LylaRequestOptionsWithContext<
@@ -223,6 +224,7 @@ export interface LylaAdapterMeta {
   responseDetail: any
   progressDetail: any
   originalRequest: any
+  extraOptions: any
 }
 
 export interface LylaAdapterOptions<T extends LylaAdapterMeta> {
@@ -233,6 +235,7 @@ export interface LylaAdapterOptions<T extends LylaAdapterMeta> {
   json: object | undefined
   responseType: T['responseType']
   withCredentials: boolean
+  extraOptions: T['extraOptions']
   onNetworkError(detail: T['networkErrorDetail']): void
   onUploadProgress:
     | ((progress: Omit<LylaProgress<unknown, T>, 'requestOptions'>) => void)

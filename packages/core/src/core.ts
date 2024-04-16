@@ -382,6 +382,7 @@ export function createLyla<C, M extends LylaAdapterMeta>(
       headers: requestHeaders,
       responseType,
       withCredentials,
+      extraOptions: _options.extraOptions,
       onNetworkError(detail: any) {
         hasNetworkError = true
         stopListeningAbortSignal()

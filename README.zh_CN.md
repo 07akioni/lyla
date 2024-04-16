@@ -5,15 +5,16 @@
 > [!IMPORTANT]  
 >  如果你只需要浏览器环境支持，你应该使用 `@lylajs/web` 而不是 `lyla`。
 
-| 环境         | 包             | 备注                                           |
-| ------------ | -------------- | ---------------------------------------------- |
-| web          | `@lylajs/web`  |                                                |
-| node         | `@lylajs/node` |                                                |
-| 头条小程序   | `@lylajs/tt`   |                                                |
-| 微信小程序   | `@lylajs/wx`   |                                                |
-| qq 小程序    | `@lylajs/qq`   |                                                |
-| 支付宝小程序 | `@lylajs/my`   |                                                |
-| web + nodejs | `lyla`         | 除非你有明确的跨端同构需求，请不要使用这个包。 |
+| 环境         | 包                | 备注                                           |
+| ------------ | ----------------- | ---------------------------------------------- |
+| web          | `@lylajs/web`     |                                                |
+| node         | `@lylajs/node`    |                                                |
+| 头条小程序   | `@lylajs/tt`      |                                                |
+| 微信小程序   | `@lylajs/wx`      |                                                |
+| qq 小程序    | `@lylajs/qq`      |                                                |
+| 支付宝小程序 | `@lylajs/my`      |                                                |
+| uni-app      | `@lylajs/uni-app` |                                                |
+| web + nodejs | `lyla`            | 除非你有明确的跨端同构需求，请不要使用这个包。 |
 
 [English](https://github.com/07akioni/lyla) · 中文
 
@@ -172,7 +173,7 @@ type LylaRequestOptions<C = undefined> = {
         payload: {
           headers: Record<string, string>
           originalRequest: M['originalRequest']
-          requestOptions: LylaRequestOptionsWithContext<C, M>
+          requestOptions: LylaRequestOptionsWithContext<C>
         },
         reject: (reason: unknown) => void
       ) => void
@@ -191,22 +192,23 @@ type LylaRequestOptions<C = undefined> = {
      * 调，例如用户在 `onAfterResponse` 回调中抛出异常不会触发该回调。
      */
     onResponseError?: Array<
-      (
-        error: LylaResponseError<C, M>,
-        reject: (reason: unknown) => void
-      ) => void
+      (error: LylaResponseError<C>, reject: (reason: unknown) => void) => void
     >
     /**
      * 任何非 onResponseError 触发的错误都会触发次回调（除了 BROKEN_ON_NON_RESPONSE_ERROR）
      */
     onNonResponseError?: Array<
-      (error: LylaNonResponseError<C, M>) => void | Promise<void>
+      (error: LylaNonResponseError<C>) => void | Promise<void>
     >
   }
   /**
    * 请求的自定义上下文
    */
   context?: C
+  /**
+   * 额外的请求选项，这些选项会被传递给对应平台的 request 请求，类型根据平台而定
+   */
+  extraOptions?: {}
 }
 ```
 

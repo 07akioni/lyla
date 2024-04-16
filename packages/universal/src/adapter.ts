@@ -71,4 +71,5 @@ export interface LylaAdapterMeta extends LylaCoreAdapterMeta {
         web: undefined
         node: ClientRequest
       }
+  extraOptions: never
 }

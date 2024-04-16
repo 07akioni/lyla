@@ -5,15 +5,16 @@ A fully typed HTTP client with explicit behavior & error handling.
 > [!IMPORTANT]  
 > If you only want to support browser environment, you should use package `@lylajs/web` instead of `lyla`.
 
-| Environment          | Package        | Note                                                                                            |
-| -------------------- | -------------- | ----------------------------------------------------------------------------------------------- |
-| web                  | `@lylajs/web`  |                                                                                                 |
-| node                 | `@lylajs/node` |                                                                                                 |
-| toutiao miniprogram  | `@lylajs/tt`   |                                                                                                 |
-| weixin miniprogram   | `@lylajs/wx`   |                                                                                                 |
-| qq miniprogram       | `@lylajs/qq`   |                                                                                                 |
-| zhifubao miniprogram | `@lylajs/my`   |                                                                                                 |
-| web + nodejs         | `lyla`         | Unless you have explicit cross-platform isomorphic requirements, please don't use this package. |
+| Environment          | Package           | Note                                                                                            |
+| -------------------- | ----------------- | ----------------------------------------------------------------------------------------------- |
+| web                  | `@lylajs/web`     |                                                                                                 |
+| node                 | `@lylajs/node`    |                                                                                                 |
+| toutiao miniprogram  | `@lylajs/tt`      |                                                                                                 |
+| weixin miniprogram   | `@lylajs/wx`      |                                                                                                 |
+| qq miniprogram       | `@lylajs/qq`      |                                                                                                 |
+| zhifubao miniprogram | `@lylajs/my`      |                                                                                                 |
+| uni-app              | `@lylajs/uni-app` |                                                                                                 |
+| web + nodejs         | `lyla`            | Unless you have explicit cross-platform isomorphic requirements, please don't use this package. |
 
 English · [中文](https://github.com/07akioni/lyla/blob/main/README.zh_CN.md)
 
@@ -170,14 +171,14 @@ type LylaRequestOptions<C = undefined> = {
     /**
      * Callbacks fired after headers are received.
      *
-     * only work in @lylajs/web @lylajs/node and lyla
+     * only work in @lylajs/web @lylajs/node and lyla.
      */
     onHeadersReceived?: Array<
       (
         payload: {
           headers: Record<string, string>
           originalRequest: M['originalRequest']
-          requestOptions: LylaRequestOptionsWithContext<C, M>
+          requestOptions: LylaRequestOptionsWithContext<C>
         },
         reject: (reason: unknown) => void
       ) => void
@@ -198,22 +199,25 @@ type LylaRequestOptions<C = undefined> = {
      * callback won't be fired.
      */
     onResponseError?: Array<
-      (
-        error: LylaResponseError<C, M>,
-        reject: (reason: unknown) => void
-      ) => void
+      (error: LylaResponseError<C>, reject: (reason: unknown) => void) => void
     >
     /**
-     * Callbacks fired when a non-response error occurs (except BROKEN_ON_NON_RESPONSE_ERROR)
+     * Callbacks fired when a non-response error occurs (except
+     * BROKEN_ON_NON_RESPONSE_ERROR)
      */
     onNonResponseError?: Array<
-      (error: LylaNonResponseError<C, M>) => void | Promise<void>
+      (error: LylaNonResponseError<C>) => void | Promise<void>
     >
   }
   /**
-   * Custom context of the request
+   * Custom context of the request.
    */
   context?: C
+  /**
+   * Extra requestion options, these options will be passed to the corresponding
+   * request method of the platform. Its type depends on the platform.
+   */
+  extraOptions?: {}
 }
 ```
 

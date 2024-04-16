@@ -22,6 +22,22 @@ export interface LylaAdapterMeta extends LylaCoreAdapterMeta {
   requestBody: string | ArrayBuffer | Record<string, unknown>
   progressDetail: never
   originalRequest: never
+  extraOptions: {
+    sslVerify?: boolean
+    withCredentials?: boolean
+    firstIpv4?: boolean
+    timeout?: number
+    enableHttp2?: boolean
+    enableQuic?: boolean
+    enableCache?: boolean
+    enableHttpDNS?: boolean
+    httpDNSServiceId?: string
+    enableChunked?: boolean
+    forceCellularNetwork?: boolean
+    enableCookie?: boolean
+    cloudCache?: boolean
+    defer?: Boolean
+  }
 }
 
 export const adapter: LylaAdapter<LylaAdapterMeta> = ({
@@ -31,7 +47,8 @@ export const adapter: LylaAdapter<LylaAdapterMeta> = ({
   body,
   responseType,
   onResponse,
-  onNetworkError
+  onNetworkError,
+  extraOptions
   // Not used, just leave it here
   // json,
   // withCredentials,
@@ -40,17 +57,14 @@ export const adapter: LylaAdapter<LylaAdapterMeta> = ({
 }): {
   abort: () => void
 } => {
-
   const requestTask = uni.request({
     url,
     method,
     header: headers,
-    //@ts-ignore
-    data: isJSON(body) ? JSON.parse(body) : body,
+    ...extraOptions,
+    data: body,
     responseType,
-    // https://developers.weixin.qq.com/miniprogram/dev/api/network/request/wx.request.html
-    // Docs said if it's not json, response data won't be transformed to json.
-    dataType: 'json',
+    dataType: 'text',
     fail(res) {
       onNetworkError(res)
     },
@@ -70,15 +84,4 @@ export const adapter: LylaAdapter<LylaAdapterMeta> = ({
       requestTask.abort()
     }
   }
-}
-
-
-function isJSON(str: any) {
-  if (typeof str === 'string' && str) {
-    if (Object.prototype.toString.call(JSON.parse(str)) === '[object Object]') {
-      return true;
-    }
-    return false;
-  }
-  return false
 }

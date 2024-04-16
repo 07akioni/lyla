@@ -3,33 +3,6 @@ export type ResponseDetail = {
   header: Record<string, string>
   data: string | object | ArrayBuffer
   cookies: string[]
-  profile?: {
-    redirectStart: number
-    redirectEnd: number
-    fetchStart: number
-    domainLookupStart: number
-    domainLookupEnd: number
-    connectStart: number
-    connectEnd: number
-    SSLconnectionStart: number
-    SSLconnectionEnd: number
-    requestStart: number
-    requestEnd: number
-    responseStart: number
-    responseEnd: number
-    rtt: number
-    estimate_nettype: number
-    httpRttEstimate: number
-    transportRttEstimate: number
-    downstreamThroughputKbpsEstimate: number
-    throughputKbps: number
-    peerIP: string
-    port: number
-    socketReused: boolean
-    sendBytesCount: number
-    receivedBytedCount: number
-    protocol: string
-  }
 }
 
 export type NetworkErrorDetail = { errno: number; errMsg: string }
@@ -59,6 +32,9 @@ export type UniRequestOptions = {
   data?: string | object | ArrayBuffer
   dataType?: 'json' | string
   responseType?: 'text' | 'arraybuffer'
+  sslVerify?: boolean
+  withCredentials?: boolean
+  firstIpv4?: boolean
   timeout?: number
   enableHttp2?: boolean
   enableQuic?: boolean
@@ -67,6 +43,9 @@ export type UniRequestOptions = {
   httpDNSServiceId?: string
   enableChunked?: boolean
   forceCellularNetwork?: boolean
+  enableCookie?: boolean
+  cloudCache?: boolean
+  defer?: Boolean
   success?: (res: ResponseDetail) => void
   fail?: (res: NetworkErrorDetail) => void
   complete?: (res: { errMsg: string }) => void

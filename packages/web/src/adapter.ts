@@ -29,6 +29,7 @@ export interface LylaAdapterMeta extends LylaCoreAdapterMeta {
   progressDetail: ProgressEvent<XMLHttpRequestEventTarget>
   responseType: 'arraybuffer' | 'blob' | 'text'
   originalRequest: XMLHttpRequest
+  extraOptions: never
 }
 
 // It's possible that the raw http response headers has multiple headers with

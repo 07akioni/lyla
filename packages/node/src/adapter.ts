@@ -53,6 +53,7 @@ export interface LylaAdapterMeta extends LylaCoreAdapterMeta {
   progressDetail: null
   responseType: 'text' | 'arraybuffer' | 'blob'
   originalRequest: ClientRequest
+  extraOptions: never
 }
 
 export const adapter: LylaAdapter<LylaAdapterMeta> = ({
