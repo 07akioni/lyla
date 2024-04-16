@@ -49,7 +49,7 @@ export const adapter: LylaAdapter<LylaAdapterMeta> = ({
   onResponse,
   onNetworkError,
   extraOptions,
-  withCredentials,
+  withCredentials
   // Not used, just leave it here
   // json,
   // onDownloadProgress,
@@ -62,7 +62,6 @@ export const adapter: LylaAdapter<LylaAdapterMeta> = ({
     method,
     header: headers,
     withCredentials,
-    ...extraOptions,
     data: body,
     responseType,
     dataType: 'text',
@@ -78,7 +77,8 @@ export const adapter: LylaAdapter<LylaAdapterMeta> = ({
         },
         res
       )
-    }
+    },
+    ...extraOptions
   })
   return {
     abort() {
