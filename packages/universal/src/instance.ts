@@ -22,6 +22,7 @@ export const { lyla, isLylaError } = coreCreateLyla<undefined, LylaAdapterMeta>(
     responseType,
     json,
     withCredentials,
+    extraOptions,
     onHeadersReceived,
     onDownloadProgress,
     onUploadProgress,
@@ -38,6 +39,7 @@ export const { lyla, isLylaError } = coreCreateLyla<undefined, LylaAdapterMeta>(
         responseType,
         json,
         withCredentials,
+        extraOptions,
         onHeadersReceived(headers, originalRequest) {
           return onHeadersReceived(headers, {
             anyhow: originalRequest,
@@ -114,6 +116,7 @@ export const { lyla, isLylaError } = coreCreateLyla<undefined, LylaAdapterMeta>(
         responseType,
         json,
         withCredentials,
+        extraOptions,
         onHeadersReceived(headers, originalRequest) {
           return onHeadersReceived(headers, {
             anyhow: originalRequest,
