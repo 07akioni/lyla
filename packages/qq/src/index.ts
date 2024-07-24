@@ -1,3 +1,4 @@
+export { adapter } from './adapter'
 export type { LylaAdapterMeta } from './adapter'
 export type {
   Lyla,
