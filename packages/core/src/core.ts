@@ -407,10 +407,11 @@ export function createLyla<C, M extends LylaAdapterMeta>(
       onUploadProgress: (progress) => {
         onUploadProgress?.({ ...progress, requestOptions: _options })
       },
-      onHeadersReceived: (headers, originalRequest) => {
+      onHeadersReceived: (_headers, originalRequest) => {
         if (aborted) return
         if (hasNetworkError) return
         if (_options.hooks?.onHeadersReceived) {
+          const headers = mergeHeaders({}, _headers)
           try {
             for (const hook of _options.hooks.onHeadersReceived) {
               hook(

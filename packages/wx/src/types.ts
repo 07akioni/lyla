@@ -72,6 +72,16 @@ export type WxRequestOptions = {
   complete?: (res: { errMsg: string }) => void
 }
 
-export type WxRequestTask = { abort: () => void }
+export type WxRequestTask = {
+  abort: () => void
+  onHeadersReceived: (
+    listener: (res: {
+      cookies: unknown[]
+      header: Record<string, string>
+      statusCode: number
+    }) => void
+  ) => void
+  onChunkReceived: (listener: (res: { data: ArrayBuffer }) => void) => void
+}
 
 export type WxRequest = (options: WxRequestOptions) => WxRequestTask

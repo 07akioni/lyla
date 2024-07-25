@@ -7,7 +7,8 @@ import type {
   NetworkErrorDetail,
   ResponseDetail,
   WxRequest,
-  WxRequestMethod
+  WxRequestMethod,
+  WxRequestTask
 } from './types'
 
 declare const wx: {
@@ -20,8 +21,8 @@ export interface LylaAdapterMeta extends LylaCoreAdapterMeta {
   responseDetail: ResponseDetail
   responseType: 'arraybuffer' | 'text'
   requestBody: string | ArrayBuffer
-  progressDetail: never
-  originalRequest: never
+  progressDetail: { data: ArrayBuffer }
+  originalRequest: WxRequestTask
   extraOptions: never
 }
 
@@ -32,11 +33,12 @@ export const adapter: LylaAdapter<LylaAdapterMeta> = ({
   body,
   responseType,
   onResponse,
-  onNetworkError
+  onNetworkError,
   // Not used, just leave it here
   // json,
   // withCredentials,
-  // onDownloadProgress,
+  onDownloadProgress,
+  onHeadersReceived
   // onUploadProgress,
 }): {
   abort: () => void
@@ -47,6 +49,7 @@ export const adapter: LylaAdapter<LylaAdapterMeta> = ({
     header: headers,
     data: body,
     responseType,
+    enableChunked: !!onDownloadProgress,
     // https://developers.weixin.qq.com/miniprogram/dev/api/network/request/wx.request.html
     // Docs said if it's not json, response data won't be transformed to json.
     dataType: 'text',
@@ -64,6 +67,23 @@ export const adapter: LylaAdapter<LylaAdapterMeta> = ({
       )
     }
   })
+  if (onDownloadProgress) {
+    requestTask.onChunkReceived((detail) => {
+      onDownloadProgress({
+        detail,
+        lengthComputable: false,
+        loaded: 0,
+        originalRequest: requestTask,
+        total: 0,
+        percent: 0
+      })
+    })
+  }
+  if (onHeadersReceived) {
+    requestTask.onHeadersReceived(({ header }) => {
+      onHeadersReceived(header, requestTask)
+    })
+  }
   return {
     abort() {
       requestTask.abort()
