@@ -123,7 +123,9 @@ export const adapter: LylaAdapter<LylaAdapterMeta> = ({
   })
   const _onHeadersReceived = () => {
     if (xhr.readyState === xhr.HEADERS_RECEIVED) {
-      onHeadersReceived(ensureResponseHeaders(), xhr)
+      if (onHeadersReceived) {
+        onHeadersReceived(ensureResponseHeaders(), xhr)
+      }
     }
     xhr.removeEventListener('readystatechange', _onHeadersReceived)
   }

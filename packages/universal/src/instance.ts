@@ -41,7 +41,7 @@ export const { lyla, isLylaError } = coreCreateLyla<undefined, LylaAdapterMeta>(
         withCredentials,
         extraOptions,
         onHeadersReceived(headers, originalRequest) {
-          return onHeadersReceived(headers, {
+          return onHeadersReceived?.(headers, {
             anyhow: originalRequest,
             node: originalRequest,
             web: undefined
@@ -118,7 +118,7 @@ export const { lyla, isLylaError } = coreCreateLyla<undefined, LylaAdapterMeta>(
         withCredentials,
         extraOptions,
         onHeadersReceived(headers, originalRequest) {
-          return onHeadersReceived(headers, {
+          return onHeadersReceived?.(headers, {
             anyhow: originalRequest,
             node: undefined,
             web: originalRequest

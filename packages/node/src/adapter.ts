@@ -120,10 +120,12 @@ export const adapter: LylaAdapter<LylaAdapterMeta> = ({
       protocol: parsedUrl.protocol
     },
     (incomingMessage) => {
-      onHeadersReceived(
-        ensureResponseHeaders(incomingMessage.headers),
-        clientRequest
-      )
+      if (onHeadersReceived) {
+        onHeadersReceived(
+          ensureResponseHeaders(incomingMessage.headers),
+          clientRequest
+        )
+      }
       const rawResponseContentLength = incomingMessage.headers['content-length']
       const responseContentLength =
         typeof rawResponseContentLength === 'string' &&
