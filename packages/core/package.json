@@ -1,6 +1,6 @@
 {
   "name": "@lylajs/core",
-  "version": "1.13.1",
+  "version": "1.13.2",
   "keywords": [
     "http-request",
     "http-client",
