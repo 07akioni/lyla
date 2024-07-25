@@ -11,3 +11,4 @@ export type {
 } from './reexports'
 export { LYLA_ERROR, LylaAbortController } from './reexports'
 export { lyla, isLylaError, createLyla } from './instance'
+export { arrayBufferToString } from './utils'

@@ -1,4 +1,5 @@
-const { lyla } = require('@lylajs/wx')
+// copy @lylajs/wx/dist to here
+const { lyla } = require('./lyla')
 
 // index.js
 Page({
@@ -7,16 +8,25 @@ Page({
   },
   onShow() {
     lyla
-      .get('https://randomuser.me/api/', {
+      .post('https://chat.deepseek.com/api/v0/chat/completions', {
         headers: {
-          foo: 'bar'
+          Authorization: 'Bearer xxx'
+        },
+        json: {
+          message: 'Hello',
+          stream: true,
+          model_preference: null,
+          model_class: 'deepseek_chat',
+          temperature: 0
+        },
+        onDownloadProgress({ detail }) {
+          console.log('!!!1', detail.responseText)
         }
       })
       .then((resp) => {
-        console.log(resp.detail)
-        console.log('resp', resp.headers, resp.body, resp.json)
+        console.log('!!!2', resp.body)
         this.setData({
-          respBody: JSON.stringify(resp.json)
+          respBody: resp.body
         })
       })
   }

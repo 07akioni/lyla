@@ -243,10 +243,12 @@ export interface LylaAdapterOptions<T extends LylaAdapterMeta> {
   onDownloadProgress:
     | ((progress: Omit<LylaProgress<unknown, T>, 'requestOptions'>) => void)
     | undefined
-  onHeadersReceived(
-    headers: Record<string, string>,
-    originalRequest: T['originalRequest']
-  ): void
+  onHeadersReceived:
+    | ((
+        headers: Record<string, string>,
+        originalRequest: T['originalRequest']
+      ) => void)
+    | undefined
   onResponse(
     response: {
       body: T['responseBody']

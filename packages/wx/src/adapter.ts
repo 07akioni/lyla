@@ -10,6 +10,7 @@ import type {
   WxRequestMethod,
   WxRequestTask
 } from './types'
+import { arrayBufferToString } from './utils'
 
 declare const wx: {
   request: WxRequest
@@ -21,7 +22,7 @@ export interface LylaAdapterMeta extends LylaCoreAdapterMeta {
   responseDetail: ResponseDetail
   responseType: 'arraybuffer' | 'text'
   requestBody: string | ArrayBuffer
-  progressDetail: { data: ArrayBuffer }
+  progressDetail: { data: ArrayBuffer; responseText: string }
   originalRequest: WxRequestTask
   extraOptions: never
 }
@@ -43,6 +44,8 @@ export const adapter: LylaAdapter<LylaAdapterMeta> = ({
 }): {
   abort: () => void
 } => {
+  let latestProgressData: Uint8Array | undefined = undefined
+
   const requestTask = wx.request({
     url,
     method,
@@ -57,9 +60,19 @@ export const adapter: LylaAdapter<LylaAdapterMeta> = ({
       onNetworkError(res)
     },
     success(res) {
+      let body: string | ArrayBuffer
+      if (onDownloadProgress) {
+        if (responseType === 'arraybuffer') {
+          body = latestProgressData || new ArrayBuffer(0)
+        } else {
+          body = arrayBufferToString(latestProgressData || new ArrayBuffer(0))
+        }
+      } else {
+        body = res.data as string | ArrayBuffer
+      }
       onResponse(
         {
-          body: res.data as string | ArrayBuffer,
+          body,
           status: res.statusCode,
           headers: headersKeyToLowerCase(res.header)
         },
@@ -69,8 +82,26 @@ export const adapter: LylaAdapter<LylaAdapterMeta> = ({
   })
   if (onDownloadProgress) {
     requestTask.onChunkReceived((detail) => {
+      if (!latestProgressData) {
+        latestProgressData = new Uint8Array([])
+      }
+      let mergedProgressData = new Uint8Array(
+        latestProgressData.byteLength + detail.data.byteLength
+      )
+      mergedProgressData.set(latestProgressData, 0)
+      mergedProgressData.set(
+        detail.data instanceof Uint8Array
+          ? detail.data
+          : new Uint8Array(detail.data),
+        latestProgressData.byteLength
+      )
+      latestProgressData = mergedProgressData
+
       onDownloadProgress({
-        detail,
+        detail: {
+          data: detail.data,
+          responseText: arrayBufferToString(latestProgressData)
+        },
         lengthComputable: false,
         loaded: 0,
         originalRequest: requestTask,

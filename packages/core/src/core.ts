@@ -374,6 +374,7 @@ export function createLyla<C, M extends LylaAdapterMeta>(
     }
 
     let hasNetworkError = false
+    const onHeadersReceived = _options.hooks?.onHeadersReceived
     const adapterHandle = adapter({
       url,
       method,
@@ -401,47 +402,53 @@ export function createLyla<C, M extends LylaAdapterMeta>(
         handleResponseError(networkError)
         _reject(networkError)
       },
-      onDownloadProgress: (progress) => {
-        onDownloadProgress?.({ ...progress, requestOptions: _options })
-      },
-      onUploadProgress: (progress) => {
-        onUploadProgress?.({ ...progress, requestOptions: _options })
-      },
-      onHeadersReceived: (_headers, originalRequest) => {
-        if (aborted) return
-        if (hasNetworkError) return
-        if (_options.hooks?.onHeadersReceived) {
-          const headers = mergeHeaders({}, _headers)
-          try {
-            for (const hook of _options.hooks.onHeadersReceived) {
-              hook(
-                { headers, requestOptions: _options, originalRequest },
-                _customReject
-              )
-            }
-          } catch (error) {
-            const brokenOnHeadersReceived = defineLylaError<
-              M,
-              C,
-              LylaBrokenOnHeadersReceivedError<C, M>
-            >(
-              {
-                type: LYLA_ERROR.BROKEN_ON_HEADERS_RECEIVED,
-                message: '`onHeadersReceived` hook throws error',
-                detail: undefined,
-                response: undefined,
-                error,
-                context: _options.context,
-                requestOptions: _options
-              },
-              undefined
-            )
-            handleNonResponseError(brokenOnHeadersReceived)
-            _reject(brokenOnHeadersReceived)
-            return
+      onDownloadProgress: onDownloadProgress
+        ? (progress) => {
+            onDownloadProgress({ ...progress, requestOptions: _options })
           }
-        }
-      },
+        : undefined,
+      onUploadProgress: onUploadProgress
+        ? (progress) => {
+            onUploadProgress({ ...progress, requestOptions: _options })
+          }
+        : undefined,
+      onHeadersReceived: onHeadersReceived
+        ? (_headers, originalRequest) => {
+            if (aborted) return
+            if (hasNetworkError) return
+            if (onHeadersReceived) {
+              const headers = mergeHeaders({}, _headers)
+              try {
+                for (const hook of onHeadersReceived) {
+                  hook(
+                    { headers, requestOptions: _options, originalRequest },
+                    _customReject
+                  )
+                }
+              } catch (error) {
+                const brokenOnHeadersReceived = defineLylaError<
+                  M,
+                  C,
+                  LylaBrokenOnHeadersReceivedError<C, M>
+                >(
+                  {
+                    type: LYLA_ERROR.BROKEN_ON_HEADERS_RECEIVED,
+                    message: '`onHeadersReceived` hook throws error',
+                    detail: undefined,
+                    response: undefined,
+                    error,
+                    context: _options.context,
+                    requestOptions: _options
+                  },
+                  undefined
+                )
+                handleNonResponseError(brokenOnHeadersReceived)
+                _reject(brokenOnHeadersReceived)
+                return
+              }
+            }
+          }
+        : undefined,
       async onResponse(resp, detail) {
         if (aborted) return
         if (hasNetworkError) return

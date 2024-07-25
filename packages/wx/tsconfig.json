@@ -5,7 +5,9 @@
     "target": "ES2017",
     "esModuleInterop": true,
     "moduleResolution": "node",
-    "strict": true
+    "strict": true,
+    "allowJs": true,
+    "noEmit": true
   },
   "include": ["src"]
 }
