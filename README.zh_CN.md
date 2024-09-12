@@ -133,7 +133,21 @@ type LylaRequestOptions<C = undefined> = {
    * 需要被写入请求主体的 JSON 值，不可以同时和 body 使用
    */
   json?: any
-  query?: Record<string, string | number>
+  /**
+   * Query 对象，用于构建 URL 里的搜索参数 search params。
+   * 注意，如果你想在查询中设置 `null` 或 `undefined` 作为值，
+   * 请使用字符串作为值，如 `query: { key: "undefined" }` ，而非 `query: { key: undefined }`。
+   * 否则，该键值对将被忽略。
+   */
+  query?: Record<
+    string,
+    | string
+    | number
+    | boolean
+    | Array<string | number | boolean>
+    | null
+    | undefined
+  >
   baseUrl?: string
   /**
    * 请求使用的 Abort signal
