@@ -38,9 +38,15 @@ function isOkStatus(status: number): boolean {
 
 declare const setTimeout: (callback: () => void, timeout?: number) => number
 
+type URLSearchParamsLike = {
+  toString: () => string
+  append: (key: string, value: string) => void
+}
+
 // It exists both in node, browser, miniprogram environment
 declare const URLSearchParams: {
-  new (params: Record<string, string>): { toString: () => string }
+  new (params: Record<string, string>): URLSearchParamsLike
+  new (): URLSearchParamsLike
 }
 
 export function createLyla<C, M extends LylaAdapterMeta>(
@@ -164,13 +170,17 @@ export function createLyla<C, M extends LylaAdapterMeta>(
 
     // Resolve query string, patch it to URL
     if (_options.query) {
-      const resolvedQuery: Record<string, string> = {}
-      for (const key in _options.query) {
-        const v = _options.query[key]
-        if (v === undefined || v === null) continue
-        resolvedQuery[key] = v.toString()
+      const urlSearchParams = new URLSearchParams()
+      for (const [key, value] of Object.entries(_options.query)) {
+        if (Array.isArray(value)) {
+          for (const v of value) {
+            urlSearchParams.append(key, v.toString())
+          }
+        } else if (value !== undefined && value !== null) {
+          urlSearchParams.append(key, value.toString())
+        }
       }
-      const urlSearchParams = new URLSearchParams(resolvedQuery)
+
       const queryString = urlSearchParams.toString()
       if (_options.url.includes('?')) {
         const badRequestError = defineLylaError<
