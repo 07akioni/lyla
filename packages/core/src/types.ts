@@ -55,7 +55,7 @@ export type LylaRequestOptions<
   json?: any
   query?: Record<
     string,
-    string | number | boolean | undefined | null | string[] | number[]
+    string | number | boolean | undefined | null | Array<string | number>
   >
   baseUrl?: string
   /**

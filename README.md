@@ -135,7 +135,7 @@ type LylaRequestOptions<C = undefined> = {
    * `body`.
    */
   json?: any
-  query?: Record<string, string | number | string[] | number[]>
+  query?: Record<string, string | number | Array<string | number>>
   baseUrl?: string
   /**
    * Abort signal of the request.
