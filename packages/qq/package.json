@@ -1,6 +1,6 @@
 {
   "name": "@lylajs/qq",
-  "version": "1.13.2",
+  "version": "1.14.0",
   "scripts": {
     "check-type": "tsc -p tsconfig.cjs.json --noEmit",
     "build": "rm -rf es lib dist && tsc -p tsconfig.esm.json && tsc -p tsconfig.cjs.json && rollup -c rollup.config.js",
