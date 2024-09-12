@@ -53,7 +53,15 @@ export type LylaRequestOptions<
    * `body`.
    */
   json?: any
-  query?: Record<string, string | number | boolean | undefined | null>
+  query?: Record<
+    string,
+    | string
+    | number
+    | boolean
+    | undefined
+    | null
+    | Array<string | number | boolean>
+  >
   baseUrl?: string
   /**
    * Abort signal of the request.

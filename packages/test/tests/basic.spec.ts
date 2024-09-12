@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test'
 import { beforeEach } from './utils'
-import "./types"
+import './types'
 
 beforeEach(test)
 ;(['get', 'post', 'delete', 'put', 'patch'] as const).forEach((method) => {
@@ -70,4 +70,40 @@ beforeEach(test)
       expect(json).toEqual({ jsonKey: 'jsonValue' })
     })
   }
+})
+
+test('parse normal query', async ({ page }) => {
+  const res = await page.evaluate(async () => {
+    const res = await window.lyla.get('/api/get-query', {
+      query: {
+        key1: 'value1'
+      }
+    })
+    return res.json
+  })
+  expect(res).toMatchObject({ key1: ['value1'] })
+})
+
+test('parse array query', async ({ page }) => {
+  const res = await page.evaluate(async () => {
+    const res = await window.lyla.get('/api/get-query', {
+      query: {
+        key1: ['value1', 'value2']
+      }
+    })
+    return res.json
+  })
+  expect(res).toMatchObject({ key1: ['value1', 'value2'] })
+})
+
+test('parse empty query', async ({ page }) => {
+  const res = await page.evaluate(async () => {
+    const res = await window.lyla.get('/api/get-query', {
+      query: {
+        key1: null
+      }
+    })
+    return res.json
+  })
+  expect(res).toMatchObject({})
 })

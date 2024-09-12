@@ -135,7 +135,21 @@ type LylaRequestOptions<C = undefined> = {
    * `body`.
    */
   json?: any
-  query?: Record<string, string | number>
+  /**
+   * Query object, also known as search params.
+   * Note, if you want to set `null` or `undefined` as value in query,
+   * use object like `query: { key: "undefined" }` instead of `query: { key: undefined }`.
+   * Otherwise, the k-v pair will be ignored.
+   */
+  query?: Record<
+    string,
+    | string
+    | number
+    | boolean
+    | Array<string | number | boolean>
+    | null
+    | undefined
+  >
   baseUrl?: string
   /**
    * Abort signal of the request.

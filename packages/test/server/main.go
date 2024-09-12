@@ -42,6 +42,11 @@ func GetTestRoutes(r *gin.Engine) {
 		c.Header("X-UPPER", "X-UPPER")
 		c.Header("x-lower", "x-lower")
 	})
+	r.GET("/api/get-query", func(c *gin.Context) {
+		queryParams := c.Request.URL.Query()
+		// return {"key1": ["value1"]}
+		c.JSON(200, queryParams)
+	})
 }
 
 func PostTestRoutes(r *gin.Engine) {
