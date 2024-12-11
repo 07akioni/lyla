@@ -107,6 +107,8 @@ export function createLyla<C, M extends LylaAdapterMeta>(
           )
           return
         }
+      } else {
+        _reject(error)
       }
     }
     try {
@@ -309,6 +311,8 @@ export function createLyla<C, M extends LylaAdapterMeta>(
           handleNonResponseError(brokenOnResponseErrorError)
           return
         }
+      } else {
+        _reject(error)
       }
     }
 
