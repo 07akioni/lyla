@@ -89,6 +89,7 @@ export function createLyla<C, M extends LylaAdapterMeta>(
               await maybePromise
             }
           }
+          _reject(error)
         } catch (e) {
           _reject(
             defineLylaError<M, C, LylaBrokenOnNonResponseErrorError<C, M>>(
@@ -287,6 +288,7 @@ export function createLyla<C, M extends LylaAdapterMeta>(
               await maybePromise
             }
           }
+          _reject(error)
         } catch (e) {
           const brokenOnResponseErrorError = defineLylaError<
             M,
@@ -305,7 +307,6 @@ export function createLyla<C, M extends LylaAdapterMeta>(
             undefined
           )
           handleNonResponseError(brokenOnResponseErrorError)
-          _reject(brokenOnResponseErrorError)
           return
         }
       }
@@ -374,9 +375,8 @@ export function createLyla<C, M extends LylaAdapterMeta>(
         },
         stack
       )
-      handleResponseError(abortError)
-      _reject(abortError)
-      adapterHandle.abort()
+      const settled = () => adapterHandle.abort()
+      handleResponseError(abortError).then(settled).catch(settled)
     }
 
     if (signal) {
@@ -410,7 +410,6 @@ export function createLyla<C, M extends LylaAdapterMeta>(
           stack
         )
         handleResponseError(networkError)
-        _reject(networkError)
       },
       onDownloadProgress: onDownloadProgress
         ? (progress) => {
@@ -453,7 +452,6 @@ export function createLyla<C, M extends LylaAdapterMeta>(
                   undefined
                 )
                 handleNonResponseError(brokenOnHeadersReceived)
-                _reject(brokenOnHeadersReceived)
                 return
               }
             }
@@ -549,7 +547,6 @@ export function createLyla<C, M extends LylaAdapterMeta>(
             stack
           )
           handleResponseError(httpError)
-          _reject(httpError)
           return
         }
 
@@ -581,7 +578,6 @@ export function createLyla<C, M extends LylaAdapterMeta>(
               undefined
             )
             handleNonResponseError(brokenOnAfterResponseErrorError)
-            _reject(brokenOnAfterResponseErrorError)
             return
           }
         }
@@ -610,7 +606,6 @@ export function createLyla<C, M extends LylaAdapterMeta>(
           stack
         )
         handleResponseError(timeoutError)
-        _reject(timeoutError)
       }, timeout)
     }
     if (!_options.allowGetBody && method === 'GET' && body) {

@@ -204,9 +204,11 @@ type LylaRequestOptions<C = undefined> = {
     /**
      * 响应处理遇到异常时的回调。只会在 LylaError 产生时被触发，用户触发的异常不会触发此回
      * 调，例如用户在 `onAfterResponse` 回调中抛出异常不会触发该回调。
+     * 
+     * 在次回调结束之前，异常不会被抛出
      */
     onResponseError?: Array<
-      (error: LylaResponseError<C>, reject: (reason: unknown) => void) => void
+      (error: LylaResponseError<C>, reject: (reason: unknown) => void) => void | Promise<void>
     >
     /**
      * 任何非 onResponseError 触发的错误都会触发次回调（除了 BROKEN_ON_NON_RESPONSE_ERROR）

@@ -211,9 +211,11 @@ type LylaRequestOptions<C = undefined> = {
      * fired by LylaError. Error thrown by user won't triggered the callback,
      * for example if user throws an error in `onAfterResponse` hook. The
      * callback won't be fired.
+     * 
+     * Before the callback if finished, the error won't be thrown.
      */
     onResponseError?: Array<
-      (error: LylaResponseError<C>, reject: (reason: unknown) => void) => void
+      (error: LylaResponseError<C>, reject: (reason: unknown) => void) => void | Promise<void>
     >
     /**
      * Callbacks fired when a non-response error occurs (except
