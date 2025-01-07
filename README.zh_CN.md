@@ -99,6 +99,8 @@ function createLyla<C>(
 
 ### `lyla.withRetry(options: LylaWithRetryOptions) => Lyla`
 
+测试中，目前仅对 `2.0.0-beta.1` 和之后的版本生效。
+
 基于当前 lyla 实例创建一个带重试的 lyla 实例，详情见[重试请求](#重试请求)。
 
 #### `LylaRequestOptions` 类型
@@ -504,6 +506,8 @@ lyla.get('/foo').then((response) => {
 ```
 
 ## 重试请求
+
+测试中，目前仅对 `2.0.0-beta.1` 和之后的版本生效。
 
 Lyla 提供了一个 `withRetry` 方法，可以用来创建一个带重试的 lyla 实例。
 

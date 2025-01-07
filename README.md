@@ -99,6 +99,8 @@ function createLyla<C>(
 
 ### `lyla.withRetry(options: LylaWithRetryOptions) => Lyla`
 
+Beta compatibility. Currently only work in `2.0.0-beta.1` and later versions.
+
 Create a `lyla` instance with retry feature using existing `lyla` instance. For detail see [Retry request](#Retry request).
 
 #### Type `LylaRequestOptions`
@@ -519,6 +521,8 @@ lyla.get('/foo').then((response) => {
 ```
 
 ## Retry request
+
+Beta compatibility. Currently only work in `2.0.0-beta.1` and later versions.
 
 Lyla provides a `withRetry` method to create a lyla instance with retry capability.
 
