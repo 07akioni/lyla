@@ -261,7 +261,6 @@ export type LylaRetryOnResolvedCommand<
     }
   | {
       action: 'reject'
-      // Will be wrapped in lyla custom error
       value: unknown
     }
 

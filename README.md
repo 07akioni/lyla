@@ -547,7 +547,6 @@ type LylaWithRetryOptions<S> = {
       }
     | {
         action: 'reject'
-        // Will be wrapped in lyla custom error
         value: unknown
       }
   >
@@ -563,7 +562,6 @@ type LylaWithRetryOptions<S> = {
       }
     | {
         action: 'reject'
-        // Will be wrapped in lyla custom error
         value: unknown
       }
   >
