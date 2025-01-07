@@ -97,6 +97,10 @@ function createLyla<C>(
 
 ### `lyla.trace<T>(options: LylaRequestOptions): LylaResponse<T>`
 
+### `lyla.withRetry(options: LylaWithRetryOptions) => Lyla`
+
+Create a `lyla` instance with retry feature using existing `lyla` instance. For detail see [Retry request](#Retry request).
+
 #### Type `LylaRequestOptions`
 
 ```ts
@@ -211,11 +215,14 @@ type LylaRequestOptions<C = undefined> = {
      * fired by LylaError. Error thrown by user won't triggered the callback,
      * for example if user throws an error in `onAfterResponse` hook. The
      * callback won't be fired.
-     * 
+     *
      * Before the callback if finished, the error won't be thrown.
      */
     onResponseError?: Array<
-      (error: LylaResponseError<C>, reject: (reason: unknown) => void) => void | Promise<void>
+      (
+        error: LylaResponseError<C>,
+        reject: (reason: unknown) => void
+      ) => void | Promise<void>
     >
     /**
      * Callbacks fired when a non-response error occurs (except
@@ -406,7 +413,23 @@ export enum LYLA_ERROR {
   /**
    * `onHeadersReceived` hook throws error.
    */
-  BROKEN_ON_HEADERS_RECEIVED = 'BROKEN_ON_HEADERS_RECEIVED'
+  BROKEN_ON_HEADERS_RECEIVED = 'BROKEN_ON_HEADERS_RECEIVED',
+  /**
+   * Lyla instance created with `withRetry` throws an unexpected error. This
+   * error isn't created by `lyla` instance itself, but thrown by `onRejected`
+   * or `onResolved` of `withRetry` or the process of creating retry request options
+   * defined by user.
+   *
+   * The error won't be created by `lyla` instance that not created with `withRetry`.
+   */
+  BROKEN_RETRY = 'BROKEN_RETRY',
+  /**
+   * A non-lyla error is return by `onRejected` or `onResolved`'s `reject` action.
+   * Lyla error won't be wrapped in this error.
+   *
+   * The error won't be created by `lyla` instance that not created with `withRetry`.
+   */
+  RETRY_REJECTED_BY_NON_LYLA_ERROR = 'RETRY_REJECTED_BY_NON_LYLA_ERROR'
 }
 ```
 
@@ -494,6 +517,99 @@ lyla.get('/foo').then((response) => {
   console.log(response.context.duration)
 })
 ```
+
+## Retry request
+
+Lyla provides a `withRetry` method to create a lyla instance with retry capability.
+
+`lyla.withRetry(options: LylaWithRetryOptions) => Lyla`
+
+The type `LylaWithRetryOptions` is (simplified version):
+
+```ts
+type LylaWithRetryOptions<S> = {
+  onResolved: (params: {
+    state: S
+    options: LylaRequestOptions
+    response: LylaResponse
+  }) => Promise<
+    | {
+        action: 'retry'
+        value: () => Promise<LylaRequestOptions> | LylaRequestOptions
+      }
+    | {
+        action: 'resolve'
+        value: LylaResponse
+      }
+    | {
+        action: 'reject'
+        // Will be wrapped in lyla custom error
+        value: unknown
+      }
+  >
+  onRejected: (params: {
+    state: S
+    options: LylaRequestOptionsWithContext<C, M>
+    lyla: Lyla<C, M>
+    error: LylaError<C, M>
+  }) => Promise<
+    | {
+        action: 'retry'
+        value: () => Promise<LylaRequestOptions> | LylaRequestOptions
+      }
+    | {
+        action: 'reject'
+        // Will be wrapped in lyla custom error
+        value: unknown
+      }
+  >
+  createState: () => S
+}
+```
+
+The `lyla.withRetry` method returns a new lyla instance with all lyla methods except `retry`. This instance will decide whether to retry, continue, or reject based on the return values of `onResolved` and `onRejected`.
+
+`createState` is called at the beginning of each request to create a new state object, which is passed to `onResolved` and `onRejected`. You can use this object to store some state, such as retry count.
+
+Here is an example of retrying three times:
+
+```ts
+import { createLyla } from '@lylajs/*' // * is the platform you need
+
+const { lyla: _lyla } = createLyla({ context: null })
+
+const lyla = _lyla.withRetry({
+  createState: () => ({
+    count: 0
+  }),
+  onResolved: async ({ response }) => {
+    return {
+      action: 'resolve',
+      value: response
+    }
+  },
+  onRejected: async ({ state, error, options }) => {
+    state.count += 1
+    if (state.count > 3) {
+      return {
+        action: 'reject',
+        value: error
+      }
+    } else {
+      return {
+        action: 'retry',
+        // Retry with the original options
+        value: () => options
+      }
+    }
+  }
+})
+```
+
+An instance created by `lyla.withRetry` may encounter three types of errors when sending a request:
+1. A Lyla Error returned by the reject action, which will be thrown directly without being wrapped.
+2. A non-Lyla Error (e.g., `error1`) returned by the reject action, which will be wrapped into a `RETRY_REJECTED_BY_NON_LYLA_ERROR` type error and thrown (e.g., `error2`). `error1` can be accessed via `error2.error`.
+3. An exception thrown by `onResolved` or `onRejected`, or an exception thrown by the value function of the retry action, which will be wrapped into a `BROKEN_RETRY` type error and thrown.
 
 ## FAQ
 

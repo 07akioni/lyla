@@ -211,7 +211,17 @@ export type LylaProgress<C, M extends LylaAdapterMeta = LylaAdapterMeta> = {
 
 export type LylaRequestHeaders = Record<string, string | number | undefined>
 
-export type Lyla<C = any, M extends LylaAdapterMeta = LylaAdapterMeta> = {
+export type Lyla<
+  C = any,
+  M extends LylaAdapterMeta = LylaAdapterMeta
+> = LylaWithoutRetry<C, M> & {
+  withRetry: LylaWithRetry<C, M>
+}
+
+export type LylaWithoutRetry<
+  C = any,
+  M extends LylaAdapterMeta = LylaAdapterMeta
+> = {
   <T = any>(options: LylaRequestOptions<C, M>): Promise<LylaResponse<T, C, M>>
 } & Record<
   Lowercase<M['method']>,
@@ -222,6 +232,58 @@ export type Lyla<C = any, M extends LylaAdapterMeta = LylaAdapterMeta> = {
 > & {
     errorType: LylaError<C, M>
   }
+
+export type LylaRetryOnRejectedCommand<
+  C = any,
+  M extends LylaAdapterMeta = LylaAdapterMeta
+> =
+  | {
+      action: 'retry'
+      value: () => Promise<LylaRequestOptions<C, M>> | LylaRequestOptions<C, M>
+    }
+  | {
+      action: 'reject'
+      value: unknown
+    }
+
+export type LylaRetryOnResolvedCommand<
+  T,
+  C = any,
+  M extends LylaAdapterMeta = LylaAdapterMeta
+> =
+  | {
+      action: 'retry'
+      value: () => Promise<LylaRequestOptions<C, M>> | LylaRequestOptions<C, M>
+    }
+  | {
+      action: 'resolve'
+      value: LylaResponse<T, C, M>
+    }
+  | {
+      action: 'reject'
+      // Will be wrapped in lyla custom error
+      value: unknown
+    }
+
+export type LylaWithRetryOptions<C, M extends LylaAdapterMeta, S> = {
+  onResolved: (params: {
+    state: S
+    options: LylaRequestOptionsWithContext<C, M>
+    response: LylaResponse<any, C, M>
+  }) => Promise<LylaRetryOnResolvedCommand<any, C, M>>
+  onRejected: (params: {
+    state: S
+    options: LylaRequestOptionsWithContext<C, M>
+    lyla: Lyla<C, M>
+    error: LylaError<C, M>
+  }) => Promise<LylaRetryOnRejectedCommand<C, M>>
+  createState: () => S
+}
+
+export type LylaWithRetry<
+  C = any,
+  M extends LylaAdapterMeta = LylaAdapterMeta
+> = <S = any>(options: LylaWithRetryOptions<C, M, S>) => LylaWithoutRetry<C, M>
 
 export interface LylaAdapterMeta {
   method: LylaMethod

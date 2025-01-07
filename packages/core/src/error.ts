@@ -58,7 +58,23 @@ export enum LYLA_ERROR {
   /**
    * `onHeadersReceived` hook throws error.
    */
-  BROKEN_ON_HEADERS_RECEIVED = 'BROKEN_ON_HEADERS_RECEIVED'
+  BROKEN_ON_HEADERS_RECEIVED = 'BROKEN_ON_HEADERS_RECEIVED',
+  /**
+   * Lyla instance created with `withRetry` throws an unexpected error. This
+   * error isn't created by `lyla` instance itself, but thrown by `onRejected`
+   * or `onResolved` of `withRetry` or the process of creating retry request options
+   * defined by user.
+   *
+   * The error won't be created by `lyla` instance that not created with `withRetry`.
+   */
+  BROKEN_RETRY = 'BROKEN_RETRY',
+  /**
+   * A non-lyla error is return by `onRejected` or `onResolved`'s `reject` action.
+   * Lyla error won't be wrapped in this error.
+   *
+   * The error won't be created by `lyla` instance that not created with `withRetry`.
+   */
+  RETRY_REJECTED_BY_NON_LYLA_ERROR = 'RETRY_REJECTED_BY_NON_LYLA_ERROR'
 }
 
 export interface LylaBrokenOnHeadersReceivedError<
@@ -124,6 +140,32 @@ export interface LylaBrokenOnBeforeRequestError<
   context: C
   requestOptions: LylaRequestOptionsWithContext<C, M>
   spread: () => Omit<LylaBrokenOnBeforeRequestError<C, M>, 'spread'>
+}
+
+export interface LylaBrokenRetryError<
+  C,
+  M extends LylaAdapterMeta = LylaAdapterMeta
+> extends Error {
+  type: LYLA_ERROR.BROKEN_RETRY
+  error: unknown
+  detail: undefined
+  response: undefined
+  context: undefined
+  requestOptions: LylaRequestOptionsWithContext<C, M>
+  spread: () => Omit<LylaBrokenRetryError<C, M>, 'spread'>
+}
+
+export interface LylaRetryRejectedByNonLylaErrorError<
+  C,
+  M extends LylaAdapterMeta = LylaAdapterMeta
+> extends Error {
+  type: LYLA_ERROR.RETRY_REJECTED_BY_NON_LYLA_ERROR
+  error: unknown
+  detail: undefined
+  response: undefined
+  context: undefined
+  requestOptions: LylaRequestOptionsWithContext<C, M>
+  spread: () => Omit<LylaRetryRejectedByNonLylaErrorError<C, M>, 'spread'>
 }
 
 export interface LylaBrokenOnInitError<
@@ -260,6 +302,8 @@ export type LylaError<C = any, M extends LylaAdapterMeta = LylaAdapterMeta> =
   | LylaResponseError<C, M>
   | LylaNonResponseError<C, M>
   | LylaBrokenOnNonResponseErrorError<C, M>
+  | LylaBrokenRetryError<C, M>
+  | LylaRetryRejectedByNonLylaErrorError<C, M>
 
 type _LylaError = Error & { __lylaError?: true }
 

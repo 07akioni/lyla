@@ -7,19 +7,22 @@ import {
   LylaBrokenOnAfterResponseError,
   LylaBrokenOnResponseErrorError,
   LylaBrokenOnInitError,
-  LylaBrokenOnBeforeRequestError
+  LylaBrokenOnBeforeRequestError,
+  isLylaError
 } from './error'
 import { mergeUrl, mergeHeaders, mergeOptions } from './utils'
 import type {
   LylaAbortedError,
   LylaBrokenOnHeadersReceivedError,
   LylaBrokenOnNonResponseErrorError,
+  LylaBrokenRetryError,
   LylaError,
   LylaHttpError,
   LylaInvalidConversionError,
   LylaInvalidJSONError,
   LylaNetworkError,
   LylaNonResponseError,
+  LylaRetryRejectedByNonLylaErrorError,
   LylaTimeoutError
 } from './error'
 import type {
@@ -28,7 +31,10 @@ import type {
   Lyla,
   LylaAdapter,
   LylaAdapterMeta,
-  LylaRequestOptionsWithContext
+  LylaRequestOptionsWithContext,
+  LylaRetryOnRejectedCommand,
+  LylaRetryOnResolvedCommand,
+  LylaWithRetry
 } from './types'
 import { getStatusText } from './status'
 
@@ -644,21 +650,173 @@ export function createLyla<C, M extends LylaAdapterMeta>(
     }
   }
 
-  return {
-    lyla: Object.assign(request, {
-      get: createRequestShortcut('get'),
-      post: createRequestShortcut('post'),
-      put: createRequestShortcut('put'),
-      patch: createRequestShortcut('patch'),
-      head: createRequestShortcut('head'),
-      delete: createRequestShortcut('delete'),
-      options: createRequestShortcut('options'),
-      trace: createRequestShortcut('trace'),
-      connect: createRequestShortcut('connect'),
+  const lyla: Lyla<C, M> = Object.assign(request, {
+    get: createRequestShortcut('get'),
+    post: createRequestShortcut('post'),
+    put: createRequestShortcut('put'),
+    patch: createRequestShortcut('patch'),
+    head: createRequestShortcut('head'),
+    delete: createRequestShortcut('delete'),
+    options: createRequestShortcut('options'),
+    trace: createRequestShortcut('trace'),
+    connect: createRequestShortcut('connect'),
+    get errorType() {
+      return {} as LylaError<C, M>
+    },
+    withRetry: null as any
+  })
+
+  const withRetry: LylaWithRetry<C, M> = ({
+    onResolved,
+    onRejected,
+    createState
+  }) => {
+    async function requestWithRetry<T = any>(
+      options: LylaRequestOptions<C, M>
+    ): Promise<LylaResponse<T, C, M>> {
+      const state = createState()
+
+      let retryOptionsResolver:
+        | (() => Promise<LylaRequestOptions<C, M>> | LylaRequestOptions<C, M>)
+        | undefined = undefined
+
+      const makeBrokenRetryError = (error: unknown) =>
+        defineLylaError<M, C, LylaBrokenRetryError<C, M>>(
+          {
+            type: LYLA_ERROR.BROKEN_RETRY,
+            error: error,
+            message: 'Retry process throws an unexpected error',
+            detail: undefined,
+            response: undefined,
+            context: undefined,
+            requestOptions: options as LylaRequestOptionsWithContext<C, M>
+          },
+          undefined
+        )
+      const makeRetryRejectedError = (error: unknown) =>
+        defineLylaError<M, C, LylaRetryRejectedByNonLylaErrorError<C, M>>(
+          {
+            type: LYLA_ERROR.RETRY_REJECTED_BY_NON_LYLA_ERROR,
+            error: error,
+            message: 'Retry process is rejected by user with an non-lyla error',
+            detail: undefined,
+            response: undefined,
+            context: undefined,
+            requestOptions: options as LylaRequestOptionsWithContext<C, M>
+          },
+          undefined
+        )
+
+      while (true) {
+        let response: LylaResponse<any, C, M>
+        let finalOptions: LylaRequestOptions<C, M>
+
+        // options resolving throws an error
+        try {
+          finalOptions = retryOptionsResolver
+            ? await retryOptionsResolver()
+            : options
+        } catch (e) {
+          throw makeBrokenRetryError(e)
+        }
+
+        try {
+          response = await request(finalOptions)
+        } catch (e) {
+          // expected error
+          if (_isLylaError(e)) {
+            let rejected: LylaRetryOnRejectedCommand<C, M>
+            // onRejected throws an error
+            try {
+              rejected = await onRejected({
+                options: finalOptions as LylaRequestOptionsWithContext<C, M>,
+                state,
+                lyla,
+                error: e
+              })
+            } catch (e) {
+              throw makeBrokenRetryError(e)
+            }
+            // expected error
+            switch (rejected.action) {
+              case 'reject':
+                if (_isLylaError(rejected.value)) {
+                  throw rejected.value
+                } else {
+                  throw makeRetryRejectedError(rejected.value)
+                }
+              case 'retry':
+                retryOptionsResolver = rejected.value
+                continue
+            }
+          } else {
+            // If it goes here, this is a bug.
+            throw makeBrokenRetryError(e)
+          }
+        }
+
+        let resolved: LylaRetryOnResolvedCommand<any, C, M>
+        try {
+          resolved = await onResolved({
+            options: finalOptions as LylaRequestOptionsWithContext<C, M>,
+            response,
+            state
+          })
+        } catch (e) {
+          throw makeBrokenRetryError(e)
+        }
+
+        // expected error
+        switch (resolved.action) {
+          case 'resolve':
+            return resolved.value
+          case 'reject':
+            if (_isLylaError(resolved.value)) {
+              throw resolved.value
+            } else {
+              throw makeRetryRejectedError(resolved.value)
+            }
+          case 'retry':
+            retryOptionsResolver = resolved.value
+            continue
+        }
+      }
+    }
+
+    function createRequestWithRetryShortcut(
+      method: LylaRequestOptions['method']
+    ) {
+      return <T>(
+        url: string,
+        options?: Omit<LylaRequestOptions<C, M>, 'url' | 'method'>
+      ): Promise<LylaResponse<T, C, M>> => {
+        return requestWithRetry<T>({
+          ...options,
+          method,
+          url
+        })
+      }
+    }
+    return Object.assign(requestWithRetry, {
+      get: createRequestWithRetryShortcut('get'),
+      post: createRequestWithRetryShortcut('post'),
+      put: createRequestWithRetryShortcut('put'),
+      patch: createRequestWithRetryShortcut('patch'),
+      head: createRequestWithRetryShortcut('head'),
+      delete: createRequestWithRetryShortcut('delete'),
+      options: createRequestWithRetryShortcut('options'),
+      trace: createRequestWithRetryShortcut('trace'),
+      connect: createRequestWithRetryShortcut('connect'),
       get errorType() {
         return {} as LylaError<C, M>
       }
-    }),
+    })
+  }
+
+  lyla.withRetry = withRetry
+
+  return {
+    lyla,
     isLylaError(e: unknown): e is LylaError<C, M> {
       return _isLylaError(e)
     }

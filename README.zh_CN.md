@@ -97,6 +97,10 @@ function createLyla<C>(
 
 ### `lyla.trace<T>(options: LylaRequestOptions): LylaResponse<T>`
 
+### `lyla.withRetry(options: LylaWithRetryOptions) => Lyla`
+
+基于当前 lyla 实例创建一个带重试的 lyla 实例，详情见[重试请求](#重试请求)。
+
 #### `LylaRequestOptions` 类型
 
 ```ts
@@ -204,11 +208,14 @@ type LylaRequestOptions<C = undefined> = {
     /**
      * 响应处理遇到异常时的回调。只会在 LylaError 产生时被触发，用户触发的异常不会触发此回
      * 调，例如用户在 `onAfterResponse` 回调中抛出异常不会触发该回调。
-     * 
+     *
      * 在次回调结束之前，异常不会被抛出
      */
     onResponseError?: Array<
-      (error: LylaResponseError<C>, reject: (reason: unknown) => void) => void | Promise<void>
+      (
+        error: LylaResponseError<C>,
+        reject: (reason: unknown) => void
+      ) => void | Promise<void>
     >
     /**
      * 任何非 onResponseError 触发的错误都会触发次回调（除了 BROKEN_ON_NON_RESPONSE_ERROR）
@@ -394,7 +401,21 @@ export enum LYLA_ERROR {
   /**
    * `onHeadersReceived` 回调抛了异常
    */
-  BROKEN_ON_HEADERS_RECEIVED = 'BROKEN_ON_HEADERS_RECEIVED'
+  BROKEN_ON_HEADERS_RECEIVED = 'BROKEN_ON_HEADERS_RECEIVED',
+  /**
+   * 使用 `withRetry` 创建的 Lyla 实例抛出了一个意外的错误。
+   * 这个错误不是由 `lyla` 实例本身创建的，而是由 `withRetry` 的 `onRejected` 或 `onResolved` 抛出的，或者是用户定义的创建重试请求选项的过程中抛出的。
+   *
+   * 这个错误不会由未使用 `withRetry` 创建的 `lyla` 实例创建。
+   */
+  BROKEN_RETRY = 'BROKEN_RETRY',
+  /**
+   * 非 lyla 错误是由 `onRejected` 或 `onResolved` 的 `reject` 动作返回的。
+   * Lyla 错误不会被包装在此错误中。
+   *
+   * 该错误不会由未使用 `withRetry` 创建的 `lyla` 实例创建。
+   */
+  RETRY_REJECTED_BY_NON_LYLA_ERROR = 'RETRY_REJECTED_BY_NON_LYLA_ERROR'
 }
 ```
 
@@ -481,6 +502,99 @@ lyla.get('/foo').then((response) => {
   console.log(response.context.duration)
 })
 ```
+
+## 重试请求
+
+Lyla 提供了一个 `withRetry` 方法，可以用来创建一个带重试的 lyla 实例。
+
+`lyla.withRetry(options: LylaWithRetryOptions) => Lyla`
+
+`LylaWithRetryOptions` 类型为（简化理解的版本）：
+
+```ts
+type LylaWithRetryOptions<S> = {
+  onResolved: (params: {
+    state: S
+    options: LylaRequestOptions
+    response: LylaResponse
+  }) => Promise<
+    | {
+        action: 'retry'
+        value: () => Promise<LylaRequestOptions> | LylaRequestOptions
+      }
+    | {
+        action: 'resolve'
+        value: LylaResponse
+      }
+    | {
+        action: 'reject'
+        // Will be wrapped in lyla custom error
+        value: unknown
+      }
+  >
+  onRejected: (params: {
+    state: S
+    options: LylaRequestOptionsWithContext<C, M>
+    lyla: Lyla<C, M>
+    error: LylaError<C, M>
+  }) => Promise<
+    | {
+        action: 'retry'
+        value: () => Promise<LylaRequestOptions> | LylaRequestOptions
+      }
+    | {
+        action: 'reject'
+        // Will be wrapped in lyla custom error
+        value: unknown
+      }
+  >
+  createState: () => S
+}
+```
+
+`lyla.withRetry` 方法会返回一个新的 lyla 实例，这个 lyla 实例 API 拥有除了 `retry` 之外所有的 lyla 方法，这个实例会在请求失败时根据 `onResolved` 和 `onRejected` 的返回值来决定是重试、继续还是拒绝。
+
+`createState` 会在每次请求开始时调用，用于创建一个新的状态对象，这个状态对象会在 `onResolved` 和 `onRejected` 中传递，你可以在这个对象中保存一些状态，例如重试次数。
+
+下面是一个重试三次的例子：
+
+```ts
+import { createLyla } from '@lylajs/*' // * 是你需要的平台
+
+const { lyla: _lyla } = createLyla({ context: null })
+
+const lyla = _lyla.withRetry({
+  createState: () => ({
+    count: 0
+  }),
+  onResolved: async ({ response }) => {
+    return {
+      action: 'resolve',
+      value: response
+    }
+  },
+  onRejected: async ({ state, error, options }) => {
+    state.count += 1
+    if (state.count > 3) {
+      return {
+        action: 'reject',
+        value: error
+      }
+    } else {
+      return {
+        action: 'retry',
+        // Retry with the original options
+        value: () => options
+      }
+    }
+  }
+})
+```
+
+一个通过 `lyla.withRetry` 创建的实例在发送请求时可能会有三类错误：
+1. 通过 reject action 返回了一个 Lyla Error，这个错误会被直接抛出，不会被包装
+2. 通过 reject action 返回了一个非 Lyla Error（比如 `error1`），这个错误会被包装成一个 `RETRY_REJECTED_BY_NON_LYLA_ERROR` 类型的错误并抛出（比如 `error2`），`error1` 可以通过 `error2.error` 获取
+3. `onResolved` 或 `onRejected` 抛出了异常，或者 retry action 的 value 函数抛出了异常，这个错误会被包装成一个 `BROKEN_RETRY` 类型的错误并抛出
 
 ## FAQ
 
