@@ -537,9 +537,9 @@ type LylaWithRetryOptions<S> = {
   >
   onRejected: (params: {
     state: S
-    options: LylaRequestOptionsWithContext<C, M>
-    lyla: Lyla<C, M>
-    error: LylaError<C, M>
+    options: LylaRequestOptions
+    lyla: Lyla
+    error: LylaError
   }) => Promise<
     | {
         action: 'retry'
