@@ -284,6 +284,7 @@ export type LylaResponseError<
   | LylaAbortedError<C, M>
   | LylaTimeoutError<C, M>
 
+// Error that can appear in `onNonResponseError` hook.
 export type LylaNonResponseError<
   C = any,
   M extends LylaAdapterMeta = LylaAdapterMeta
@@ -302,6 +303,7 @@ export type LylaError<C = any, M extends LylaAdapterMeta = LylaAdapterMeta> =
   | LylaResponseError<C, M>
   | LylaNonResponseError<C, M>
   | LylaBrokenOnNonResponseErrorError<C, M>
+  // Retry related error would only be thrown by lyla instance created with `withRetry`.
   | LylaBrokenRetryError<C, M>
   | LylaRetryRejectedByNonLylaErrorError<C, M>
 
