@@ -1,4 +1,4 @@
-import { createLyla } from '@lylajs/web'
+import { createLyla, LYLA_ERROR } from '@lylajs/web'
 
 // lyla.get<'GiGi'>('/foo').then((response) => {
 //   response.json
@@ -11,7 +11,7 @@ import { createLyla } from '@lylajs/web'
 // lyla.trace
 // lyla.connect
 
-const { lyla, isLylaError } = createLyla({
+const { lyla, isLylaError, isLylaErrorWithRetry } = createLyla({
   context: {
     startTime: -1,
     endTime: -1,
@@ -25,11 +25,9 @@ const { lyla, isLylaError } = createLyla({
       }
     ],
     onResponseError: [
-      (options) => {
-        options.context.endTime = Date.now()
-        options.context.duration =
-          options.context.endTime - options.context.startTime
-        return options
+      (error) => {
+        error.context.endTime = Date.now()
+        error.context.duration = error.context.endTime - error.context.startTime
       }
     ],
     onAfterResponse: [
@@ -54,5 +52,17 @@ try {
 } catch (e) {
   if (isLylaError(e)) {
     e.context.duration
+  }
+  if (isLylaErrorWithRetry(e)) {
+    switch (e.type) {
+      case LYLA_ERROR.RETRY_REJECTED_BY_NON_LYLA_ERROR:
+        e.context
+        break
+      case LYLA_ERROR.BROKEN_RETRY:
+        e.context
+        break
+      case LYLA_ERROR.ABORTED:
+        e.context.duration
+    }
   }
 }

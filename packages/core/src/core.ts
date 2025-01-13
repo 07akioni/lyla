@@ -17,6 +17,7 @@ import type {
   LylaBrokenOnNonResponseErrorError,
   LylaBrokenRetryError,
   LylaError,
+  LylaErrorWithRetry,
   LylaHttpError,
   LylaInvalidConversionError,
   LylaInvalidJSONError,
@@ -61,6 +62,7 @@ export function createLyla<C, M extends LylaAdapterMeta>(
   ...overrides: LylaRequestOptions<C, M>[]
 ): {
   isLylaError(e: unknown): e is LylaError<C, M>
+  isLylaErrorWithRetry(e: unknown): e is LylaErrorWithRetry<C, M>
   lyla: Lyla<C, M>
 } {
   const mergedLylaOptions = mergeOptions<LylaRequestOptionsWithContext<C, M>>(
@@ -151,7 +153,8 @@ export function createLyla<C, M extends LylaAdapterMeta>(
           error: e,
           response: undefined,
           context: optionsWithContext.context,
-          requestOptions: optionsWithContext
+          requestOptions: optionsWithContext,
+          isRetryError: true
         },
         undefined
       )
@@ -702,6 +705,7 @@ export function createLyla<C, M extends LylaAdapterMeta>(
             detail: undefined,
             response: undefined,
             context: undefined,
+            isRetryError: true,
             requestOptions: options as LylaRequestOptionsWithContext<C, M>
           },
           undefined
@@ -809,6 +813,11 @@ export function createLyla<C, M extends LylaAdapterMeta>(
       connect: createRequestWithRetryShortcut('connect'),
       get errorType() {
         return {} as LylaError<C, M>
+      },
+      withRetry() {
+        throw new Error(
+          "Can't call `withRetry` on a lyla instance with created by `withRetry`"
+        )
       }
     })
   }
@@ -818,6 +827,9 @@ export function createLyla<C, M extends LylaAdapterMeta>(
   return {
     lyla,
     isLylaError(e: unknown): e is LylaError<C, M> {
+      return _isLylaError(e)
+    },
+    isLylaErrorWithRetry(e: unknown): e is LylaErrorWithRetry<C, M> {
       return _isLylaError(e)
     }
   }

@@ -8,7 +8,9 @@ import type {
 import type {
   LylaResponseError as LylaCoreResponseError,
   LylaError as LylaCoreError,
-  LylaNonResponseError as LylaCoreNonResponseError
+  LylaNonResponseError as LylaCoreNonResponseError,
+  LylaRetryError as LylaCoreRetryError,
+  LylaErrorWithRetry as LylaCoreErrorWithRetry
 } from '@lylajs/core'
 import type { LylaAdapterMeta } from './adapter'
 
@@ -36,6 +38,14 @@ export type LylaNonResponseError<C = undefined> = LylaCoreNonResponseError<
   LylaAdapterMeta
 >
 export type LylaError<C = undefined> = LylaCoreError<C, LylaAdapterMeta>
+export type LylaRetryError<C = undefined> = LylaCoreRetryError<
+  C,
+  LylaAdapterMeta
+>
+export type LylaErrorWithRetry<C = undefined> = LylaCoreErrorWithRetry<
+  C,
+  LylaAdapterMeta
+>
 
 export type LylaProgress = LylaCoreProgress<LylaAdapterMeta>
 

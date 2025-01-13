@@ -5,7 +5,7 @@ import type {
   LylaRequestOptionsWithContext
 } from './reexports'
 
-export const { lyla, isLylaError } = coreCreateLyla(adapter, {
+export const { lyla, isLylaError, isLylaErrorWithRetry } = coreCreateLyla(adapter, {
   context: undefined
 })
 

@@ -13,7 +13,10 @@ const adapter: any =
       (require('@lylajs/node') as typeof import('@lylajs/node')).adapter
     : (require('@lylajs/web') as typeof import('@lylajs/web')).adapter
 
-export const { lyla, isLylaError } = coreCreateLyla<undefined, LylaAdapterMeta>(
+export const { lyla, isLylaError, isLylaErrorWithRetry } = coreCreateLyla<
+  undefined,
+  LylaAdapterMeta
+>(
   ({
     url,
     method,

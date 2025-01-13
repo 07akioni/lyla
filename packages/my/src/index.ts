@@ -1,5 +1,6 @@
 export { adapter } from './adapter'
 export type { LylaAdapterMeta } from './adapter'
+export { lyla, isLylaError, createLyla, isLylaErrorWithRetry } from './instance'
 export type {
   Lyla,
   LylaError,
@@ -7,7 +8,8 @@ export type {
   LylaRequestOptions,
   LylaResponse,
   LylaResponseError,
-  LylaNonResponseError
+  LylaNonResponseError,
+  LylaRetryError,
+  LylaErrorWithRetry
 } from './reexports'
-export { LylaAbortController, LYLA_ERROR } from './reexports'
-export { lyla, isLylaError, createLyla } from './instance'
+export { LYLA_ERROR, LylaAbortController } from './reexports'

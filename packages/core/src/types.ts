@@ -211,17 +211,7 @@ export type LylaProgress<C, M extends LylaAdapterMeta = LylaAdapterMeta> = {
 
 export type LylaRequestHeaders = Record<string, string | number | undefined>
 
-export type Lyla<
-  C = any,
-  M extends LylaAdapterMeta = LylaAdapterMeta
-> = LylaWithoutRetry<C, M> & {
-  withRetry: LylaWithRetry<C, M>
-}
-
-export type LylaWithoutRetry<
-  C = any,
-  M extends LylaAdapterMeta = LylaAdapterMeta
-> = {
+export type Lyla<C = any, M extends LylaAdapterMeta = LylaAdapterMeta> = {
   <T = any>(options: LylaRequestOptions<C, M>): Promise<LylaResponse<T, C, M>>
 } & Record<
   Lowercase<M['method']>,
@@ -231,6 +221,8 @@ export type LylaWithoutRetry<
   ) => Promise<LylaResponse<T, C, M>>
 > & {
     errorType: LylaError<C, M>
+  } & {
+    withRetry: LylaWithRetry<C, M>
   }
 
 export type LylaRetryOnRejectedCommand<
@@ -282,7 +274,7 @@ export type LylaWithRetryOptions<C, M extends LylaAdapterMeta, S> = {
 export type LylaWithRetry<
   C = any,
   M extends LylaAdapterMeta = LylaAdapterMeta
-> = <S = any>(options: LylaWithRetryOptions<C, M, S>) => LylaWithoutRetry<C, M>
+> = <S = any>(options: LylaWithRetryOptions<C, M, S>) => Lyla<C, M>
 
 export interface LylaAdapterMeta {
   method: LylaMethod

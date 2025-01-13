@@ -165,6 +165,7 @@ export interface LylaRetryRejectedByNonLylaErrorError<
   response: undefined
   context: undefined
   requestOptions: LylaRequestOptionsWithContext<C, M>
+  isRetryError: true
   spread: () => Omit<LylaRetryRejectedByNonLylaErrorError<C, M>, 'spread'>
 }
 
@@ -178,6 +179,7 @@ export interface LylaBrokenOnInitError<
   response: undefined
   context: C
   requestOptions: LylaRequestOptionsWithContext<C, M>
+  isRetryError: true
   spread: () => Omit<LylaBrokenOnInitError<C, M>, 'spread'>
 }
 
@@ -299,13 +301,22 @@ export type LylaNonResponseError<
   | LylaBrokenOnHeadersReceivedError<C, M>
   | LylaDataConversionError<C, M>
 
+export type LylaRetryError<
+  C = any,
+  M extends LylaAdapterMeta = LylaAdapterMeta
+> =
+  // Retry related error would only be thrown by lyla instance created with `withRetry`.
+  LylaBrokenRetryError<C, M> | LylaRetryRejectedByNonLylaErrorError<C, M>
+
 export type LylaError<C = any, M extends LylaAdapterMeta = LylaAdapterMeta> =
   | LylaResponseError<C, M>
   | LylaNonResponseError<C, M>
   | LylaBrokenOnNonResponseErrorError<C, M>
-  // Retry related error would only be thrown by lyla instance created with `withRetry`.
-  | LylaBrokenRetryError<C, M>
-  | LylaRetryRejectedByNonLylaErrorError<C, M>
+
+export type LylaErrorWithRetry<
+  C = any,
+  M extends LylaAdapterMeta = LylaAdapterMeta
+> = LylaError<C, M> | LylaRetryError<C, M>
 
 type _LylaError = Error & { __lylaError?: true }
 
@@ -318,7 +329,7 @@ function createLylaError(): _LylaError {
 export function defineLylaError<
   M extends LylaAdapterMeta,
   C,
-  T extends LylaError<C, M>
+  T extends LylaError<C, M> | LylaRetryError<C, M>
 >(lylaErrorProps: Omit<T, 'name' | 'spread'>, stack: string | undefined): T {
   const lylaError = createLylaError()
   lylaError.name = `LylaError[${lylaErrorProps.type}]`
@@ -349,5 +360,16 @@ export function defineLylaError<
 }
 
 export function isLylaError(error: unknown): error is LylaError<any, any> {
+  return (
+    typeof error === 'object' &&
+    !!error &&
+    '__lylaError' in error &&
+    !('isRetryError' in error)
+  )
+}
+
+export function isLylaErrorWithRetry(
+  error: unknown
+): error is LylaErrorWithRetry<any, any> {
   return typeof error === 'object' && !!error && '__lylaError' in error
 }
