@@ -597,6 +597,7 @@ const lyla = _lyla.withRetry({
 1. 通过 reject action 返回了一个 Lyla Error，这个错误会被直接抛出，不会被包装
 2. 通过 reject action 返回了一个非 Lyla Error（比如 `error1`），这个错误会被包装成一个 `RETRY_REJECTED_BY_NON_LYLA_ERROR` 类型的错误并抛出（比如 `error2`），`error1` 可以通过 `error2.error` 获取
 3. `onResolved` 或 `onRejected` 抛出了异常，或者 retry action 的 value 函数抛出了异常，这个错误会被包装成一个 `BROKEN_RETRY` 类型的错误并抛出
+4. 重试可能会抛出两种独特的 Error，`RETRY_REJECTED_BY_NON_LYLA_ERROR` 和 `BROKEN_RETRY`，这两种错误不会被任何 hook 捕获，也不会被 `isLylaError` 判定为 `true`。如果你需要判断这两种错误，你需要使用 `isLylaErrorWithRetry`，这个函数会判断所有的 Lyla Error。
 
 ## FAQ
 
