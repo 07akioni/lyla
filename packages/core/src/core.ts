@@ -88,7 +88,10 @@ export function createLyla<C, M extends LylaAdapterMeta>(
             : resolvedContext
       }
     )
-    async function handleNonResponseError(error: LylaNonResponseError<C, M>) {
+    async function handleNonResponseError(
+      error: LylaNonResponseError<C, M>,
+      shouldRejectOriginalRequest: boolean
+    ) {
       if (_options.hooks?.onNonResponseError) {
         try {
           for (const hook of _options.hooks?.onNonResponseError) {
@@ -97,7 +100,9 @@ export function createLyla<C, M extends LylaAdapterMeta>(
               await maybePromise
             }
           }
-          _reject(error)
+          if (shouldRejectOriginalRequest) {
+            _reject(error)
+          }
         } catch (e) {
           _reject(
             defineLylaError<M, C, LylaBrokenOnNonResponseErrorError<C, M>>(
@@ -116,7 +121,9 @@ export function createLyla<C, M extends LylaAdapterMeta>(
           return
         }
       } else {
-        _reject(error)
+        if (shouldRejectOriginalRequest) {
+          _reject(error)
+        }
       }
     }
     try {
@@ -158,7 +165,7 @@ export function createLyla<C, M extends LylaAdapterMeta>(
         },
         undefined
       )
-      handleNonResponseError(brokenOnInitError)
+      handleNonResponseError(brokenOnInitError, true)
       throw brokenOnInitError
     }
 
@@ -212,7 +219,7 @@ export function createLyla<C, M extends LylaAdapterMeta>(
           },
           undefined
         )
-        handleNonResponseError(badRequestError)
+        handleNonResponseError(badRequestError, true)
         throw badRequestError
       }
       if (queryString.length) {
@@ -247,7 +254,7 @@ export function createLyla<C, M extends LylaAdapterMeta>(
           },
           undefined
         )
-        handleNonResponseError(brokenOnBeforeRequestError)
+        handleNonResponseError(brokenOnBeforeRequestError, true)
         throw brokenOnBeforeRequestError
       }
     }
@@ -272,7 +279,7 @@ export function createLyla<C, M extends LylaAdapterMeta>(
           },
           undefined
         )
-        handleNonResponseError(badRequestError)
+        handleNonResponseError(badRequestError, true)
         throw badRequestError
       }
       _options.body = JSON.stringify(_options.json)
@@ -317,7 +324,7 @@ export function createLyla<C, M extends LylaAdapterMeta>(
             },
             undefined
           )
-          handleNonResponseError(brokenOnResponseErrorError)
+          handleNonResponseError(brokenOnResponseErrorError, true)
           return
         }
       } else {
@@ -464,7 +471,7 @@ export function createLyla<C, M extends LylaAdapterMeta>(
                   },
                   undefined
                 )
-                handleNonResponseError(brokenOnHeadersReceived)
+                handleNonResponseError(brokenOnHeadersReceived, true)
                 return
               }
             }
@@ -510,7 +517,7 @@ export function createLyla<C, M extends LylaAdapterMeta>(
                 },
                 undefined
               )
-              handleNonResponseError(dataConversionError)
+              handleNonResponseError(dataConversionError, false)
               throw dataConversionError
             }
             if (_cachedJson === undefined) {
@@ -539,7 +546,7 @@ export function createLyla<C, M extends LylaAdapterMeta>(
                 },
                 undefined
               )
-              handleNonResponseError(dataConversionError)
+              handleNonResponseError(dataConversionError, false)
               throw dataConversionError
             }
           }
@@ -590,7 +597,7 @@ export function createLyla<C, M extends LylaAdapterMeta>(
               },
               undefined
             )
-            handleNonResponseError(brokenOnAfterResponseErrorError)
+            handleNonResponseError(brokenOnAfterResponseErrorError, true)
             return
           }
         }
@@ -634,7 +641,7 @@ export function createLyla<C, M extends LylaAdapterMeta>(
         },
         undefined
       )
-      handleNonResponseError(badRequestError)
+      handleNonResponseError(badRequestError, true)
       throw badRequestError
     }
     return requestPromise
