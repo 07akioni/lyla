@@ -152,6 +152,7 @@ export interface LylaBrokenRetryError<
   response: undefined
   context: undefined
   requestOptions: LylaRequestOptionsWithContext<C, M>
+  isRetryError: true
   spread: () => Omit<LylaBrokenRetryError<C, M>, 'spread'>
 }
 
@@ -179,7 +180,6 @@ export interface LylaBrokenOnInitError<
   response: undefined
   context: C
   requestOptions: LylaRequestOptionsWithContext<C, M>
-  isRetryError: true
   spread: () => Omit<LylaBrokenOnInitError<C, M>, 'spread'>
 }
 

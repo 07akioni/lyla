@@ -161,7 +161,6 @@ export function createLyla<C, M extends LylaAdapterMeta>(
           response: undefined,
           context: optionsWithContext.context,
           requestOptions: optionsWithContext,
-          isRetryError: true
         },
         undefined
       )
@@ -699,6 +698,7 @@ export function createLyla<C, M extends LylaAdapterMeta>(
             detail: undefined,
             response: undefined,
             context: undefined,
+            isRetryError: true,
             requestOptions: options as LylaRequestOptionsWithContext<C, M>
           },
           undefined
