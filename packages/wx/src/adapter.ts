@@ -24,7 +24,9 @@ export interface LylaAdapterMeta extends LylaCoreAdapterMeta {
   requestBody: string | ArrayBuffer
   progressDetail: { data: ArrayBuffer; responseText: string }
   originalRequest: WxRequestTask
-  extraOptions: never
+  extraOptions: Partial<{
+    enableHttp2: boolean
+  }>
 }
 
 export const adapter: LylaAdapter<LylaAdapterMeta> = ({
@@ -39,7 +41,8 @@ export const adapter: LylaAdapter<LylaAdapterMeta> = ({
   // json,
   // withCredentials,
   onDownloadProgress,
-  onHeadersReceived
+  onHeadersReceived,
+  extraOptions
   // onUploadProgress,
 }): {
   abort: () => void
@@ -52,6 +55,7 @@ export const adapter: LylaAdapter<LylaAdapterMeta> = ({
     header: headers,
     data: body,
     responseType,
+    enableHttp2: extraOptions?.enableHttp2,
     enableChunked: !!onDownloadProgress,
     // https://developers.weixin.qq.com/miniprogram/dev/api/network/request/wx.request.html
     // Docs said if it's not json, response data won't be transformed to json.
