@@ -26,6 +26,12 @@ export interface LylaAdapterMeta extends LylaCoreAdapterMeta {
   originalRequest: WxRequestTask
   extraOptions: Partial<{
     enableHttp2: boolean
+    timeout: number
+    enableQuic: boolean
+    enableCache: boolean
+    enableHttpDNS: boolean
+    httpDNSServiceId: string
+    forceCellularNetwork: boolean
   }>
 }
 
@@ -56,6 +62,12 @@ export const adapter: LylaAdapter<LylaAdapterMeta> = ({
     data: body,
     responseType,
     enableHttp2: extraOptions?.enableHttp2,
+    timeout: extraOptions?.timeout,
+    enableQuic: extraOptions?.enableQuic,
+    enableCache: extraOptions?.enableCache,
+    enableHttpDNS: extraOptions?.enableHttpDNS,
+    httpDNSServiceId: extraOptions?.httpDNSServiceId,
+    forceCellularNetwork: extraOptions?.forceCellularNetwork,
     enableChunked: !!onDownloadProgress,
     // https://developers.weixin.qq.com/miniprogram/dev/api/network/request/wx.request.html
     // Docs said if it's not json, response data won't be transformed to json.
