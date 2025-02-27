@@ -266,7 +266,7 @@ export type LylaWithRetryOptions<C, M extends LylaAdapterMeta, S> = {
     state: S
     options: LylaRequestOptionsWithContext<C, M>
     lyla: Lyla<C, M>
-    error: LylaError<C, M>
+    error: unknown
   }) => Promise<LylaRetryOnRejectedCommand<C, M>>
   createState: () => S
 }

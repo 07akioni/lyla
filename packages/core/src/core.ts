@@ -7,8 +7,7 @@ import {
   LylaBrokenOnAfterResponseError,
   LylaBrokenOnResponseErrorError,
   LylaBrokenOnInitError,
-  LylaBrokenOnBeforeRequestError,
-  isLylaError
+  LylaBrokenOnBeforeRequestError
 } from './error'
 import { mergeUrl, mergeHeaders, mergeOptions } from './utils'
 import type {
@@ -160,7 +159,7 @@ export function createLyla<C, M extends LylaAdapterMeta>(
           error: e,
           response: undefined,
           context: optionsWithContext.context,
-          requestOptions: optionsWithContext,
+          requestOptions: optionsWithContext
         },
         undefined
       )
@@ -734,35 +733,31 @@ export function createLyla<C, M extends LylaAdapterMeta>(
         try {
           response = await request(finalOptions)
         } catch (e) {
-          // expected error
-          if (_isLylaError(e)) {
-            let rejected: LylaRetryOnRejectedCommand<C, M>
-            // onRejected throws an error
-            try {
-              rejected = await onRejected({
-                options: finalOptions as LylaRequestOptionsWithContext<C, M>,
-                state,
-                lyla,
-                error: e
-              })
-            } catch (e) {
-              throw makeBrokenRetryError(e)
-            }
-            // expected error
-            switch (rejected.action) {
-              case 'reject':
-                if (_isLylaError(rejected.value)) {
-                  throw rejected.value
-                } else {
-                  throw makeRetryRejectedError(rejected.value)
-                }
-              case 'retry':
-                retryOptionsResolver = rejected.value
-                continue
-            }
-          } else {
-            // If it goes here, this is a bug.
+          let rejected: LylaRetryOnRejectedCommand<C, M>
+          // onRejected throws an error
+          try {
+            rejected = await onRejected({
+              options: finalOptions as LylaRequestOptionsWithContext<C, M>,
+              state,
+              lyla,
+              // The error can be a lyla error, or a custom error thrown by user
+              // in lyla hooks.
+              error: e
+            })
+          } catch (e) {
             throw makeBrokenRetryError(e)
+          }
+          // expected error
+          switch (rejected.action) {
+            case 'reject':
+              if (_isLylaError(rejected.value)) {
+                throw rejected.value
+              } else {
+                throw makeRetryRejectedError(rejected.value)
+              }
+            case 'retry':
+              retryOptionsResolver = rejected.value
+              continue
           }
         }
 
