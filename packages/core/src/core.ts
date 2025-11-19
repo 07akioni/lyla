@@ -174,6 +174,7 @@ export function createLyla<C, M extends LylaAdapterMeta>(
       optionsWithContext
     )
 
+    _options.context = optionsWithContext.context
     _options.method = _options.method?.toUpperCase() as any
     _options.responseType = options.responseType || 'text'
     _options.url = _options.url || ''
