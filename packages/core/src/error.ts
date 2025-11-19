@@ -1,6 +1,7 @@
 import type {
   LylaAdapterMeta,
   LylaRequestOptionsWithContext,
+  LylaRequestOptions,
   LylaResponse
 } from './types'
 
@@ -150,8 +151,8 @@ export interface LylaBrokenRetryError<
   error: unknown
   detail: undefined
   response: undefined
-  context: undefined
-  requestOptions: LylaRequestOptionsWithContext<C, M>
+  context: C | undefined
+  requestOptions: LylaRequestOptions<C, M>
   isRetryError: true
   spread: () => Omit<LylaBrokenRetryError<C, M>, 'spread'>
 }
@@ -164,8 +165,8 @@ export interface LylaRetryRejectedByNonLylaErrorError<
   error: unknown
   detail: undefined
   response: undefined
-  context: undefined
-  requestOptions: LylaRequestOptionsWithContext<C, M>
+  context: C
+  requestOptions: LylaRequestOptions<C, M>
   isRetryError: true
   spread: () => Omit<LylaRetryRejectedByNonLylaErrorError<C, M>, 'spread'>
 }

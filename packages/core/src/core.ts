@@ -69,7 +69,8 @@ export function createLyla<C, M extends LylaAdapterMeta>(
     ...overrides
   )
   async function request<T = any>(
-    options: LylaRequestOptions<C, M>
+    options: LylaRequestOptions<C, M>,
+    onContextReady?: (c: C) => void
   ): Promise<LylaResponse<T, C, M>> {
     const resolvedContext =
       options.context === undefined
@@ -87,6 +88,7 @@ export function createLyla<C, M extends LylaAdapterMeta>(
             : resolvedContext
       }
     )
+    onContextReady?.(optionsWithContext.context)
     async function handleNonResponseError(
       error: LylaNonResponseError<C, M>,
       shouldRejectOriginalRequest: boolean
@@ -688,7 +690,7 @@ export function createLyla<C, M extends LylaAdapterMeta>(
         | (() => Promise<LylaRequestOptions<C, M>> | LylaRequestOptions<C, M>)
         | undefined = undefined
 
-      const makeBrokenRetryError = (error: unknown) =>
+      const makeBrokenRetryError = (error: unknown, context: C | undefined) =>
         defineLylaError<M, C, LylaBrokenRetryError<C, M>>(
           {
             type: LYLA_ERROR.BROKEN_RETRY,
@@ -696,13 +698,13 @@ export function createLyla<C, M extends LylaAdapterMeta>(
             message: 'Retry process throws an unexpected error',
             detail: undefined,
             response: undefined,
-            context: undefined,
+            context,
             isRetryError: true,
-            requestOptions: options as LylaRequestOptionsWithContext<C, M>
+            requestOptions: options
           },
           undefined
         )
-      const makeRetryRejectedError = (error: unknown) =>
+      const makeRetryRejectedError = (error: unknown, context: C) =>
         defineLylaError<M, C, LylaRetryRejectedByNonLylaErrorError<C, M>>(
           {
             type: LYLA_ERROR.RETRY_REJECTED_BY_NON_LYLA_ERROR,
@@ -710,9 +712,9 @@ export function createLyla<C, M extends LylaAdapterMeta>(
             message: 'Retry process is rejected by user with an non-lyla error',
             detail: undefined,
             response: undefined,
-            context: undefined,
+            context,
             isRetryError: true,
-            requestOptions: options as LylaRequestOptionsWithContext<C, M>
+            requestOptions: options
           },
           undefined
         )
@@ -727,17 +729,19 @@ export function createLyla<C, M extends LylaAdapterMeta>(
             ? await retryOptionsResolver()
             : options
         } catch (e) {
-          throw makeBrokenRetryError(e)
+          throw makeBrokenRetryError(e, undefined)
         }
 
+        let context: C | undefined = undefined
         try {
-          response = await request(finalOptions)
+          response = await request(finalOptions, v => context = v)
         } catch (e) {
           let rejected: LylaRetryOnRejectedCommand<C, M>
           // onRejected throws an error
           try {
             rejected = await onRejected({
-              options: finalOptions as LylaRequestOptionsWithContext<C, M>,
+              options: finalOptions,
+              context: context!,
               state,
               lyla,
               // The error can be a lyla error, or a custom error thrown by user
@@ -745,7 +749,7 @@ export function createLyla<C, M extends LylaAdapterMeta>(
               error: e
             })
           } catch (e) {
-            throw makeBrokenRetryError(e)
+            throw makeBrokenRetryError(e, context)
           }
           // expected error
           switch (rejected.action) {
@@ -753,7 +757,7 @@ export function createLyla<C, M extends LylaAdapterMeta>(
               if (_isLylaError(rejected.value)) {
                 throw rejected.value
               } else {
-                throw makeRetryRejectedError(rejected.value)
+                throw makeRetryRejectedError(rejected.value, context!)
               }
             case 'retry':
               retryOptionsResolver = rejected.value
@@ -764,12 +768,13 @@ export function createLyla<C, M extends LylaAdapterMeta>(
         let resolved: LylaRetryOnResolvedCommand<any, C, M>
         try {
           resolved = await onResolved({
-            options: finalOptions as LylaRequestOptionsWithContext<C, M>,
+            options: finalOptions,
+            context: context!,
             response,
             state
           })
         } catch (e) {
-          throw makeBrokenRetryError(e)
+          throw makeBrokenRetryError(e, context)
         }
 
         // expected error
@@ -780,7 +785,7 @@ export function createLyla<C, M extends LylaAdapterMeta>(
             if (_isLylaError(resolved.value)) {
               throw resolved.value
             } else {
-              throw makeRetryRejectedError(resolved.value)
+              throw makeRetryRejectedError(resolved.value, context!)
             }
           case 'retry':
             retryOptionsResolver = resolved.value

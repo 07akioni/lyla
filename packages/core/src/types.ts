@@ -259,12 +259,14 @@ export type LylaRetryOnResolvedCommand<
 export type LylaWithRetryOptions<C, M extends LylaAdapterMeta, S> = {
   onResolved: (params: {
     state: S
-    options: LylaRequestOptionsWithContext<C, M>
+    options: LylaRequestOptions<C, M>
+    context: C,
     response: LylaResponse<any, C, M>
   }) => Promise<LylaRetryOnResolvedCommand<any, C, M>>
   onRejected: (params: {
     state: S
-    options: LylaRequestOptionsWithContext<C, M>
+    options: LylaRequestOptions<C, M>
+    context: C,
     lyla: Lyla<C, M>
     error: unknown
   }) => Promise<LylaRetryOnRejectedCommand<C, M>>

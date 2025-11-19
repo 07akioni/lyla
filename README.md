@@ -531,10 +531,11 @@ Lyla provides a `withRetry` method to create a lyla instance with retry capabili
 The type `LylaWithRetryOptions` is (simplified version):
 
 ```ts
-type LylaWithRetryOptions<S> = {
+type LylaWithRetryOptions<C, S> = {
   onResolved: (params: {
     state: S
     options: LylaRequestOptions
+    context: C
     response: LylaResponse
   }) => Promise<
     | {
@@ -552,7 +553,8 @@ type LylaWithRetryOptions<S> = {
   >
   onRejected: (params: {
     state: S
-    options: LylaRequestOptionsWithContext
+    options: LylaRequestOptions
+    context: C
     lyla: Lyla
     error: LylaError
   }) => Promise<

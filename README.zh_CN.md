@@ -516,10 +516,11 @@ Lyla 提供了一个 `withRetry` 方法，可以用来创建一个带重试的 l
 `LylaWithRetryOptions` 类型为（简化理解的版本）：
 
 ```ts
-type LylaWithRetryOptions<S> = {
+type LylaWithRetryOptions<C, S> = {
   onResolved: (params: {
     state: S
     options: LylaRequestOptions
+    context: C
     response: LylaResponse
   }) => Promise<
     | {
@@ -538,6 +539,7 @@ type LylaWithRetryOptions<S> = {
   onRejected: (params: {
     state: S
     options: LylaRequestOptions
+    context: C
     lyla: Lyla
     error: LylaError
   }) => Promise<

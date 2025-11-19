@@ -35,3 +35,5 @@ const lyla = _lyla.withRetry({
   }
 })
 ```
+
+# 在文档中说明 context 会被 clone...
