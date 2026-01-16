@@ -602,7 +602,7 @@ export function createLyla<C, M extends LylaAdapterMeta>(
             return
           }
         }
-
+        cleanup()
         _resolve(response)
       }
     })
@@ -735,7 +735,7 @@ export function createLyla<C, M extends LylaAdapterMeta>(
 
         let context: C | undefined = undefined
         try {
-          response = await request(finalOptions, v => context = v)
+          response = await request(finalOptions, (v) => (context = v))
         } catch (e) {
           let rejected: LylaRetryOnRejectedCommand<C, M>
           // onRejected throws an error
