@@ -1,6 +1,6 @@
 {
   "name": "test",
-  "version": "2.1.3",
+  "version": "2.1.4",
   "scripts": {
     "dev": "vite --host",
     "check-type": "tsc -p tsconfig.json",
