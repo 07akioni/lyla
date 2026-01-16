@@ -1,6 +1,6 @@
 {
   "name": "lyla",
-  "version": "2.1.2",
+  "version": "2.1.3",
   "scripts": {
     "build": "rm -rf lib && tsc -p tsconfig.cjs.json",
     "prepublishOnly": "pnpm run build"
