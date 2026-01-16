@@ -74,7 +74,7 @@ export const adapter: LylaAdapter<LylaAdapterMeta> = ({
   abort: () => void
 } => {
   const xhr = new XMLHttpRequest()
-  xhr.open(method, url)
+  xhr.open(method, url, true)
   xhr.withCredentials = withCredentials
   xhr.responseType = responseType
   for (const [key, value] of Object.entries(headers)) {
