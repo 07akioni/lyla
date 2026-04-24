@@ -7,7 +7,8 @@ import {
   LylaBrokenOnAfterResponseError,
   LylaBrokenOnResponseErrorError,
   LylaBrokenOnInitError,
-  LylaBrokenOnBeforeRequestError
+  LylaBrokenOnBeforeRequestError,
+  isLylaErrorWithRetry
 } from './error'
 import { mergeUrl, mergeHeaders, mergeOptions } from './utils'
 import type {
@@ -838,7 +839,7 @@ export function createLyla<C, M extends LylaAdapterMeta>(
       return _isLylaError(e)
     },
     isLylaErrorWithRetry(e: unknown): e is LylaErrorWithRetry<C, M> {
-      return _isLylaError(e)
+      return isLylaErrorWithRetry(e)
     }
   }
 }
