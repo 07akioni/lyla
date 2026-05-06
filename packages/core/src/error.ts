@@ -68,14 +68,7 @@ export enum LYLA_ERROR {
    *
    * The error won't be created by `lyla` instance that not created with `withRetry`.
    */
-  BROKEN_RETRY = 'BROKEN_RETRY',
-  /**
-   * A non-lyla error is return by `onRejected` or `onResolved`'s `reject` action.
-   * Lyla error won't be wrapped in this error.
-   *
-   * The error won't be created by `lyla` instance that not created with `withRetry`.
-   */
-  RETRY_REJECTED_BY_NON_LYLA_ERROR = 'RETRY_REJECTED_BY_NON_LYLA_ERROR'
+  BROKEN_RETRY = 'BROKEN_RETRY'
 }
 
 export interface LylaBrokenOnHeadersReceivedError<
@@ -155,20 +148,6 @@ export interface LylaBrokenRetryError<
   requestOptions: LylaRequestOptions<C, M>
   isRetryError: true
   spread: () => Omit<LylaBrokenRetryError<C, M>, 'spread'>
-}
-
-export interface LylaRetryRejectedByNonLylaErrorError<
-  C,
-  M extends LylaAdapterMeta = LylaAdapterMeta
-> extends Error {
-  type: LYLA_ERROR.RETRY_REJECTED_BY_NON_LYLA_ERROR
-  error: unknown
-  detail: undefined
-  response: undefined
-  context: C
-  requestOptions: LylaRequestOptions<C, M>
-  isRetryError: true
-  spread: () => Omit<LylaRetryRejectedByNonLylaErrorError<C, M>, 'spread'>
 }
 
 export interface LylaBrokenOnInitError<
@@ -307,7 +286,7 @@ export type LylaRetryError<
   M extends LylaAdapterMeta = LylaAdapterMeta
 > =
   // Retry related error would only be thrown by lyla instance created with `withRetry`.
-  LylaBrokenRetryError<C, M> | LylaRetryRejectedByNonLylaErrorError<C, M>
+  LylaBrokenRetryError<C, M>
 
 export type LylaError<C = any, M extends LylaAdapterMeta = LylaAdapterMeta> =
   | LylaResponseError<C, M>

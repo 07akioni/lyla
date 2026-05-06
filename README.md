@@ -424,14 +424,7 @@ export enum LYLA_ERROR {
    *
    * The error won't be created by `lyla` instance that not created with `withRetry`.
    */
-  BROKEN_RETRY = 'BROKEN_RETRY',
-  /**
-   * A non-lyla error is return by `onRejected` or `onResolved`'s `reject` action.
-   * Lyla error won't be wrapped in this error.
-   *
-   * The error won't be created by `lyla` instance that not created with `withRetry`.
-   */
-  RETRY_REJECTED_BY_NON_LYLA_ERROR = 'RETRY_REJECTED_BY_NON_LYLA_ERROR'
+  BROKEN_RETRY = 'BROKEN_RETRY'
 }
 ```
 
@@ -611,10 +604,13 @@ const lyla = _lyla.withRetry({
 ```
 
 An instance created by `lyla.withRetry` may encounter three types of errors when sending a request:
+
 1. A Lyla Error returned by the reject action, which will be thrown directly without being wrapped.
-2. A non-Lyla Error (e.g., `error1`) returned by the reject action, which will be wrapped into a `RETRY_REJECTED_BY_NON_LYLA_ERROR` type error and thrown (e.g., `error2`). `error1` can be accessed via `error2.error`.
+2. A non-Lyla Error returned by the reject action, which will be thrown directly without being wrapped.
 3. An exception thrown by `onResolved` or `onRejected`, or an exception thrown by the value function of the retry action, which will be wrapped into a `BROKEN_RETRY` type error and thrown.
-4. Retry may throw 2 unique errors, `RETRY_REJECTED_BY_NON_LYLA_ERROR` and `BROKEN_RETRY`, which won't be caught by any hook and won't be judged as `true` by `isLylaError`. If you need to judge these two errors, you need to use `isLylaErrorWithRetry`, which will judge all Lyla Errors.
+
+
+The `BROKEN_RETRY` error, which won't be caught by any hook and won't be judged as `true` by `isLylaError`. If you need to judge the error, you need to use `isLylaErrorWithRetry`, which will judge all Lyla Errors.
 
 ## FAQ
 

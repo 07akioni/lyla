@@ -23,7 +23,6 @@ import type {
   LylaInvalidJSONError,
   LylaNetworkError,
   LylaNonResponseError,
-  LylaRetryRejectedByNonLylaErrorError,
   LylaTimeoutError
 } from './error'
 import type {
@@ -706,21 +705,6 @@ export function createLyla<C, M extends LylaAdapterMeta>(
           },
           undefined
         )
-      const makeRetryRejectedError = (error: unknown, context: C) =>
-        defineLylaError<M, C, LylaRetryRejectedByNonLylaErrorError<C, M>>(
-          {
-            type: LYLA_ERROR.RETRY_REJECTED_BY_NON_LYLA_ERROR,
-            error: error,
-            message: 'Retry process is rejected by user with an non-lyla error',
-            detail: undefined,
-            response: undefined,
-            context,
-            isRetryError: true,
-            requestOptions: options
-          },
-          undefined
-        )
-
       while (true) {
         let response: LylaResponse<any, C, M>
         let finalOptions: LylaRequestOptions<C, M>
@@ -756,11 +740,7 @@ export function createLyla<C, M extends LylaAdapterMeta>(
           // expected error
           switch (rejected.action) {
             case 'reject':
-              if (_isLylaError(rejected.value)) {
-                throw rejected.value
-              } else {
-                throw makeRetryRejectedError(rejected.value, context!)
-              }
+              throw rejected.value
             case 'retry':
               retryOptionsResolver = rejected.value
               continue
@@ -784,11 +764,7 @@ export function createLyla<C, M extends LylaAdapterMeta>(
           case 'resolve':
             return resolved.value
           case 'reject':
-            if (_isLylaError(resolved.value)) {
-              throw resolved.value
-            } else {
-              throw makeRetryRejectedError(resolved.value, context!)
-            }
+            throw resolved.value
           case 'retry':
             retryOptionsResolver = resolved.value
             continue

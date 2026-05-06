@@ -55,9 +55,6 @@ try {
   }
   if (isLylaErrorWithRetry(e)) {
     switch (e.type) {
-      case LYLA_ERROR.RETRY_REJECTED_BY_NON_LYLA_ERROR:
-        e.context
-        break
       case LYLA_ERROR.BROKEN_RETRY:
         e.context
         break
