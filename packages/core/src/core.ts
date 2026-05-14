@@ -610,8 +610,9 @@ export function createLyla<C, M extends LylaAdapterMeta>(
     if (timeout) {
       setTimeout(() => {
         if (settled) return
-        adapterHandle.abort()
         aborted = true
+        // XHR's abort will call onReponse in loadend event, so we need to mark aborted before calling abort()
+        adapterHandle.abort()
         const timeoutError = defineLylaError<M, C, LylaTimeoutError<C, M>>(
           {
             type: LYLA_ERROR.TIMEOUT,
