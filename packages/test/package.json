@@ -10,6 +10,7 @@
   },
   "private": true,
   "devDependencies": {
+    "@lylajs/core": "workspace:*",
     "lyla": "workspace:*",
     "@lylajs/web": "workspace:*",
     "@lylajs/node": "workspace:*",

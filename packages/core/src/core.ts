@@ -416,6 +416,7 @@ export function createLyla<C, M extends LylaAdapterMeta>(
       withCredentials,
       extraOptions: _options.extraOptions,
       onNetworkError(detail: any) {
+        if (aborted) return
         hasNetworkError = true
         stopListeningAbortSignal()
         const networkError = defineLylaError<M, C, LylaNetworkError<C, M>>(
@@ -611,7 +612,7 @@ export function createLyla<C, M extends LylaAdapterMeta>(
       setTimeout(() => {
         if (settled) return
         aborted = true
-        // XHR's abort will call onReponse in loadend event, so we need to mark aborted before calling abort()
+        // XHR's abort will call onResponse in loadend event, so we need to mark aborted before calling abort()
         adapterHandle.abort()
         const timeoutError = defineLylaError<M, C, LylaTimeoutError<C, M>>(
           {
