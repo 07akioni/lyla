@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
+    "rootDir": "src",
     "strict": true,
     "outDir": "es",
     "target": "ES6",

@@ -5,3 +5,4 @@ dist
 pnpm-lock.yaml
 .pnpm-debug.log
 .DS_Store
+.pnpm-store

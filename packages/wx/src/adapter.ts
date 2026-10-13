@@ -78,10 +78,11 @@ export const adapter: LylaAdapter<LylaAdapterMeta> = ({
     success(res) {
       let body: string | ArrayBuffer
       if (onDownloadProgress) {
+        const buffer = latestProgressData?.buffer ?? new ArrayBuffer(0)
         if (responseType === 'arraybuffer') {
-          body = latestProgressData || new ArrayBuffer(0)
+          body = buffer
         } else {
-          body = arrayBufferToString(latestProgressData || new ArrayBuffer(0))
+          body = arrayBufferToString(buffer)
         }
       } else {
         body = res.data as string | ArrayBuffer
@@ -116,7 +117,7 @@ export const adapter: LylaAdapter<LylaAdapterMeta> = ({
       onDownloadProgress({
         detail: {
           data: detail.data,
-          responseText: arrayBufferToString(latestProgressData)
+          responseText: arrayBufferToString(latestProgressData.buffer)
         },
         lengthComputable: false,
         loaded: 0,

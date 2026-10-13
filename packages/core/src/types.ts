@@ -1,4 +1,5 @@
 import type {
+  LylaBrokenRetryError,
   LylaError,
   LylaNonResponseError,
   LylaResponseError
@@ -220,23 +221,23 @@ export type Lyla<C = any, M extends LylaAdapterMeta = LylaAdapterMeta> = {
     options?: Omit<LylaRequestOptions<C, M>, 'url' | 'method'>
   ) => Promise<LylaResponse<T, C, M>>
 > & {
-    errorType: LylaError<C, M>
-  } & {
-    withRetry: LylaWithRetry<C, M>
-  }
+  errorType: LylaError<C, M>
+} & {
+  withRetry: LylaWithRetry<C, M>
+}
 
 export type LylaRetryOnRejectedCommand<
   C = any,
   M extends LylaAdapterMeta = LylaAdapterMeta
 > =
   | {
-      action: 'retry'
-      value: () => Promise<LylaRequestOptions<C, M>> | LylaRequestOptions<C, M>
-    }
+    action: 'retry'
+    value: () => Promise<LylaRequestOptions<C, M>> | LylaRequestOptions<C, M>
+  }
   | {
-      action: 'reject'
-      value: unknown
-    }
+    action: 'reject'
+    value: unknown
+  }
 
 export type LylaRetryOnResolvedCommand<
   T,
@@ -244,17 +245,17 @@ export type LylaRetryOnResolvedCommand<
   M extends LylaAdapterMeta = LylaAdapterMeta
 > =
   | {
-      action: 'retry'
-      value: () => Promise<LylaRequestOptions<C, M>> | LylaRequestOptions<C, M>
-    }
+    action: 'retry'
+    value: () => Promise<LylaRequestOptions<C, M>> | LylaRequestOptions<C, M>
+  }
   | {
-      action: 'resolve'
-      value: LylaResponse<T, C, M>
-    }
+    action: 'resolve'
+    value: LylaResponse<T, C, M>
+  }
   | {
-      action: 'reject'
-      value: unknown
-    }
+    action: 'reject'
+    value: unknown
+  }
 
 export type LylaWithRetryOptions<C, M extends LylaAdapterMeta, S> = {
   onResolved: (params: {
@@ -269,6 +270,13 @@ export type LylaWithRetryOptions<C, M extends LylaAdapterMeta, S> = {
     context: C,
     lyla: Lyla<C, M>
     error: unknown
+  }) => Promise<LylaRetryOnRejectedCommand<C, M>>
+  onBrokenRetry: (params: {
+    state: S,
+    options: LylaRequestOptions<C, M> | undefined,
+    context: C | undefined,
+    lyla: Lyla<C, M>
+    error: LylaBrokenRetryError<C, M>
   }) => Promise<LylaRetryOnRejectedCommand<C, M>>
   createState: () => S
 }
@@ -301,17 +309,17 @@ export interface LylaAdapterOptions<T extends LylaAdapterMeta> {
   extraOptions: T['extraOptions']
   onNetworkError(detail: T['networkErrorDetail']): void
   onUploadProgress:
-    | ((progress: Omit<LylaProgress<unknown, T>, 'requestOptions'>) => void)
-    | undefined
+  | ((progress: Omit<LylaProgress<unknown, T>, 'requestOptions'>) => void)
+  | undefined
   onDownloadProgress:
-    | ((progress: Omit<LylaProgress<unknown, T>, 'requestOptions'>) => void)
-    | undefined
+  | ((progress: Omit<LylaProgress<unknown, T>, 'requestOptions'>) => void)
+  | undefined
   onHeadersReceived:
-    | ((
-        headers: Record<string, string>,
-        originalRequest: T['originalRequest']
-      ) => void)
-    | undefined
+  | ((
+    headers: Record<string, string>,
+    originalRequest: T['originalRequest']
+  ) => void)
+  | undefined
   onResponse(
     response: {
       body: T['responseBody']

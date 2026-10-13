@@ -4,7 +4,8 @@
     "lib": ["ES2015"],
     "target": "ESNext",
     "esModuleInterop": true,
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
+    "rootDir": "src",
     "strict": true
   },
   "include": ["src"]

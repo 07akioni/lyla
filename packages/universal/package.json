@@ -14,11 +14,12 @@
   "sideEffects": false,
   "dependencies": {
     "@lylajs/core": "workspace:*",
-    "@lylajs/web": "workspace:*",
-    "@lylajs/node": "workspace:*"
+    "@lylajs/node": "workspace:*",
+    "@lylajs/web": "workspace:*"
   },
   "devDependencies": {
-    "typescript": "^4.6.2"
+    "@types/node": "^20.19.43",
+    "typescript": "^7.0.2"
   },
   "publishConfig": {
     "registry": "https://registry.npmjs.org"

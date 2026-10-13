@@ -115,7 +115,7 @@ export const { lyla, isLylaError, isLylaErrorWithRetry } = coreCreateLyla<
         url,
         method,
         headers,
-        body,
+        body: body as any,
         responseType,
         json,
         withCredentials,

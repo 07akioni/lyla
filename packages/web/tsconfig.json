@@ -4,7 +4,8 @@
     "lib": ["DOM", "ES2017"],
     "target": "ES2017",
     "esModuleInterop": true,
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
+    "rootDir": "src",
     "strict": true
   },
   "include": ["src"]
