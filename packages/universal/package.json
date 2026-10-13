@@ -18,7 +18,7 @@
     "@lylajs/web": "workspace:*"
   },
   "devDependencies": {
-    "@types/node": "^20.19.43",
+    "@types/node": "^26.6.5",
     "typescript": "^7.0.2"
   },
   "publishConfig": {

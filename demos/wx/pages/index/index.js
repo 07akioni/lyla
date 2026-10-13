@@ -1,5 +1,4 @@
-// copy @lylajs/wx/dist to here
-const { lyla } = require('./lyla')
+const { lyla, isLylaError } = require('@lylajs/wx/dist/index')
 
 // index.js
 Page({
@@ -28,6 +27,13 @@ Page({
         this.setData({
           respBody: resp.body
         })
+      })
+      .catch((error) => {
+        if (isLylaError(error)) {
+          console.log(error.detail)
+        } else {
+          console.log(error)
+        }
       })
   }
 })

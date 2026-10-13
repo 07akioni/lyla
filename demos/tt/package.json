@@ -9,6 +9,6 @@
   "keywords": [],
   "author": "",
   "devDependencies": {
-    "@lylajs/tt": "^0.4.9"
+    "@lylajs/tt": "^2.2.0"
   }
 }

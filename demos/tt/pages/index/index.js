@@ -1,4 +1,4 @@
-const { lyla } = require('@lylajs/tt')
+const { lyla, isLylaError } = require('@lylajs/tt/dist/index')
 
 Page({
   data: {
@@ -10,6 +10,12 @@ Page({
       this.setData({
         respBody: resp.body
       })
+    }).catch((error) => {
+      if (isLylaError(error)) {
+        console.log(error.detail)
+      } else {
+        console.log(error)
+      }
     })
   }
 })

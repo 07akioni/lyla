@@ -166,7 +166,7 @@ export const adapter: LylaAdapter<LylaAdapterMeta> = ({
                       contentEncoding as BufferEncoding
                     )
                   : responseType === 'blob'
-                  ? new Blob(buffers)
+                  ? new Blob([Uint8Array.from(Buffer.concat(buffers))])
                   : responseType === 'arraybuffer'
                   ? (Buffer.concat(buffers).buffer satisfies ArrayBuffer)
                   : null
@@ -193,13 +193,11 @@ export const adapter: LylaAdapter<LylaAdapterMeta> = ({
   const chunkedRequestBodyStream =
     requestBodyStream && onUploadProgress
       ? pipeline(
-          [
-            requestBodyStream,
-            new AxiosTransformStream({
-              length: contentLength,
-              maxRate: undefined
-            })
-          ],
+          requestBodyStream,
+          new AxiosTransformStream({
+            length: contentLength,
+            maxRate: undefined
+          }),
           () => undefined
         )
       : null

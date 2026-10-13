@@ -1,4 +1,4 @@
-import { lyla, catchError } from '@lylajs/my/dist'
+import { lyla, isLylaError } from '@lylajs/my/dist'
 
 Page({
   onLoad(query) {
@@ -14,13 +14,11 @@ Page({
     lyla.get('https://www.baidu.com').then(resp => {
       console.log(resp.body)
     })
-    lyla.get('xxx').catch(catchError(({
-      lylaError
-    }) => {
-      if (lylaError) {
-        console.log('lylaError.detail', lylaError.detail)
+    lyla.get('xxx').catch((error) => {
+      if (isLylaError(error)) {
+        console.log('lylaError.detail', error.detail)
       }
-    }))
+    })
   },
   onReady() {
     // 页面加载完成

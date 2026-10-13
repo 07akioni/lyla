@@ -6,7 +6,7 @@ export default ({ command }: ConfigEnv): UserConfigExport => {
     plugins: [
       viteMockServe({
         mockPath: 'mock',
-        localEnabled: command === 'serve'
+        enable: command === 'serve'
       })
     ]
   }

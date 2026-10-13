@@ -1,0 +1,33 @@
+{
+  "name": "@lylajs/core",
+  "version": "2.2.0",
+  "keywords": [
+    "http-request",
+    "http-client",
+    "request",
+    "xhr",
+    "xmlhttprequest"
+  ],
+  "module": "es/index.js",
+  "main": "lib/index.js",
+  "files": [
+    "es",
+    "lib"
+  ],
+  "author": "07akioni",
+  "license": "MIT",
+  "sideEffects": false,
+  "devDependencies": {
+    "typescript": "^4.6.2"
+  },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org"
+  },
+  "scripts": {
+    "check-type": "tsc -p tsconfig.cjs.json --noEmit",
+    "build": "rm -rf es lib && tsc -p tsconfig.cjs.json && tsc -p tsconfig.esm.json",
+    "watch": "tsc -w -p tsconfig.cjs.json",
+    "release": "pnpm run build-and-test && pnpm publish",
+    "test:type": "tsc --noEmit"
+  }
+}

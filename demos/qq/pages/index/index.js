@@ -1,4 +1,4 @@
-const { lyla, catchError } = require('../../lib/@lylajs/qq/dist/index')
+const { lyla, isLylaError } = require('@lylajs/qq/dist/index')
 
 Page({
   data: {
@@ -16,15 +16,12 @@ Page({
     lyla.get('https://www.baidu.com').then(resp => {
       console.log(resp.body)
     })
-    lyla.get('xxx').catch(catchError(({
-      lylaError,
-      error
-    }) => {
-      if (lylaError) {
-        console.log('lylaError.detail', lylaError.detail)
+    lyla.get('xxx').catch((error) => {
+      if (isLylaError(error)) {
+        console.log('lylaError.detail', error.detail)
       } else {
         console.log('error', error)
       }
-    }))
+    })
   },
 })

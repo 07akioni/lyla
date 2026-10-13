@@ -24,7 +24,7 @@ const preStyle = {
   fontFamily: 'inherit'
 }
 
-function EmptyText(): VNode {
+function EmptyText(): VNode<any> {
   return h(
     'span',
     {
@@ -53,7 +53,7 @@ function JsonView({
   unwrapJsonString: boolean
   inArray?: boolean
   level?: number
-}): VNode {
+}): VNode<any> {
   const [expandedKeys, setExpandedKeys] = useState<string[]>([])
   let indent = ''
   for (let i = 0; i < level; ++i) {
