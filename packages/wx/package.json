@@ -19,6 +19,8 @@
     "@lylajs/core": "workspace:*"
   },
   "devDependencies": {
+    "@babel/core": "^7.29.7",
+    "@babel/preset-env": "^7.29.7",
     "tsdown": "^0.23.1",
     "typescript": "^7.0.2"
   },
