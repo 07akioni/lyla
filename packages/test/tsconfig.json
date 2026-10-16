@@ -3,8 +3,10 @@
     "noEmit": true,
     "moduleResolution": "bundler",
     "strict": true,
-    "lib": ["DOM", "ES2015", "DOM.Iterable"],
-    "target": "ESNext"
+    "lib": ["DOM", "ESNext", "DOM.Iterable"],
+    "target": "ESNext",
+    "skipLibCheck": true,
+    "types": ["node"]
   },
-  "include": ["tests", "demo"]
+  "include": ["tests", "demo", "node-tests"]
 }

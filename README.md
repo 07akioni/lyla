@@ -183,17 +183,21 @@ type LylaRequestOptions<C = undefined> = {
      */
     onInit?: Array<
       (
-        options: LylaRequestOptions<C>
-      ) => LylaRequestOptions<C> | Promise<LylaRequestOptions<C>>
+        options: LylaRequestOptionsWithContext<C>
+      ) =>
+        | LylaRequestOptionsWithContext<C>
+        | Promise<LylaRequestOptionsWithContext<C>>
     >
     /**
      * Callbacks fired before request is sent. In this moment, request options is
-     * normalized.
+     * normalized. The returned options will be normalized again.
      */
     onBeforeRequest?: Array<
       (
-        options: LylaRequestOptions<C>
-      ) => LylaRequestOptions<C> | Promise<LylaRequestOptions<C>>
+        options: LylaNormalizedRequestOptions<C>
+      ) =>
+        | LylaRequestOptionsWithContext<C>
+        | Promise<LylaRequestOptionsWithContext<C>>
     >
     /**
      * Callbacks fired after headers are received.
@@ -205,7 +209,7 @@ type LylaRequestOptions<C = undefined> = {
         payload: {
           headers: Record<string, string>
           originalRequest: M['originalRequest']
-          requestOptions: LylaRequestOptionsWithContext<C>
+          requestOptions: LylaNormalizedRequestOptions<C>
         },
         reject: (reason: unknown) => void
       ) => void
@@ -259,11 +263,38 @@ type LylaRequestOptions<C = undefined> = {
 }
 ```
 
+#### Type `LylaRequestOptionsWithContext` & `LylaNormalizedRequestOptions`
+
+```ts
+/**
+ * Request options whose context is resolved. It's received by `onInit`, in
+ * which options haven't been normalized.
+ */
+type LylaRequestOptionsWithContext<C = undefined> = Omit<
+  LylaRequestOptions<C>,
+  'context'
+> & {
+  context: C
+}
+
+/**
+ * Normalized request options. It's received by hooks and callbacks after
+ * `onInit`. `url` has been merged with `baseUrl` and `query`, and `method` is
+ * in upper case.
+ */
+type LylaNormalizedRequestOptions<C = undefined> =
+  LylaRequestOptionsWithContext<C> & {
+    url: string
+    method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'HEAD' | 'DELETE' | ... // platform relevant
+    responseType: 'arraybuffer' | 'blob' | 'text' // platform relevant
+  }
+```
+
 #### Type `LylaResponse`
 
 ```ts
 type LylaResponse<T = any, C = undefined> = {
-  requestOptions: LylaRequestOptions<C>
+  requestOptions: LylaNormalizedRequestOptions<C>
   status: number
   statusText: string
   /**
@@ -310,7 +341,7 @@ type LylaProgress<C> = {
   /**
    * Request options of the request.
    */
-  requestOptions: LylaRequestOptions<C>
+  requestOptions: LylaNormalizedRequestOptions<C>
 }
 ```
 

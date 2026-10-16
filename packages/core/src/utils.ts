@@ -27,7 +27,7 @@ export function mergeHeaders(
   if (!source) return target
   for (const [key, value] of Object.entries(source)) {
     if (value === undefined) {
-      delete target[key]
+      delete target[key.toLowerCase()]
     } else {
       target[key.toLowerCase()] = typeof value === 'string' ? value : `${value}`
     }

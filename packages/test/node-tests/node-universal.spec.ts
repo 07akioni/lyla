@@ -86,7 +86,7 @@ describe('node basic', () => {
     try {
       resp = await lyla.post('http://localhost:8091/api/error')
     } catch (e) {
-      error = e
+      error = e as Error
       expect(isLylaError(e)).toBe(true)
       if (isLylaError(e)) {
         expect(e.type === LYLA_ERROR.HTTP).toBe(true)

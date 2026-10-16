@@ -4,6 +4,10 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"strconv"
+	"strings"
+	"sync"
+	"time"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -198,6 +202,55 @@ func ErrorTestRoutes(r *gin.Engine) {
 	})
 }
 
+var flakyMutex sync.Mutex
+var flakyAttempts = map[string]int{}
+
+func UtilTestRoutes(r *gin.Engine) {
+	// Responds with the received request
+	r.Any("/api/echo", func(c *gin.Context) {
+		body, _ := ioutil.ReadAll(c.Request.Body)
+		headers := map[string]string{}
+		for key, vals := range c.Request.Header {
+			headers[strings.ToLower(key)] = strings.Join(vals, ", ")
+		}
+		c.JSON(200, gin.H{
+			"method":  c.Request.Method,
+			"url":     c.Request.URL.String(),
+			"query":   c.Request.URL.Query(),
+			"headers": headers,
+			"body":    string(body),
+		})
+	})
+	// Responds after `ms` milliseconds
+	r.GET("/api/delay", func(c *gin.Context) {
+		ms, _ := strconv.Atoi(c.DefaultQuery("ms", "1000"))
+		select {
+		case <-time.After(time.Duration(ms) * time.Millisecond):
+			c.String(200, "delayed")
+		case <-c.Request.Context().Done():
+		}
+	})
+	// Responds with 503 for the first `fail` requests of the same `id`
+	r.GET("/api/flaky", func(c *gin.Context) {
+		id := c.Query("id")
+		fail, _ := strconv.Atoi(c.DefaultQuery("fail", "1"))
+		flakyMutex.Lock()
+		flakyAttempts[id]++
+		attempt := flakyAttempts[id]
+		flakyMutex.Unlock()
+		if attempt <= fail {
+			c.JSON(503, gin.H{"attempt": attempt})
+			return
+		}
+		c.JSON(200, gin.H{"attempt": attempt})
+	})
+	r.Any("/api/status/:code", func(c *gin.Context) {
+		code, _ := strconv.Atoi(c.Param("code"))
+		c.Header("X-Status", c.Param("code"))
+		c.JSON(code, gin.H{"status": code})
+	})
+}
+
 func StaticRoutes(r *gin.Engine) {
 	r.Static("/es", "../es")
 	r.StaticFile("/", "./index.html")
@@ -228,6 +281,7 @@ func main() {
 	PutTestRoutes(r)
 
 	ErrorTestRoutes(r)
+	UtilTestRoutes(r)
 
 	r.Use(func(c *gin.Context) {
 		fmt.Println("[request.url]", c.Request.URL)

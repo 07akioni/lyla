@@ -49,9 +49,11 @@ function createHeaders(headers: string): Record<string, string> {
   const headerPairs = headers.trim().split(/[\r\n]+/)
 
   headerPairs.forEach(function (line) {
-    const parts = line.split(':')
-    const header = (parts[0] || '').trim().toLowerCase()
-    const value = (parts[1] || '').trim()
+    const index = line.indexOf(':')
+    if (index === -1) return
+    const header = line.slice(0, index).trim().toLowerCase()
+    if (!header) return
+    const value = line.slice(index + 1).trim()
     headerMap[header] = value
   })
 

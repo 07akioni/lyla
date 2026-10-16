@@ -32,6 +32,7 @@ import type {
   LylaAdapter,
   LylaAdapterMeta,
   LylaRequestOptionsWithContext,
+  LylaNormalizedRequestOptions,
   LylaContextFactory,
   LylaCreateOptions,
   LylaRetryOnRejectedCommand,
@@ -55,6 +56,18 @@ type URLSearchParamsLike = {
 declare const URLSearchParams: {
   new(params: Record<string, string>): URLSearchParamsLike
   new(): URLSearchParamsLike
+}
+
+function normalizeOptions<C, M extends LylaAdapterMeta>(
+  options: LylaRequestOptionsWithContext<C, M>
+): LylaNormalizedRequestOptions<C, M> {
+  return Object.assign(options, {
+    url: options.url || '',
+    method: (options.method
+      ? options.method.toUpperCase()
+      : 'GET') as LylaNormalizedRequestOptions<C, M>['method'],
+    responseType: options.responseType || ('text' as M['responseType'])
+  })
 }
 
 export function createLyla<C, M extends LylaAdapterMeta>(
@@ -220,14 +233,12 @@ export function createLyla<C, M extends LylaAdapterMeta>(
       )
     }
 
-    let _options = mergeOptions<LylaRequestOptionsWithContext<C, M>>(
-      mergedLylaOptions,
-      optionsWithContext
+    let _options = normalizeOptions(
+      mergeOptions<LylaRequestOptionsWithContext<C, M>>(
+        mergedLylaOptions,
+        optionsWithContext
+      )
     )
-
-    _options.method = _options.method?.toUpperCase() as any
-    _options.responseType = options.responseType || 'text'
-    _options.url = _options.url || ''
 
     if (_options.baseUrl) {
       _options.url = mergeUrl(_options.baseUrl, _options.url)
@@ -281,11 +292,11 @@ export function createLyla<C, M extends LylaAdapterMeta>(
       try {
         for (const hook of _options.hooks?.onBeforeRequest) {
           const maybeOptionsPromise = hook(_options)
-          if (maybeOptionsPromise instanceof Promise) {
-            _options = await maybeOptionsPromise
-          } else {
-            _options = maybeOptionsPromise
-          }
+          _options = normalizeOptions(
+            maybeOptionsPromise instanceof Promise
+              ? await maybeOptionsPromise
+              : maybeOptionsPromise
+          )
         }
       } catch (e) {
         const brokenOnBeforeRequestError = defineLylaError<
@@ -362,10 +373,10 @@ export function createLyla<C, M extends LylaAdapterMeta>(
 
     const {
       timeout,
-      url = '',
-      method = 'get',
+      url,
+      method,
       body,
-      responseType = 'text',
+      responseType,
       withCredentials = false,
       signal,
       onUploadProgress,
@@ -454,6 +465,7 @@ export function createLyla<C, M extends LylaAdapterMeta>(
       }
     )
 
+    let adapterHandle: ReturnType<LylaAdapter<M>> | undefined
     let aborted = false
     function onAbortSignalReceived() {
       if (aborted) return
@@ -470,17 +482,21 @@ export function createLyla<C, M extends LylaAdapterMeta>(
         },
         stack
       )
-      const settled = () => adapterHandle.abort()
+      const settled = () => adapterHandle?.abort()
       handleResponseError(abortError).then(settled).catch(settled)
     }
 
     if (signal) {
+      if (signal.aborted) {
+        onAbortSignalReceived()
+        return requestPromise
+      }
       signal.addEventListener('abort', onAbortSignalReceived)
     }
 
     let hasNetworkError = false
     const onHeadersReceived = _options.hooks?.onHeadersReceived
-    const adapterHandle = adapter({
+    adapterHandle = adapter({
       url,
       method,
       body,
@@ -687,7 +703,7 @@ export function createLyla<C, M extends LylaAdapterMeta>(
         if (settled) return
         aborted = true
         // XHR's abort will call onResponse in loadend event, so we need to mark aborted before calling abort()
-        adapterHandle.abort()
+        adapterHandle!.abort()
         const timeoutError = defineLylaError<M, C, LylaTimeoutError<C, M>>(
           {
             type: LYLA_ERROR.TIMEOUT,

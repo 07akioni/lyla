@@ -6,6 +6,7 @@
       import {
         lyla,
         isLylaError,
+        isLylaErrorWithRetry,
         createLyla,
         LylaAbortController,
         LYLA_ERROR
@@ -13,7 +14,9 @@
       window.createLyla = createLyla
       window.lyla = lyla
       window.isLylaError = isLylaError
+      window.isLylaErrorWithRetry = isLylaErrorWithRetry
       window.LylaAbortController = LylaAbortController
+      window.LYLA_ERROR = LYLA_ERROR
     </script>
   </body>
 </html>

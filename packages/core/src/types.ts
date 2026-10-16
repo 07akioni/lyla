@@ -26,6 +26,7 @@ export type LylaMethod =
   | 'connect'
 
 export type AbortSignal = {
+  readonly aborted: boolean
   addEventListener(ev: 'abort', callback: () => void): void
   removeEventListener(ev: 'abort', callback: () => void): void
 }
@@ -101,7 +102,7 @@ export type LylaRequestOptions<
      */
     onBeforeRequest?: Array<
       (
-        options: LylaRequestOptionsWithContext<C, M>
+        options: LylaNormalizedRequestOptions<C, M>
       ) =>
         | LylaRequestOptionsWithContext<C, M>
         | Promise<LylaRequestOptionsWithContext<C, M>>
@@ -114,7 +115,7 @@ export type LylaRequestOptions<
         payload: {
           headers: Record<string, string>
           originalRequest: M['originalRequest']
-          requestOptions: LylaRequestOptionsWithContext<C, M>
+          requestOptions: LylaNormalizedRequestOptions<C, M>
         },
         reject: (reason: unknown) => void
       ) => void
@@ -157,6 +158,19 @@ export type LylaRequestOptionsWithContext<
   context: C
 }
 
+/**
+ * Request options after normalization, which are received by hooks and
+ * callbacks after `onInit`.
+ */
+export type LylaNormalizedRequestOptions<
+  C = any,
+  M extends LylaAdapterMeta = LylaAdapterMeta
+> = LylaRequestOptionsWithContext<C, M> & {
+  url: string
+  method: M['method'] & Uppercase<M['method']>
+  responseType: M['responseType']
+}
+
 export type LylaContextFactory<C = any> = (
   parent: { context: C } | null
 ) => C
@@ -171,7 +185,7 @@ export type LylaResponse<
   C = any,
   M extends LylaAdapterMeta = LylaAdapterMeta
 > = {
-  requestOptions: LylaRequestOptions<C, M>
+  requestOptions: LylaNormalizedRequestOptions<C, M>
   status: number
   statusText: string
   /**
@@ -223,7 +237,7 @@ export type LylaProgress<C, M extends LylaAdapterMeta = LylaAdapterMeta> = {
    * Original request
    */
   originalRequest: M['originalRequest']
-  requestOptions: LylaRequestOptionsWithContext<C, M>
+  requestOptions: LylaNormalizedRequestOptions<C, M>
 }
 
 export type LylaRequestHeaders = Record<string, string | number | undefined>

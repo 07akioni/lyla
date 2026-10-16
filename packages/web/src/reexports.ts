@@ -3,6 +3,7 @@ import type {
   LylaResponse as LylaCoreResponse,
   Lyla as LylaCore,
   LylaRequestOptionsWithContext as LylaCoreRequestOptionsWithContext,
+  LylaNormalizedRequestOptions as LylaCoreNormalizedRequestOptions,
   LylaContextFactory as LylaCoreContextFactory,
   LylaCreateOptions as LylaCoreCreateOptions,
   LylaProgress as LylaCoreProgress
@@ -24,6 +25,8 @@ export type LylaRequestOptions<C = undefined> = LylaCoreRequestOptions<
 >
 export type LylaRequestOptionsWithContext<C = undefined> =
   LylaCoreRequestOptionsWithContext<C, LylaAdapterMeta>
+export type LylaNormalizedRequestOptions<C = undefined> =
+  LylaCoreNormalizedRequestOptions<C, LylaAdapterMeta>
 export type LylaContextFactory<C = undefined> = LylaCoreContextFactory<C>
 export type LylaCreateOptions<C = undefined> = LylaCoreCreateOptions<
   C,

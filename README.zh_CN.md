@@ -179,16 +179,20 @@ type LylaRequestOptions<C = undefined> = {
      */
     onInit?: Array<
       (
-        options: LylaRequestOptions<C>
-      ) => LylaRequestOptions<C> | Promise<LylaRequestOptions<C>>
+        options: LylaRequestOptionsWithContext<C>
+      ) =>
+        | LylaRequestOptionsWithContext<C>
+        | Promise<LylaRequestOptionsWithContext<C>>
     >
     /**
-     * 请求发送之前的回调，此时选项已经被转换为最终的请求参数
+     * 请求发送之前的回调，此时选项已经被转换为最终的请求参数。返回的选项会被再次规范化
      */
     onBeforeRequest?: Array<
       (
-        options: LylaRequestOptions<C>
-      ) => LylaRequestOptions<C> | Promise<LylaRequestOptions<C>>
+        options: LylaNormalizedRequestOptions<C>
+      ) =>
+        | LylaRequestOptionsWithContext<C>
+        | Promise<LylaRequestOptionsWithContext<C>>
     >
     /**
      * 收到 headers 之后的回调
@@ -200,7 +204,7 @@ type LylaRequestOptions<C = undefined> = {
         payload: {
           headers: Record<string, string>
           originalRequest: M['originalRequest']
-          requestOptions: LylaRequestOptionsWithContext<C>
+          requestOptions: LylaNormalizedRequestOptions<C>
         },
         reject: (reason: unknown) => void
       ) => void
@@ -249,11 +253,36 @@ type LylaRequestOptions<C = undefined> = {
 }
 ```
 
+#### `LylaRequestOptionsWithContext` 和 `LylaNormalizedRequestOptions` 类型
+
+```ts
+/**
+ * 上下文已经确定的请求选项。`onInit` 收到的是这个类型，此时选项还没有被规范化
+ */
+type LylaRequestOptionsWithContext<C = undefined> = Omit<
+  LylaRequestOptions<C>,
+  'context'
+> & {
+  context: C
+}
+
+/**
+ * 规范化之后的请求选项，`onInit` 之后的回调收到的都是这个类型。`url` 已经合并了
+ * `baseUrl` 和 `query`，`method` 是大写的
+ */
+type LylaNormalizedRequestOptions<C = undefined> =
+  LylaRequestOptionsWithContext<C> & {
+    url: string
+    method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'HEAD' | 'DELETE' | ... // 平台相关
+    responseType: 'arraybuffer' | 'blob' | 'text' // 平台相关
+  }
+```
+
 #### `LylaResponse` 类型
 
 ```ts
 type LylaResponse<T = any, C = undefined> = {
-  requestOptions: LylaRequestOptions<C>
+  requestOptions: LylaNormalizedRequestOptions<C>
   status: number
   statusText: string
   /**
@@ -298,7 +327,7 @@ type LylaProgress<C> = {
   /**
    * 发送的请求配置
    */
-  requestOptions: LylaRequestOptions<C>
+  requestOptions: LylaNormalizedRequestOptions<C>
 }
 ```
 

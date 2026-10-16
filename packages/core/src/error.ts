@@ -1,5 +1,6 @@
 import type {
   LylaAdapterMeta,
+  LylaNormalizedRequestOptions,
   LylaRequestOptionsWithContext,
   LylaRequestOptions,
   LylaResponse
@@ -80,7 +81,7 @@ export interface LylaBrokenOnHeadersReceivedError<
   detail: undefined
   response: undefined
   context: C
-  requestOptions: LylaRequestOptionsWithContext<C, M>
+  requestOptions: LylaNormalizedRequestOptions<C, M>
   spread: () => Omit<LylaBrokenOnHeadersReceivedError<C, M>, 'spread'>
 }
 
@@ -93,7 +94,7 @@ export interface LylaBrokenOnAfterResponseError<
   detail: undefined
   response: LylaResponse<any, C, M>
   context: C
-  requestOptions: LylaRequestOptionsWithContext<C, M>
+  requestOptions: LylaNormalizedRequestOptions<C, M>
   spread: () => Omit<LylaBrokenOnAfterResponseError<C, M>, 'spread'>
 }
 
@@ -106,7 +107,7 @@ export interface LylaBrokenOnResponseErrorError<
   detail: undefined
   response: LylaResponse<any, C, M> | undefined
   context: C
-  requestOptions: LylaRequestOptionsWithContext<C, M>
+  requestOptions: LylaNormalizedRequestOptions<C, M>
   spread: () => Omit<LylaBrokenOnResponseErrorError<C, M>, 'spread'>
 }
 
@@ -132,7 +133,7 @@ export interface LylaBrokenOnBeforeRequestError<
   detail: undefined
   response: undefined
   context: C
-  requestOptions: LylaRequestOptionsWithContext<C, M>
+  requestOptions: LylaNormalizedRequestOptions<C, M>
   spread: () => Omit<LylaBrokenOnBeforeRequestError<C, M>, 'spread'>
 }
 
@@ -172,7 +173,7 @@ export interface LylaTimeoutError<
   detail: undefined
   response: undefined
   context: C
-  requestOptions: LylaRequestOptionsWithContext<C, M>
+  requestOptions: LylaNormalizedRequestOptions<C, M>
   spread: () => Omit<LylaTimeoutError<C, M>, 'spread'>
 }
 
@@ -185,7 +186,7 @@ export interface LylaInvalidConversionError<
   detail: undefined
   response: LylaResponse<any, C, M>
   context: C
-  requestOptions: LylaRequestOptionsWithContext<C, M>
+  requestOptions: LylaNormalizedRequestOptions<C, M>
   spread: () => Omit<LylaInvalidConversionError<C, M>, 'spread'>
 }
 
@@ -196,7 +197,7 @@ export interface LylaHttpError<C, M extends LylaAdapterMeta = LylaAdapterMeta>
   detail: undefined
   response: LylaResponse<any, C, M>
   context: C
-  requestOptions: LylaRequestOptionsWithContext<C, M>
+  requestOptions: LylaNormalizedRequestOptions<C, M>
   spread: () => Omit<LylaHttpError<C, M>, 'spread'>
 }
 
@@ -209,7 +210,7 @@ export interface LylaNetworkError<
   detail: M['networkErrorDetail']
   response: undefined
   context: C
-  requestOptions: LylaRequestOptionsWithContext<C, M>
+  requestOptions: LylaNormalizedRequestOptions<C, M>
   spread: () => Omit<LylaNetworkError<C, M>, 'spread'>
 }
 
@@ -222,7 +223,7 @@ export interface LylaInvalidJSONError<
   detail: undefined
   response: LylaResponse<any, C, M>
   context: C
-  requestOptions: LylaRequestOptionsWithContext<C, M>
+  requestOptions: LylaNormalizedRequestOptions<C, M>
   spread: () => Omit<LylaInvalidJSONError<C, M>, 'spread'>
 }
 
@@ -235,7 +236,7 @@ export interface LylaAbortedError<
   detail: undefined
   response: undefined
   context: C
-  requestOptions: LylaRequestOptionsWithContext<C, M>
+  requestOptions: LylaNormalizedRequestOptions<C, M>
   spread: () => Omit<LylaAbortedError<C, M>, 'spread'>
 }
 
