@@ -297,12 +297,18 @@ export type LylaWithRetryOptions<C, M extends LylaAdapterMeta, S> = {
   onRejected: (params: {
     state: S
     options: LylaRequestOptions<C, M>
-    context: C,
+    /**
+     * `undefined` if the request is rejected before its context is created.
+     */
+    context: C | undefined,
     lyla: Lyla<C, M>
     error: unknown
   }) => Promise<LylaRetryOnRejectedCommand<C, M>>
   onBrokenRetry: (params: {
-    state: S,
+    /**
+     * `undefined` if `createState` throws.
+     */
+    state: S | undefined,
     options: LylaRequestOptions<C, M> | undefined,
     context: C | undefined,
     lyla: Lyla<C, M>

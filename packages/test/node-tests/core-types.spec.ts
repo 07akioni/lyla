@@ -305,12 +305,14 @@ describe('error types', () => {
       } catch (e) {
         expectTypeOf(e).toBeUnknown()
         if (isLylaError(e)) {
-          expectTypeOf(e.context).toEqualTypeOf<Context>()
+          // `BAD_REQUEST` raised by `createContext` has no context
+          expectTypeOf(e.context).toEqualTypeOf<Context | undefined>()
           expectTypeOf(e.requestOptions).toExtend<
-            LylaRequestOptionsWithContext<Context, M>
+            LylaRequestOptions<Context, M>
           >()
           switch (e.type) {
             case LYLA_ERROR.HTTP:
+              expectTypeOf(e.context).toEqualTypeOf<Context>()
               expectTypeOf(e.response).toEqualTypeOf<
                 LylaResponse<any, Context, M>
               >()
@@ -329,9 +331,12 @@ describe('error types', () => {
               break
             // may be raised before options are normalized
             case LYLA_ERROR.BAD_REQUEST:
+            case LYLA_ERROR.BROKEN_ON_NON_RESPONSE_ERROR:
+              expectTypeOf(e.context).toEqualTypeOf<Context | undefined>()
               expectTypeOf(e.requestOptions).toEqualTypeOf<
-                LylaRequestOptionsWithContext<Context, M>
+                LylaRequestOptions<Context, M>
               >()
+              expectTypeOf(e.error).toBeUnknown()
               break
             case LYLA_ERROR.NETWORK:
               expectTypeOf(e.detail).toBeAny()
@@ -343,7 +348,7 @@ describe('error types', () => {
               >()
               break
             case LYLA_ERROR.BROKEN_ON_INIT:
-            case LYLA_ERROR.BROKEN_ON_NON_RESPONSE_ERROR:
+              expectTypeOf(e.context).toEqualTypeOf<Context>()
               expectTypeOf(e.error).toBeUnknown()
               expectTypeOf(e.requestOptions).toEqualTypeOf<
                 LylaRequestOptionsWithContext<Context, M>
@@ -395,13 +400,15 @@ describe('retry types', () => {
       },
       onRejected: async (params) => {
         expectTypeOf(params.state).toEqualTypeOf<{ count: number }>()
-        expectTypeOf(params.context).toEqualTypeOf<Context>()
+        expectTypeOf(params.context).toEqualTypeOf<Context | undefined>()
         expectTypeOf(params.error).toBeUnknown()
         expectTypeOf(params.lyla).toEqualTypeOf<Lyla<Context, M>>()
         return { action: 'retry', value: async () => params.options }
       },
       onBrokenRetry: async (params) => {
-        expectTypeOf(params.state).toEqualTypeOf<{ count: number }>()
+        expectTypeOf(params.state).toEqualTypeOf<
+          { count: number } | undefined
+        >()
         expectTypeOf(params.context).toEqualTypeOf<Context | undefined>()
         expectTypeOf(params.options).toEqualTypeOf<
           LylaRequestOptions<Context, M> | undefined

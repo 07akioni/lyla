@@ -371,6 +371,10 @@ try {
 }
 ```
 
+只要按照类型的要求使用 lyla，失败的请求都会以 `LylaError` 被拒绝，除非请求被 `onHeadersReceived`、`onAfterResponse` 或 `onResponseError` 的 `reject` 手动拒绝，此时请求会以传入的值原样被拒绝。
+
+通过 `withRetry` 创建的实例请参考[重试请求](#重试请求)。
+
 ### `LylaError` 类型
 
 ```ts
@@ -380,13 +384,15 @@ type LylaError<C = undefined> = {
   name: string
   message: string
   type: LYLA_ERROR
-  // Error 对应的原始 error，通常没什么用，目前只有 JSON 不合法会产生，一般来说你需要使用
-  // detail 字段
-  error: Error | undefined
+  // Error 对应的原始 error，例如回调抛出的异常（`BROKEN_*`）、解析 JSON 的异常
+  // （`INVALID_JSON`）、创建上下文、序列化 `json` 或发送请求时的异常（`BAD_REQUEST`）。
+  // 一般来说你需要使用 detail 字段
+  error: unknown
   detail: 平台相关 // 平台产生的错误关联信息
   response: 平台相关 // 类似于 LylaResponse | undefined
-  // 请求的上下文
-  context: C
+  // 请求的上下文。只有 `createContext` 抛出异常时产生的 `BAD_REQUEST` 和
+  // `BROKEN_ON_NON_RESPONSE_ERROR` 错误中它是 `undefined`
+  context: C | undefined
 }
 ```
 
@@ -422,6 +428,9 @@ export enum LYLA_ERROR {
   HTTP = 'HTTP',
   /**
    * 请求的配置不合法，它不是一个响应异常
+   *
+   * `createContext` 抛出异常、`options.json` 无法序列化成 JSON，或者平台拒绝发送请求（例
+   * 如 URL 或 header 的值不合法）时也会产生这个错误，此时 `error` 是原始的异常
    */
   BAD_REQUEST = 'BAD_REQUEST',
   /**
@@ -450,7 +459,7 @@ export enum LYLA_ERROR {
   BROKEN_ON_HEADERS_RECEIVED = 'BROKEN_ON_HEADERS_RECEIVED',
   /**
    * 使用 `withRetry` 创建的 Lyla 实例抛出了一个意外的错误。
-   * 这个错误不是由 `lyla` 实例本身创建的，而是由 `withRetry` 的 `onRejected` 或 `onResolved` 抛出的，或者是用户定义的创建重试请求选项的过程中抛出的。
+   * 这个错误不是由 `lyla` 实例本身创建的，而是由 `withRetry` 的 `createState`、`onRejected` 或 `onResolved` 抛出的，或者是用户定义的创建重试请求选项的过程中抛出的。
    * 它会被传给 `withRetry` 的 `onBrokenRetry`，只有 `onBrokenRetry` 通过 reject action 返回它时才会被抛出。
    *
    * 这个错误不会由未使用 `withRetry` 创建的 `lyla` 实例创建。
@@ -550,6 +559,8 @@ lyla.get('/foo').then((response) => {
   `createContext`，最后再调用它。每个 factory 的 `parent` 参数是上一个 factory 创建的上下文（第一个
   factory 收到 `null`）。
 - 如果请求同时传了 `context` 和 `createContext`，请求会以 `BAD_REQUEST` 错误失败。
+- 如果某个工厂函数抛出异常，请求不会被发送，并以 `BAD_REQUEST` 错误被拒绝。它的 `error`
+  是抛出的异常，`context` 是 `undefined`。这个错误会被传给实例和请求的 `onNonResponseError`。
 
 ```ts
 const { lyla } = createLyla(
@@ -610,7 +621,8 @@ type LylaWithRetryOptions<C, S> = {
   onRejected: (params: {
     state: S
     options: LylaRequestOptions
-    context: C
+    // 如果请求在上下文创建之前就被拒绝（例如 `createContext` 抛出异常），它是 `undefined`
+    context: C | undefined
     lyla: Lyla
     // 可能是 Lyla Error，也可能是用户在 hook 中抛出的错误
     error: unknown
@@ -625,9 +637,10 @@ type LylaWithRetryOptions<C, S> = {
       }
   >
   onBrokenRetry: (params: {
-    state: S
+    // 如果 `createState` 抛出异常，它是 `undefined`
+    state: S | undefined
     options: LylaRequestOptions | undefined
-    // 如果错误是在解析重试请求选项时抛出的，它是 `undefined`
+    // 如果错误是由 `createState` 或者在解析重试请求选项时抛出的，它是 `undefined`
     context: C | undefined
     lyla: Lyla
     error: LylaBrokenRetryError
@@ -692,9 +705,10 @@ const lyla = _lyla.withRetry({
 
 一个通过 `lyla.withRetry` 创建的实例在发送请求时可能会有这些错误：
 
-1. 通过 reject action 返回的值，不管是不是 Lyla Error，都会被直接抛出，不会被包装
-2. `onResolved` 或 `onRejected` 抛出了异常，或者 retry action 的 value 函数抛出了异常，这个错误会被包装成一个 `BROKEN_RETRY` 类型的错误并传给 `onBrokenRetry`，由它决定是拒绝（直接抛出它的 `value`）还是重试。如果要抛出 `BROKEN_RETRY` 错误，返回 `{ action: 'reject', value: error }` 即可
-3. `onBrokenRetry` 抛出的异常会被直接抛出，不会被包装
+1. 请求被拒绝的原因（`LylaError`，或者传给 hook 的 `reject` 的值）会被原样传给 `onRejected`
+2. 通过 reject action 返回的值，不管是不是 Lyla Error，都会被直接抛出，不会被包装
+3. `createState`、`onResolved` 或 `onRejected` 抛出了异常，或者 retry action 的 value 函数抛出了异常，这个错误会被包装成一个 `BROKEN_RETRY` 类型的错误并传给 `onBrokenRetry`，由它决定是拒绝（直接抛出它的 `value`）还是重试。如果要抛出 `BROKEN_RETRY` 错误，返回 `{ action: 'reject', value: error }` 即可。如果是 `createState` 抛出了异常，传给 `onBrokenRetry` 的 `state` 是 `undefined`，重试时会在发送请求之前再次调用 `createState`
+4. `onBrokenRetry` 抛出的异常会被直接抛出，不会被包装
 
 其中 `BROKEN_RETRY`，这种错误不会被任何 hook 捕获，也不会被 `isLylaError` 判定为 `true`。如果你需要判断这种错误，你需要使用 `isLylaErrorWithRetry`，这个函数会判断所有的 Lyla Error。
 

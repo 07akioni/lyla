@@ -35,6 +35,11 @@ export enum LYLA_ERROR {
   HTTP = 'HTTP',
   /**
    * Request `options` is not valid. It's not a response error.
+   *
+   * It's also raised when `createContext` throws, when `options.json` can't be
+   * serialized to JSON, or when the platform refuses to send the request (for
+   * example the URL or a header value is invalid). In these cases `error` is
+   * the original error.
    */
   BAD_REQUEST = 'BAD_REQUEST',
   /**
@@ -63,9 +68,9 @@ export enum LYLA_ERROR {
   BROKEN_ON_HEADERS_RECEIVED = 'BROKEN_ON_HEADERS_RECEIVED',
   /**
    * Lyla instance created with `withRetry` throws an unexpected error. This
-   * error isn't created by `lyla` instance itself, but thrown by `onRejected`
-   * or `onResolved` of `withRetry` or the process of creating retry request options
-   * defined by user.
+   * error isn't created by `lyla` instance itself, but thrown by `createState`,
+   * `onRejected` or `onResolved` of `withRetry` or the process of creating retry
+   * request options defined by user.
    *
    * The error won't be created by `lyla` instance that not created with `withRetry`.
    */
@@ -119,8 +124,11 @@ export interface LylaBrokenOnNonResponseErrorError<
   error: unknown
   detail: undefined
   response: undefined
-  context: C
-  requestOptions: LylaRequestOptionsWithContext<C, M>
+  /**
+   * `undefined` if the original error is raised by `createContext`.
+   */
+  context: C | undefined
+  requestOptions: LylaRequestOptions<C, M>
   spread: () => Omit<LylaBrokenOnNonResponseErrorError<C, M>, 'spread'>
 }
 
@@ -245,11 +253,14 @@ export interface LylaBadRequestError<
   M extends LylaAdapterMeta = LylaAdapterMeta
 > extends Error {
   type: LYLA_ERROR.BAD_REQUEST
-  error: undefined
+  error: unknown
   detail: undefined
   response: undefined
-  context: C
-  requestOptions: LylaRequestOptionsWithContext<C, M>
+  /**
+   * `undefined` if the error is raised by `createContext`.
+   */
+  context: C | undefined
+  requestOptions: LylaRequestOptions<C, M>
   spread: () => Omit<LylaBadRequestError<C, M>, 'spread'>
 }
 

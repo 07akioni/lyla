@@ -215,11 +215,13 @@ describe('core context', () => {
     expect(response.requestOptions.context).toBe(replaced)
   })
 
-  it('rejects with the error thrown by a context factory without sending request', async () => {
+  it('rejects with `BAD_REQUEST` error without sending request when a context factory throws', async () => {
     const factoryError = new Error('factory')
     const { adapter, requests } = createFakeAdapter()
+    const onNonResponseError = vi.fn()
     const { lyla } = createLyla(adapter, {
-      createContext: () => undefined
+      createContext: () => undefined,
+      hooks: { onNonResponseError: [onNonResponseError] }
     })
     const error = await catchError(
       lyla.get('/', {
@@ -228,7 +230,13 @@ describe('core context', () => {
         }
       })
     )
-    expect(error).toBe(factoryError)
+    if (!isLylaError(error) || error.type !== LYLA_ERROR.BAD_REQUEST) {
+      throw new Error('Expected a BAD_REQUEST error')
+    }
+    expect(error.error).toBe(factoryError)
+    expect(error.context).toBeUndefined()
+    expect(error.requestOptions.context).toBeUndefined()
+    expect(onNonResponseError).toHaveBeenCalledExactlyOnceWith(error)
     expect(requests).toHaveLength(0)
   })
 })

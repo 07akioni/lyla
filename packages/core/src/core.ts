@@ -31,13 +31,15 @@ import type {
   Lyla,
   LylaAdapter,
   LylaAdapterMeta,
+  LylaAdapterOptions,
   LylaRequestOptionsWithContext,
   LylaNormalizedRequestOptions,
   LylaContextFactory,
   LylaCreateOptions,
   LylaRetryOnRejectedCommand,
   LylaRetryOnResolvedCommand,
-  LylaWithRetry
+  LylaWithRetry,
+  LylaWithRetryOptions
 } from './types'
 import { getStatusText } from './status'
 
@@ -129,24 +131,52 @@ export function createLyla<C, M extends LylaAdapterMeta>(
         )
       )
     }
+    let context: C
+    try {
+      context =
+        options.context === undefined
+          ? resolveContext(
+            options.createContext
+              ? [...contextFactories, options.createContext]
+              : contextFactories
+          )
+          : options.context
+    } catch (e) {
+      const requestOptions = Object.assign({}, options)
+      const badRequestError = defineLylaError<
+        M,
+        C,
+        LylaBadRequestError<C, M>
+      >(
+        {
+          type: LYLA_ERROR.BAD_REQUEST,
+          message:
+            '`createContext` throws error. See `error` for the original error',
+          detail: undefined,
+          error: e,
+          response: undefined,
+          context: undefined,
+          requestOptions
+        },
+        undefined
+      )
+      throw await callNonResponseErrorHooks(
+        badRequestError,
+        mergeOptions<LylaRequestOptions<C, M>>(
+          mergedLylaOptions,
+          requestOptions
+        )
+      )
+    }
     let optionsWithContext: LylaRequestOptionsWithContext<C, M> = Object.assign(
       {},
       options,
-      {
-        context:
-          options.context === undefined
-            ? resolveContext(
-              options.createContext
-                ? [...contextFactories, options.createContext]
-                : contextFactories
-            )
-            : options.context
-      }
+      { context }
     )
-    onContextReady?.(optionsWithContext.context)
+    onContextReady?.(context)
     async function callNonResponseErrorHooks(
       error: LylaNonResponseError<C, M>,
-      requestOptions: LylaRequestOptionsWithContext<C, M>
+      requestOptions: LylaRequestOptions<C, M>
     ): Promise<LylaError<C, M>> {
       if (requestOptions.hooks?.onNonResponseError) {
         try {
@@ -344,7 +374,27 @@ export function createLyla<C, M extends LylaAdapterMeta>(
         )
         throw await callNonResponseErrorHooks(badRequestError, _options)
       }
-      _options.body = JSON.stringify(_options.json)
+      try {
+        _options.body = JSON.stringify(_options.json)
+      } catch (e) {
+        const badRequestError = defineLylaError<
+          M,
+          C,
+          LylaBadRequestError<C, M>
+        >(
+          {
+            type: LYLA_ERROR.BAD_REQUEST,
+            message: "`options.json` can't be serialized to JSON",
+            detail: undefined,
+            error: e,
+            response: undefined,
+            context: _options.context,
+            requestOptions: _options
+          },
+          undefined
+        )
+        throw await callNonResponseErrorHooks(badRequestError, _options)
+      }
     }
 
     if (
@@ -495,8 +545,9 @@ export function createLyla<C, M extends LylaAdapterMeta>(
     }
 
     let hasNetworkError = false
+    let hasBrokenOnHeadersReceived = false
     const onHeadersReceived = _options.hooks?.onHeadersReceived
-    adapterHandle = adapter({
+    const adapterOptions: LylaAdapterOptions<M> = {
       url,
       method,
       body,
@@ -563,6 +614,7 @@ export function createLyla<C, M extends LylaAdapterMeta>(
                 },
                 undefined
               )
+              hasBrokenOnHeadersReceived = true
               handleNonResponseError(brokenOnHeadersReceived, true)
               return
             }
@@ -572,6 +624,8 @@ export function createLyla<C, M extends LylaAdapterMeta>(
       async onResponse(resp, detail) {
         if (aborted) return
         if (hasNetworkError) return
+        // The response may arrive before `onNonResponseError` hooks finish
+        if (hasBrokenOnHeadersReceived) return
         stopListeningAbortSignal()
         let _json: any
         let _jsonIsSet = false
@@ -696,7 +750,32 @@ export function createLyla<C, M extends LylaAdapterMeta>(
         cleanup()
         _resolve(response)
       }
-    })
+    }
+
+    try {
+      adapterHandle = adapter(adapterOptions)
+    } catch (e) {
+      stopListeningAbortSignal()
+      const badRequestError = defineLylaError<
+        M,
+        C,
+        LylaBadRequestError<C, M>
+      >(
+        {
+          type: LYLA_ERROR.BAD_REQUEST,
+          message:
+            'Adapter throws error when sending the request, `options.url` or `options.headers` may be invalid. See `error` for the original error',
+          detail: undefined,
+          error: e,
+          response: undefined,
+          context: _options.context,
+          requestOptions: _options
+        },
+        stack
+      )
+      handleNonResponseError(badRequestError, true)
+      return requestPromise
+    }
 
     if (timeout) {
       setTimeout(() => {
@@ -753,31 +832,35 @@ export function createLyla<C, M extends LylaAdapterMeta>(
     withRetry: null as any
   })
 
-  const withRetry: LylaWithRetry<C, M> = ({
+  const withRetry: LylaWithRetry<C, M> = <S>({
     onResolved,
     onRejected,
     onBrokenRetry,
     createState
-  }) => {
+  }: LylaWithRetryOptions<C, M, S>) => {
     async function requestWithRetry<T = any>(
       options: LylaRequestOptions<C, M>
     ): Promise<LylaResponse<T, C, M>> {
-      const state = createState()
-
-      type State = typeof state
+      // Errors thrown by `onBrokenRetry` are thrown as is
+      let state: S | undefined = undefined
 
       let retryOptionsResolver:
         | (() => Promise<LylaRequestOptions<C, M>> | LylaRequestOptions<C, M>)
         | undefined = undefined
 
-      const makeBrokenRetryError = (
+      const handleBrokenRetry = async (
         error: unknown,
         context: C | undefined,
-      ) => {
-        const lylaError = defineLylaError<M, C, LylaBrokenRetryError<C, M>>(
+        requestOptions: LylaRequestOptions<C, M>
+      ): Promise<LylaRetryOnRejectedCommand<C, M>> => {
+        const brokenRetryError = defineLylaError<
+          M,
+          C,
+          LylaBrokenRetryError<C, M>
+        >(
           {
             type: LYLA_ERROR.BROKEN_RETRY,
-            error: error,
+            error,
             message: 'Retry process throws an unexpected error',
             detail: undefined,
             response: undefined,
@@ -787,33 +870,39 @@ export function createLyla<C, M extends LylaAdapterMeta>(
           },
           undefined
         )
-        return lylaError
+        return onBrokenRetry({
+          error: brokenRetryError,
+          context,
+          lyla,
+          state,
+          options: requestOptions
+        })
       }
+
+      while (true) {
+        try {
+          state = createState()
+          break
+        } catch (e) {
+          const command = await handleBrokenRetry(e, undefined, options)
+          if (command.action === 'reject') throw command.value
+          retryOptionsResolver = command.value
+        }
+      }
+
       while (true) {
         let response: LylaResponse<any, C, M>
         let finalOptions: LylaRequestOptions<C, M>
 
-        // options resolving throws an error
         try {
           finalOptions = retryOptionsResolver
             ? await retryOptionsResolver()
             : options
         } catch (e) {
-          const brokenRetryError = makeBrokenRetryError(e, undefined)
-          const brokenRetryHandle = await onBrokenRetry({
-            error: brokenRetryError,
-            context: undefined,
-            lyla,
-            state,
-            options
-          })
-          switch (brokenRetryHandle.action) {
-            case 'reject':
-              throw brokenRetryHandle.value
-            case 'retry':
-              retryOptionsResolver = brokenRetryHandle.value
-              continue
-          }
+          const command = await handleBrokenRetry(e, undefined, options)
+          if (command.action === 'reject') throw command.value
+          retryOptionsResolver = command.value
+          continue
         }
 
         let context: C | undefined = undefined
@@ -821,11 +910,10 @@ export function createLyla<C, M extends LylaAdapterMeta>(
           response = await request(finalOptions, (v) => (context = v))
         } catch (e) {
           let rejected: LylaRetryOnRejectedCommand<C, M>
-          // onRejected throws an error
           try {
             rejected = await onRejected({
               options: finalOptions,
-              context: context!,
+              context,
               state,
               lyla,
               // The error can be a lyla error, or a custom error thrown by user
@@ -833,30 +921,11 @@ export function createLyla<C, M extends LylaAdapterMeta>(
               error: e
             })
           } catch (e) {
-            const brokenRetryError = makeBrokenRetryError(e, context!)
-            const brokenRetryHandle = await onBrokenRetry({
-              error: brokenRetryError,
-              context: context!,
-              lyla,
-              state,
-              options: finalOptions
-            })
-            switch (brokenRetryHandle.action) {
-              case 'reject':
-                throw brokenRetryHandle.value
-              case 'retry':
-                retryOptionsResolver = brokenRetryHandle.value
-                continue
-            }
+            rejected = await handleBrokenRetry(e, context, finalOptions)
           }
-          // expected error
-          switch (rejected.action) {
-            case 'reject':
-              throw rejected.value
-            case 'retry':
-              retryOptionsResolver = rejected.value
-              continue
-          }
+          if (rejected.action === 'reject') throw rejected.value
+          retryOptionsResolver = rejected.value
+          continue
         }
 
         let resolved: LylaRetryOnResolvedCommand<any, C, M>
@@ -868,24 +937,9 @@ export function createLyla<C, M extends LylaAdapterMeta>(
             state
           })
         } catch (e) {
-          const brokenRetryError = makeBrokenRetryError(e, context!)
-          const brokenRetryHandle = await onBrokenRetry({
-            error: brokenRetryError,
-            context: context!,
-            lyla,
-            state,
-            options: finalOptions
-          })
-          switch (brokenRetryHandle.action) {
-            case 'reject':
-              throw brokenRetryHandle.value
-            case 'retry':
-              retryOptionsResolver = brokenRetryHandle.value
-              continue
-          }
+          resolved = await handleBrokenRetry(e, context, finalOptions)
         }
 
-        // expected error
         switch (resolved.action) {
           case 'resolve':
             return resolved.value

@@ -295,7 +295,7 @@ describe('core retry context', () => {
       createState: () => undefined,
       onResolved: resolveResponse,
       onRejected: async ({ options, context, error }) => {
-        rejectedContexts.push(context)
+        rejectedContexts.push(context!)
         expect((error as LylaErrorWithRetry).context).toBe(context)
         return { action: 'retry', value: () => options }
       },
@@ -315,7 +315,7 @@ describe('core retry context', () => {
       createState: () => undefined,
       onResolved: resolveResponse,
       onRejected: async ({ options, context }) => {
-        rejectedContexts.push(context)
+        rejectedContexts.push(context!)
         return { action: 'retry', value: () => options }
       },
       onBrokenRetry: rejectError

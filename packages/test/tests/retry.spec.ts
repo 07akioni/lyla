@@ -23,7 +23,7 @@ test('retries until the request succeeds with a new context for every attempt', 
         value: response
       }),
       onRejected: async ({ state, options, context, error }) => {
-        rejectedContexts.push(context.id)
+        rejectedContexts.push(context!.id)
         if (
           window.isLylaError(error) &&
           error.type === window.LYLA_ERROR.HTTP &&
@@ -141,7 +141,7 @@ test('reuses context passed by request options for every attempt', async ({
       }),
       onRejected: async ({ options, context, error }) => {
         if (window.isLylaError(error) && error.type === window.LYLA_ERROR.HTTP) {
-          context.attempts.push(error.response.json.attempt)
+          context!.attempts.push(error.response.json.attempt)
           return { action: 'retry', value: () => options }
         }
         return { action: 'reject', value: error }

@@ -192,6 +192,43 @@ test('rejects with NETWORK error when CORS is not allowed', async ({ page }) => 
   expect(errorType).toBe(LYLA_ERROR.NETWORK)
 })
 
+test('rejects with BAD_REQUEST error when the request can not be sent', async ({
+  page
+}) => {
+  const { sent } = trackRequests(page, '/api/echo')
+  const results = await page.evaluate(async () => {
+    const circular: Record<string, unknown> = {}
+    circular.self = circular
+    const cases: Array<[string, () => Promise<unknown>]> = [
+      ['invalid url', () => window.lyla.get('http://[invalid')],
+      [
+        'invalid header value',
+        () => window.lyla.get('/api/echo', { headers: { 'x-foo': 'a\nb' } })
+      ],
+      ['circular json', () => window.lyla.post('/api/echo', { json: circular })]
+    ]
+    const results: Record<string, [string | undefined, string | undefined]> =
+      {}
+    for (const [name, send] of cases) {
+      try {
+        await send()
+      } catch (e) {
+        results[name] = window.isLylaError(e)
+          ? [e.type, (e.error as Error).name]
+          : [undefined, undefined]
+      }
+    }
+    return results
+  })
+  await page.waitForTimeout(100)
+  expect(results).toEqual({
+    'invalid url': [LYLA_ERROR.BAD_REQUEST, 'SyntaxError'],
+    'invalid header value': [LYLA_ERROR.BAD_REQUEST, 'SyntaxError'],
+    'circular json': [LYLA_ERROR.BAD_REQUEST, 'TypeError']
+  })
+  expect(sent).toEqual([])
+})
+
 test("doesn't send request when it fails before being sent", async ({
   page
 }) => {
