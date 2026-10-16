@@ -74,7 +74,11 @@ const { json } = await lyla.post<MyType>('https://example.com', {
 function createLyla<C>(
   options: LylaCreateOptions<C> & { createContext: LylaContextFactory<C> },
   ...overrides: LylaCreateOptions<C>[]
-): { lyla: Lyla; isLylaError: (e: unknown) => e is LylaError }
+): {
+  lyla: Lyla
+  isLylaError: (e: unknown) => e is LylaError
+  isLylaErrorWithRetry: (e: unknown) => e is LylaErrorWithRetry
+}
 
 // 和 `LylaRequestOptions` 相同，但不允许传 `context`
 type LylaCreateOptions<C> = Omit<LylaRequestOptions<C>, 'context'>
@@ -86,23 +90,25 @@ type LylaContextFactory<C> = (parent: { context: C } | null) => C
 
 ### `lyla<T>(options: LylaRequestOptions): LylaResponse<T>`
 
-### `lyla.get<T>(options: LylaRequestOptions): LylaResponse<T>`
+### `lyla.get<T>(url: string, options?: LylaRequestOptions): LylaResponse<T>`
 
-### `lyla.post<T>(options: LylaRequestOptions): LylaResponse<T>`
+### `lyla.post<T>(url: string, options?: LylaRequestOptions): LylaResponse<T>`
 
-### `lyla.put<T>(options: LylaRequestOptions): LylaResponse<T>`
+### `lyla.put<T>(url: string, options?: LylaRequestOptions): LylaResponse<T>`
 
-### `lyla.patch<T>(options: LylaRequestOptions): LylaResponse<T>`
+### `lyla.patch<T>(url: string, options?: LylaRequestOptions): LylaResponse<T>`
 
-### `lyla.head<T>(options: LylaRequestOptions): LylaResponse<T>`
+### `lyla.head<T>(url: string, options?: LylaRequestOptions): LylaResponse<T>`
 
-### `lyla.delete<T>(options: LylaRequestOptions): LylaResponse<T>`
+### `lyla.delete<T>(url: string, options?: LylaRequestOptions): LylaResponse<T>`
 
-### `lyla.connect<T>(options: LylaRequestOptions): LylaResponse<T>`
+### `lyla.connect<T>(url: string, options?: LylaRequestOptions): LylaResponse<T>`
 
-### `lyla.options<T>(options: LylaRequestOptions): LylaResponse<T>`
+### `lyla.options<T>(url: string, options?: LylaRequestOptions): LylaResponse<T>`
 
-### `lyla.trace<T>(options: LylaRequestOptions): LylaResponse<T>`
+### `lyla.trace<T>(url: string, options?: LylaRequestOptions): LylaResponse<T>`
+
+这些方法的 `options` 中不能包含 `url` 和 `method`。
 
 ### `lyla.withRetry(options: LylaWithRetryOptions) => Lyla`
 
@@ -130,6 +136,10 @@ type LylaRequestOptions<C = undefined> = {
     | 'DELETE'
     | 'options'
     | 'OPTIONS'
+    | 'trace'
+    | 'TRACE'
+    | 'connect'
+    | 'CONNECT'
   timeout?: number
   /**
    * 为 true 时跨域请求时包含 credentials（https://fetch.spec.whatwg.org/#credentials）
@@ -197,7 +207,7 @@ type LylaRequestOptions<C = undefined> = {
     /**
      * 收到 headers 之后的回调
      *
-     * 仅在 @lylajs/web @lylajs/node 和 lyla 中可用
+     * 仅在 @lylajs/web @lylajs/node @lylajs/wx 和 lyla 中可用
      */
     onHeadersReceived?: Array<
       (
@@ -297,6 +307,10 @@ type LylaResponse<T = any, C = undefined> = {
    * 响应的 JSON 值。如果响应主体不是合法的 JSON 文本，获取这个值会抛出一个异常
    */
   json: T
+  /**
+   * 平台产生的原始响应信息
+   */
+  detail: 平台相关
   /**
    * 请求的上下文
    */
@@ -450,9 +464,9 @@ export enum LYLA_ERROR {
    */
   BROKEN_ON_RESPONSE_ERROR = 'BROKEN_ON_RESPONSE_ERROR',
   /**
-   * `onDataConversionError` 回调抛了异常
+   * `onNonResponseError` 回调抛了异常
    */
-  BROKEN_ON_DATA_CONVERSION_ERROR = 'BROKEN_ON_DATA_CONVERSION_ERROR',
+  BROKEN_ON_NON_RESPONSE_ERROR = 'BROKEN_ON_NON_RESPONSE_ERROR',
   /**
    * `onHeadersReceived` 回调抛了异常
    */
@@ -476,16 +490,20 @@ import { createLyla } from '@lylajs/web'
 const { lyla } = createLyla({
   createContext: () => null,
   hooks: {
-    onResponseError(error) {
-      switch error.type {
-        // ...
+    onResponseError: [
+      (error) => {
+        switch (error.type) {
+          // ...
+        }
       }
-    },
-    onNonResponseError(error) {
-       switch error.type {
-        // ...
+    ],
+    onNonResponseError: [
+      (error) => {
+        switch (error.type) {
+          // ...
+        }
       }
-    }
+    ]
   }
 })
 ```
@@ -529,19 +547,18 @@ const { lyla, isLylaError } = createLyla({
       }
     ],
     onResponseError: [
-      (options) => {
-        options.context.endTime = Date.now()
-        options.context.duration =
-          options.context.endTime - options.context.startTime
-        return options
+      (error) => {
+        error.context.endTime = Date.now()
+        error.context.duration =
+          error.context.endTime - error.context.startTime
       }
     ],
     onAfterResponse: [
-      (options) => {
-        options.context.endTime = Date.now()
-        options.context.duration =
-          options.context.endTime - options.context.startTime
-        return options
+      (response) => {
+        response.context.endTime = Date.now()
+        response.context.duration =
+          response.context.endTime - response.context.startTime
+        return response
       }
     ]
   }
