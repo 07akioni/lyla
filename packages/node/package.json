@@ -1,6 +1,6 @@
 {
   "name": "@lylajs/node",
-  "version": "2.2.0",
+  "version": "3.0.0",
   "scripts": {
     "check-type": "tsc -p tsconfig.cjs.json --noEmit",
     "build": "rm -rf es lib && tsc -p tsconfig.cjs.json && tsc -p tsconfig.esm.json",
