@@ -151,8 +151,8 @@ type LylaRequestOptions<C = undefined> = {
   /**
    * Type of `response.body`.
    */
-  responseType?: 'arraybuffer' | 'blob' | 'text'
-  body?: XMLHttpRequestBodyInit
+  responseType?: PlatformRelevant
+  body?: PlatformRelevant
   /**
    * JSON value to be written into the request body. It can't be used with
    * `body`.
@@ -401,6 +401,13 @@ try {
 ```
 
 As long as lyla is used as its types require, a failed request is always rejected with a `LylaError`, unless it's rejected manually by `reject` of `onHeadersReceived`, `onAfterResponse` or `onResponseError`. In that case it's rejected with the reason as is.
+
+If a request is rejected before its response or network error is received, the underlying request is aborted.
+
+Note that:
+
+- `onHeadersReceived` must be a synchronous function. An error thrown by it rejects the request with `BROKEN_ON_HEADERS_RECEIVED`. Using an async function as `onHeadersReceived`, or calling its `reject` after it returns, is undefined behavior.
+- `onUploadProgress` and `onDownloadProgress` are listeners and aren't awaited by the request. Errors thrown by them don't affect the request and aren't converted to `LylaError`. They're thrown in the event callback of the platform, or become unhandled rejections if the listener is an async function.
 
 For instances created by `withRetry`, see [Retry request](#retry-request).
 
@@ -681,6 +688,7 @@ type LylaWithRetryOptions<C, S> = {
         value: unknown
       }
   >
+  // It should not throw. If it throws, the error will be thrown as is
   onBrokenRetry: (params: {
     // It's `undefined` if `createState` throws
     state: S | undefined
@@ -704,7 +712,7 @@ type LylaWithRetryOptions<C, S> = {
 }
 ```
 
-The `lyla.withRetry` method returns a new lyla instance with all lyla methods except `retry`. This instance will decide whether to retry, continue, or reject based on the return values of `onResolved`, `onRejected` and `onBrokenRetry`.
+The `lyla.withRetry` method returns a new lyla instance with all lyla methods except `withRetry` (calling its `withRetry` throws an error). This instance will decide whether to retry, continue, or reject based on the return values of `onResolved`, `onRejected` and `onBrokenRetry`.
 
 `createState` is called at the beginning of each request to create a new state object, which is passed to `onResolved`, `onRejected` and `onBrokenRetry`. You can use this object to store some state, such as retry count.
 
@@ -754,7 +762,7 @@ An instance created by `lyla.withRetry` may encounter these errors when sending 
 1. Any rejection of a request (a `LylaError`, or a reason passed to `reject` of hooks) is passed to `onRejected` as is.
 2. A value returned by the reject action, whether it's a Lyla error or not, will be thrown directly without being wrapped.
 3. An exception thrown by `createState`, `onResolved` or `onRejected`, or an exception thrown by the value function of the retry action, will be wrapped into a `BROKEN_RETRY` type error and passed to `onBrokenRetry`. `onBrokenRetry` decides whether to reject (throw its `value` directly) or retry. To throw the `BROKEN_RETRY` error, return `{ action: 'reject', value: error }`. If `createState` throws, `state` passed to `onBrokenRetry` is `undefined`, and `createState` is called again before the retried request is sent.
-4. An exception thrown by `onBrokenRetry` will be thrown directly without being wrapped.
+4. `onBrokenRetry` should not throw. If it throws, the error will be thrown as is.
 
 The `BROKEN_RETRY` error won't be caught by any hook and won't be judged as `true` by `isLylaError`. If you need to judge the error, you need to use `isLylaErrorWithRetry`, which will judge all Lyla Errors.
 

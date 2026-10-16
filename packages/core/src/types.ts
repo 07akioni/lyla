@@ -304,6 +304,9 @@ export type LylaWithRetryOptions<C, M extends LylaAdapterMeta, S> = {
     lyla: Lyla<C, M>
     error: unknown
   }) => Promise<LylaRetryOnRejectedCommand<C, M>>
+  /**
+   * It should not throw. If it throws, the error will be thrown as is.
+   */
   onBrokenRetry: (params: {
     /**
      * `undefined` if `createState` throws.

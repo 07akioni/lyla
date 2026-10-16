@@ -5,8 +5,9 @@ import {
   isLylaErrorWithRetry,
   LYLA_ERROR
 } from '@lylajs/core'
-import type { LylaError, LylaRequestOptions } from '@lylajs/core'
+import type { Lyla, LylaError, LylaRequestOptions } from '@lylajs/core'
 import { describe, expect, it, vi } from 'vitest'
+import type { FakeRequest } from './utils'
 import { catchError, createFakeAdapter, respond, sleep } from './utils'
 
 function createErrorHooks() {
@@ -148,6 +149,224 @@ describe('core response errors', () => {
     await lyla.get('/', { timeout: 20 })
     await sleep(30)
     expect(getAbortCount()).toBe(0)
+  })
+
+  describe("doesn't time out after the outcome is received", () => {
+    const slowly = async () => sleep(30)
+
+    it('resolves when `onAfterResponse` outlasts the timeout', async () => {
+      const { adapter, getAbortCount } = createFakeAdapter()
+      const { lyla } = createLyla(adapter, { createContext: () => undefined })
+      const response = await lyla.get('/', {
+        timeout: 10,
+        hooks: {
+          onAfterResponse: [
+            async (response) => {
+              await slowly()
+              return response
+            }
+          ]
+        }
+      })
+      expect(response.status).toBe(200)
+      expect(getAbortCount()).toBe(0)
+    })
+
+    it('resolves when the adapter responds synchronously', async () => {
+      const { adapter, getAbortCount } = createFakeAdapter(respond)
+      const { lyla } = createLyla(adapter, { createContext: () => undefined })
+      const response = await lyla.get('/', {
+        timeout: 10,
+        hooks: {
+          onAfterResponse: [
+            async (response) => {
+              await slowly()
+              return response
+            }
+          ]
+        }
+      })
+      expect(response.status).toBe(200)
+      expect(getAbortCount()).toBe(0)
+    })
+
+    it('rejects with reason passed to `reject` of `onAfterResponse` after the timeout', async () => {
+      const reason = new Error('manual')
+      const { adapter } = createFakeAdapter()
+      const { lyla } = createLyla(adapter, { createContext: () => undefined })
+      const request = lyla.get('/', {
+        timeout: 10,
+        hooks: {
+          onAfterResponse: [
+            async (response, reject) => {
+              await slowly()
+              reject(reason)
+              return response
+            }
+          ]
+        }
+      })
+      await expect(request).rejects.toBe(reason)
+    })
+
+    it('ignores abort signal when `onAfterResponse` is running', async () => {
+      const controller = new AbortController()
+      const { adapter, getAbortCount } = createFakeAdapter()
+      const { lyla } = createLyla(adapter, { createContext: () => undefined })
+      const response = await lyla.get('/', {
+        signal: controller.signal,
+        hooks: {
+          onAfterResponse: [
+            async (response) => {
+              controller.abort()
+              await slowly()
+              return response
+            }
+          ]
+        }
+      })
+      expect(response.status).toBe(200)
+      expect(getAbortCount()).toBe(0)
+    })
+
+    it.each([
+      {
+        type: LYLA_ERROR.HTTP,
+        handle: (request: FakeRequest) => {
+          setTimeout(() => respond(request, { status: 500 }))
+        }
+      },
+      {
+        type: LYLA_ERROR.NETWORK,
+        handle: (request: FakeRequest) => {
+          setTimeout(() => request.onNetworkError(undefined))
+        }
+      },
+      {
+        type: LYLA_ERROR.ABORTED,
+        handle: () => {},
+        send: (lyla: Lyla<undefined>, options: LylaRequestOptions) => {
+          const controller = new AbortController()
+          setTimeout(() => controller.abort())
+          return lyla.get('/', { ...options, signal: controller.signal })
+        }
+      }
+    ])(
+      'keeps `$type` error when `onResponseError` outlasts the timeout',
+      async ({ type, handle, send = (lyla, options) => lyla.get('/', options) }) => {
+        const { adapter, getAbortCount } = createFakeAdapter(handle)
+        const { lyla } = createLyla(adapter, { createContext: () => undefined })
+        const error = (await catchError(
+          send(lyla, { timeout: 10, hooks: { onResponseError: [slowly] } })
+        )) as LylaError
+        expect(error.type).toBe(type)
+        expect(getAbortCount()).toBe(type === LYLA_ERROR.ABORTED ? 1 : 0)
+      }
+    )
+
+    it('keeps `BROKEN_ON_HEADERS_RECEIVED` error when `onNonResponseError` outlasts the timeout', async () => {
+      const { adapter, getAbortCount } = createFakeAdapter((request) => {
+        setTimeout(() => request.onHeadersReceived?.({}, undefined))
+      })
+      const { lyla } = createLyla(adapter, { createContext: () => undefined })
+      const error = (await catchError(
+        lyla.get('/', {
+          timeout: 10,
+          hooks: {
+            onHeadersReceived: [
+              () => {
+                throw new Error('hook')
+              }
+            ],
+            onNonResponseError: [slowly]
+          }
+        })
+      )) as LylaError
+      expect(error.type).toBe(LYLA_ERROR.BROKEN_ON_HEADERS_RECEIVED)
+      expect(getAbortCount()).toBe(1)
+    })
+  })
+
+  describe('aborts the underlying request when the request is rejected', () => {
+    const throwInHook = () => {
+      throw new Error('hook')
+    }
+    const respondAfterHeaders = (request: FakeRequest) => {
+      setTimeout(() => {
+        request.onHeadersReceived?.({}, undefined)
+        setTimeout(() => respond(request))
+      })
+    }
+
+    it.each([
+      {
+        name: '`onHeadersReceived` throws',
+        handle: respondAfterHeaders,
+        hooks: { onHeadersReceived: [throwInHook] }
+      },
+      {
+        name: '`reject` of `onHeadersReceived` is called',
+        handle: respondAfterHeaders,
+        hooks: { onHeadersReceived: [(_: unknown, reject: (reason: unknown) => void) => reject('manual')] }
+      },
+      {
+        name: '`reject` of `onHeadersReceived` is called while the adapter is being called',
+        handle: (request: FakeRequest) => {
+          request.onHeadersReceived?.({}, undefined)
+          setTimeout(() => respond(request))
+        },
+        hooks: { onHeadersReceived: [(_: unknown, reject: (reason: unknown) => void) => reject('manual')] }
+      }
+    ])('aborts once when $name', async ({ handle, hooks }) => {
+      const { adapter, getAbortCount } = createFakeAdapter(handle)
+      const onAfterResponse = vi.fn((response) => response)
+      const { lyla } = createLyla(adapter, { createContext: () => undefined })
+      await catchError(
+        lyla.get('/', { hooks: { ...hooks, onAfterResponse: [onAfterResponse] } })
+      )
+      await sleep(10)
+      expect(getAbortCount()).toBe(1)
+      expect(onAfterResponse).not.toHaveBeenCalled()
+    })
+
+    it.each([
+      {
+        name: 'status is not 2xx',
+        handle: (request: FakeRequest) => {
+          setTimeout(() => respond(request, { status: 500 }))
+        },
+        hooks: {}
+      },
+      {
+        name: 'network error occurs',
+        handle: (request: FakeRequest) => {
+          setTimeout(() => request.onNetworkError(undefined))
+        },
+        hooks: {}
+      },
+      {
+        name: '`onAfterResponse` throws',
+        handle: undefined,
+        hooks: { onAfterResponse: [throwInHook] }
+      },
+      {
+        name: '`reject` of `onAfterResponse` is called',
+        handle: undefined,
+        hooks: {
+          onAfterResponse: [
+            (response: any, reject: (reason: unknown) => void) => {
+              reject('manual')
+              return response
+            }
+          ]
+        }
+      }
+    ])("doesn't abort when $name after the adapter finishes", async ({ handle, hooks }) => {
+      const { adapter, getAbortCount } = createFakeAdapter(handle)
+      const { lyla } = createLyla(adapter, { createContext: () => undefined })
+      await catchError(lyla.get('/', { hooks }))
+      expect(getAbortCount()).toBe(0)
+    })
   })
 
   it('rejects with reason passed to `reject` of `onResponseError`', async () => {

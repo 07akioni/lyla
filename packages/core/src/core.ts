@@ -48,6 +48,7 @@ function isOkStatus(status: number): boolean {
 }
 
 declare const setTimeout: (callback: () => void, timeout?: number) => number
+declare const clearTimeout: (id: number) => void
 
 type URLSearchParamsLike = {
   toString: () => string
@@ -485,17 +486,22 @@ export function createLyla<C, M extends LylaAdapterMeta>(
     _options.headers = requestHeaders
 
     let settled = false
-    let abortSignalListenerOff = false
+    // Once the outcome of the request is known, abort signal and timeout are
+    // ignored, even if hooks are still running
+    let outcomeReceived = false
+    let timeoutId: number | undefined
     function cleanup() {
       settled = true
-      if (!abortSignalListenerOff) {
-        stopListeningAbortSignal()
-      }
+      onOutcomeReceived()
     }
-    function stopListeningAbortSignal() {
-      abortSignalListenerOff = true
+    function onOutcomeReceived() {
+      if (outcomeReceived) return
+      outcomeReceived = true
       if (signal) {
         signal.removeEventListener('abort', onAbortSignalReceived)
+      }
+      if (timeoutId !== undefined) {
+        clearTimeout(timeoutId)
       }
     }
 
@@ -505,21 +511,35 @@ export function createLyla<C, M extends LylaAdapterMeta>(
         _reject = (reason) => {
           if (settled) return
           cleanup()
+          abortAdapter()
           reject(reason)
         }
         _customReject = (reason) => {
           if (settled) return
           cleanup()
+          abortAdapter()
           reject(reason)
         }
       }
     )
 
     let adapterHandle: ReturnType<LylaAdapter<M>> | undefined
+    // Whether the adapter has reported the response or the network error
+    let adapterFinished = false
+    let adapterAborted = false
     let aborted = false
+    function abortAdapter() {
+      if (adapterFinished || adapterAborted) return
+      adapterAborted = true
+      // XHR's abort will call onResponse in loadend event, so we need to mark
+      // aborted before calling abort()
+      aborted = true
+      adapterHandle?.abort()
+    }
     function onAbortSignalReceived() {
       if (aborted) return
       aborted = true
+      onOutcomeReceived()
       const abortError = defineLylaError<M, C, LylaAbortedError<C, M>>(
         {
           type: LYLA_ERROR.ABORTED,
@@ -532,8 +552,7 @@ export function createLyla<C, M extends LylaAdapterMeta>(
         },
         stack
       )
-      const settled = () => adapterHandle?.abort()
-      handleResponseError(abortError).then(settled).catch(settled)
+      handleResponseError(abortError)
     }
 
     if (signal) {
@@ -557,9 +576,10 @@ export function createLyla<C, M extends LylaAdapterMeta>(
       withCredentials,
       extraOptions: _options.extraOptions,
       onNetworkError(detail: any) {
+        adapterFinished = true
         if (aborted) return
         hasNetworkError = true
-        stopListeningAbortSignal()
+        onOutcomeReceived()
         const networkError = defineLylaError<M, C, LylaNetworkError<C, M>>(
           {
             type: LYLA_ERROR.NETWORK,
@@ -615,6 +635,7 @@ export function createLyla<C, M extends LylaAdapterMeta>(
                 undefined
               )
               hasBrokenOnHeadersReceived = true
+              onOutcomeReceived()
               handleNonResponseError(brokenOnHeadersReceived, true)
               return
             }
@@ -622,11 +643,12 @@ export function createLyla<C, M extends LylaAdapterMeta>(
         }
         : undefined,
       async onResponse(resp, detail) {
+        adapterFinished = true
         if (aborted) return
         if (hasNetworkError) return
         // The response may arrive before `onNonResponseError` hooks finish
         if (hasBrokenOnHeadersReceived) return
-        stopListeningAbortSignal()
+        onOutcomeReceived()
         let _json: any
         let _jsonIsSet = false
         let _cachedJson: any
@@ -755,7 +777,7 @@ export function createLyla<C, M extends LylaAdapterMeta>(
     try {
       adapterHandle = adapter(adapterOptions)
     } catch (e) {
-      stopListeningAbortSignal()
+      onOutcomeReceived()
       const badRequestError = defineLylaError<
         M,
         C,
@@ -776,13 +798,17 @@ export function createLyla<C, M extends LylaAdapterMeta>(
       handleNonResponseError(badRequestError, true)
       return requestPromise
     }
+    // The request may be rejected while the adapter is being called
+    if (adapterAborted) {
+      adapterHandle.abort()
+    }
 
-    if (timeout) {
-      setTimeout(() => {
-        if (settled) return
-        aborted = true
-        // XHR's abort will call onResponse in loadend event, so we need to mark aborted before calling abort()
-        adapterHandle!.abort()
+    // The adapter may report the outcome synchronously
+    if (timeout && !outcomeReceived) {
+      timeoutId = setTimeout(() => {
+        if (outcomeReceived) return
+        onOutcomeReceived()
+        abortAdapter()
         const timeoutError = defineLylaError<M, C, LylaTimeoutError<C, M>>(
           {
             type: LYLA_ERROR.TIMEOUT,
@@ -841,7 +867,7 @@ export function createLyla<C, M extends LylaAdapterMeta>(
     async function requestWithRetry<T = any>(
       options: LylaRequestOptions<C, M>
     ): Promise<LylaResponse<T, C, M>> {
-      // Errors thrown by `onBrokenRetry` are thrown as is
+      // `onBrokenRetry` should not throw. If it throws, the error is thrown as is
       let state: S | undefined = undefined
 
       let retryOptionsResolver:

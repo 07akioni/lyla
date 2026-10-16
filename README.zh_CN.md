@@ -1,6 +1,6 @@
 # lyla · [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT) [![ci](https://github.com/07akioni/lyla/actions/workflows/node.js.yml/badge.svg)](https://github.com/07akioni/lyla/actions/workflows/node.js.yml/badge.svg) [![npm version](https://badge.fury.io/js/lyla.svg)](https://badge.fury.io/js/lyla) [![minzipped size](https://badgen.net/bundlephobia/minzip/lyla)](https://badgen.net/bundlephobia/minzip/lyla)
 
-一个类型完善的、表现可预期、错误处理可预期的浏览器 HTTP 请求库。
+一个类型完善的、表现可预期、错误处理可预期的 HTTP 请求库。
 
 > [!IMPORTANT]  
 >  如果你只需要浏览器环境支持，你应该使用 `@lylajs/web` 而不是 `lyla`。
@@ -232,7 +232,7 @@ type LylaRequestOptions<C = undefined> = {
      * 响应处理遇到异常时的回调。只会在 LylaError 产生时被触发，用户触发的异常不会触发此回
      * 调，例如用户在 `onAfterResponse` 回调中抛出异常不会触发该回调。
      *
-     * 在次回调结束之前，异常不会被抛出
+     * 在此回调结束之前，异常不会被抛出
      */
     onResponseError?: Array<
       (
@@ -241,7 +241,7 @@ type LylaRequestOptions<C = undefined> = {
       ) => void | Promise<void>
     >
     /**
-     * 任何非 onResponseError 触发的错误都会触发次回调（除了 BROKEN_ON_NON_RESPONSE_ERROR）
+     * 任何非 onResponseError 触发的错误都会触发此回调（除了 BROKEN_ON_NON_RESPONSE_ERROR）
      */
     onNonResponseError?: Array<
       (error: LylaNonResponseError<C>) => void | Promise<void>
@@ -386,6 +386,13 @@ try {
 ```
 
 只要按照类型的要求使用 lyla，失败的请求都会以 `LylaError` 被拒绝，除非请求被 `onHeadersReceived`、`onAfterResponse` 或 `onResponseError` 的 `reject` 手动拒绝，此时请求会以传入的值原样被拒绝。
+
+如果请求在收到响应或网络错误之前被拒绝，底层请求会被 abort。
+
+有以下需要注意的情况：
+
+- `onHeadersReceived` 必须是同步函数，它抛出的异常会让请求以 `BROKEN_ON_HEADERS_RECEIVED` 被拒绝。使用 async 函数作为 `onHeadersReceived`，或者在它返回之后再调用它的 `reject`，都是未定义行为。
+- `onUploadProgress` 和 `onDownloadProgress` 是监听函数，不会被请求等待。它们抛出的异常不会影响请求，也不会被转换成 `LylaError`，而是在平台的事件回调中被抛出；如果监听函数是 async 函数，则会变成未处理的 rejection。
 
 通过 `withRetry` 创建的实例请参考[重试请求](#重试请求)。
 
@@ -653,6 +660,7 @@ type LylaWithRetryOptions<C, S> = {
         value: unknown
       }
   >
+  // 不应该抛出异常，如果抛出了，这个异常会被原样抛出
   onBrokenRetry: (params: {
     // 如果 `createState` 抛出异常，它是 `undefined`
     state: S | undefined
@@ -675,7 +683,7 @@ type LylaWithRetryOptions<C, S> = {
 }
 ```
 
-`lyla.withRetry` 方法会返回一个新的 lyla 实例，这个 lyla 实例 API 拥有除了 `retry` 之外所有的 lyla 方法，这个实例会根据 `onResolved`、`onRejected` 和 `onBrokenRetry` 的返回值来决定是重试、继续还是拒绝。
+`lyla.withRetry` 方法会返回一个新的 lyla 实例，这个 lyla 实例 API 拥有除了 `withRetry` 之外所有的 lyla 方法（调用它的 `withRetry` 会抛出异常），这个实例会根据 `onResolved`、`onRejected` 和 `onBrokenRetry` 的返回值来决定是重试、继续还是拒绝。
 
 `createState` 会在每次请求开始时调用，用于创建一个新的状态对象，这个状态对象会在 `onResolved`、`onRejected` 和 `onBrokenRetry` 中传递，你可以在这个对象中保存一些状态，例如重试次数。
 
@@ -725,7 +733,7 @@ const lyla = _lyla.withRetry({
 1. 请求被拒绝的原因（`LylaError`，或者传给 hook 的 `reject` 的值）会被原样传给 `onRejected`
 2. 通过 reject action 返回的值，不管是不是 Lyla Error，都会被直接抛出，不会被包装
 3. `createState`、`onResolved` 或 `onRejected` 抛出了异常，或者 retry action 的 value 函数抛出了异常，这个错误会被包装成一个 `BROKEN_RETRY` 类型的错误并传给 `onBrokenRetry`，由它决定是拒绝（直接抛出它的 `value`）还是重试。如果要抛出 `BROKEN_RETRY` 错误，返回 `{ action: 'reject', value: error }` 即可。如果是 `createState` 抛出了异常，传给 `onBrokenRetry` 的 `state` 是 `undefined`，重试时会在发送请求之前再次调用 `createState`
-4. `onBrokenRetry` 抛出的异常会被直接抛出，不会被包装
+4. `onBrokenRetry` 不应该抛出异常，如果抛出了，这个异常会被原样抛出
 
 其中 `BROKEN_RETRY`，这种错误不会被任何 hook 捕获，也不会被 `isLylaError` 判定为 `true`。如果你需要判断这种错误，你需要使用 `isLylaErrorWithRetry`，这个函数会判断所有的 Lyla Error。
 
