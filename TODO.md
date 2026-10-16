@@ -2,6 +2,7 @@
 2. <del>node package</del>
 3. <del>headers 2 lower case</del>
 4. universal, fix type leakage (seems to be impossible)
+5. timeout => no active event for timeout
 
 ```ts
 import { createLyla } from '@lylajs/*' // * 是你需要的平台
