@@ -4,6 +4,8 @@ export type {
   LylaAdapter,
   LylaRequestOptions,
   LylaRequestOptionsWithContext,
+  LylaContextFactory,
+  LylaCreateOptions,
   LylaResponse,
   LylaProgress,
   Lyla

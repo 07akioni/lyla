@@ -6,10 +6,10 @@ const { mount, lylaOptions } = createLylaDebugger<CustomContext>()
 const { lyla } = createLyla<CustomContext>(
   {
     baseUrl: '/foo',
-    context: {
+    createContext: () => ({
       id: 'unset',
       foo: 'unset'
-    }
+    })
   },
   lylaOptions
 )

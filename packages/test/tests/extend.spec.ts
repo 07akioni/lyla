@@ -8,7 +8,7 @@ test('`extend` should work', async ({ page }) => {
   let text = await page.evaluate(async () => {
     const { lyla: extended } = window.createLyla({
       baseUrl: 'http://localhost:8092',
-      context: null
+      createContext: () => null
     })
     await extended.get('api/get-set-cookie')
     await extended.get('/api/get-set-cookie')
@@ -18,7 +18,7 @@ test('`extend` should work', async ({ page }) => {
   text = await page.evaluate(async () => {
     const { lyla: extended } = window.createLyla({
       baseUrl: 'http://localhost:8092/',
-      context: null
+      createContext: () => null
     })
     await extended.get('api/get-set-cookie')
     await extended.get('/api/get-set-cookie')
@@ -35,7 +35,7 @@ test('`headers` extended', async ({ page }) => {
         str: 'str',
         num: 123
       },
-      context: null
+      createContext: () => null
     })
     const { headers } = await extended.post('/post-return-headers')
     return headers
@@ -52,7 +52,7 @@ test('`headers` extended can be overrided', async ({ page }) => {
         str: 'str',
         num: 123
       },
-      context: null
+      createContext: () => null
     })
     const { headers } = await extended.post('/post-return-headers', {
       headers: {
@@ -70,7 +70,7 @@ test('`baseUrl` extended can be overrided', async ({ page }) => {
   await page.evaluate(async () => {
     const { lyla: extended } = window.createLyla({
       baseUrl: 'http://localhost:8091',
-      context: null
+      createContext: () => null
     })
     await extended.get('api/get-set-cookie', {
       baseUrl: 'http://localhost:8092',
@@ -93,7 +93,7 @@ test('`extend` multiple times', async ({ page }) => {
         wow: 'wow',
         gigi: ''
       },
-      context: null
+      createContext: () => null
     })
     const { lyla: extended2 } = window.createLyla({
       baseUrl: '/api',
@@ -102,7 +102,7 @@ test('`extend` multiple times', async ({ page }) => {
         wow: 'wow',
         gigi: ''
       },
-      context: null
+      createContext: () => null
     })
     const { headers } = await extended2.post('/post-return-headers', {
       headers: {

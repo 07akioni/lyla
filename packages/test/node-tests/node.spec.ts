@@ -146,7 +146,7 @@ describe('hooks', () => {
     let headers: Record<string, string> = {}
     let orders: number[] = []
     let { lyla } = createLyla<{ foo: string }>({
-      context: { foo: '' },
+      createContext: () => ({ foo: '' }),
       hooks: {
         onHeadersReceived: [
           ({ headers: _headers, requestOptions }) => {

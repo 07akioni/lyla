@@ -3,6 +3,8 @@ import type {
   LylaResponse as LylaCoreResponse,
   Lyla as LylaCore,
   LylaRequestOptionsWithContext as LylaCoreRequestOptionsWithContext,
+  LylaContextFactory as LylaCoreContextFactory,
+  LylaCreateOptions as LylaCoreCreateOptions,
   LylaProgress as LylaCoreProgress
 } from '@lylajs/core'
 import type {
@@ -22,6 +24,11 @@ export type LylaRequestOptions<C = undefined> = LylaCoreRequestOptions<
 >
 export type LylaRequestOptionsWithContext<C = undefined> =
   LylaCoreRequestOptionsWithContext<C, LylaAdapterMeta>
+export type LylaContextFactory<C = undefined> = LylaCoreContextFactory<C>
+export type LylaCreateOptions<C = undefined> = LylaCoreCreateOptions<
+  C,
+  LylaAdapterMeta
+>
 export type LylaResponse<T = any, C = undefined> = LylaCoreResponse<
   T,
   C,

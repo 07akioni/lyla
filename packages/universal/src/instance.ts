@@ -1,8 +1,8 @@
 import { createLyla as coreCreateLyla } from '@lylajs/core'
 import { LylaAdapterMeta } from './adapter'
 import type {
-  LylaRequestOptions,
-  LylaRequestOptionsWithContext
+  LylaCreateOptions,
+  LylaContextFactory
 } from './reexports'
 
 const isNode = typeof window === 'undefined'
@@ -189,13 +189,15 @@ export const { lyla, isLylaError, isLylaErrorWithRetry } = coreCreateLyla<
     }
   },
   {
-    context: undefined
+    createContext: () => undefined
   }
 )
 
 export const createLyla = <C>(
-  options: LylaRequestOptionsWithContext<C>,
-  ...overrides: LylaRequestOptions<C>[]
+  options: LylaCreateOptions<C> & {
+    createContext: LylaContextFactory<C>
+  },
+  ...overrides: LylaCreateOptions<C>[]
 ) => {
   return coreCreateLyla(adapter, options, ...overrides)
 }

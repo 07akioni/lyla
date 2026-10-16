@@ -3,7 +3,7 @@ import { createLyla, lyla } from '@lylajs/web'
 
 const { lyla: request, isLylaError } = createLyla({
   baseUrl: '/api/',
-  context: null
+  createContext: () => null
 })
 
 type Handler = [string, () => void]
@@ -236,7 +236,7 @@ const handlers: Handler[] = [
             }
           ]
         },
-        context: null
+        createContext: () => null
       })
       _req.post('/gigigi').then((resp) => {
         console.log(resp)
@@ -340,7 +340,7 @@ const handlers: Handler[] = [
     async () => {
       const { lyla: extended } = createLyla({
         baseUrl: 'http://localhost:8092',
-        context: null
+        createContext: () => null
       })
       let resp: any
       try {
@@ -360,7 +360,7 @@ const handlers: Handler[] = [
           str: 'str',
           num: 123
         },
-        context: null
+        createContext: () => null
       })
       const { headers } = await extended.post('/post-return-headers')
       console.log(headers)
@@ -378,7 +378,7 @@ const handlers: Handler[] = [
             wow: 'wow',
             gigi: ''
           },
-          context: null
+          createContext: () => null
         },
         {
           baseUrl: '/api',
@@ -401,7 +401,7 @@ const handlers: Handler[] = [
     async () => {
       const { lyla: lyla2 } = createLyla(
         {
-          context: null,
+          createContext: () => null,
           hooks: {
             onInit: [
               (options) => {

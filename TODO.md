@@ -6,7 +6,7 @@
 ```ts
 import { createLyla } from '@lylajs/*' // * 是你需要的平台
 
-const { lyla: _lyla } = createLyla({ context: null })
+const { lyla: _lyla } = createLyla({ createContext: () => null })
 
 const lyla = _lyla.withRetry({
   createState: () => ({
@@ -35,5 +35,3 @@ const lyla = _lyla.withRetry({
   }
 })
 ```
-
-# 在文档中说明 context 会被 clone...

@@ -29,7 +29,7 @@ test('`onResponseError` hook 1', async ({ page }) => {
           }
         ]
       },
-      context: null
+      createContext: () => null
     })
     try {
       await lyla.post('/api/post-return-body', {

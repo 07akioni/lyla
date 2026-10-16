@@ -96,7 +96,7 @@ test(`onResponseError`, async ({ page }) => {
 test('`hooks` should work with `extend`', async ({ page }) => {
   const body = await page.evaluate(async () => {
     const { lyla } = window.createLyla({
-      context: null,
+      createContext: () => null,
       hooks: {
         onInit: [
           (options) => {
@@ -161,7 +161,7 @@ test('`hooks` should work with multiple `extend`', async ({ page }) => {
     }
     const { lyla: lyla2 } = window.createLyla(
       {
-        context: null
+        createContext: () => null
       },
       lyla1Options,
       {
@@ -202,7 +202,9 @@ test('`onHeadersReceived` should work', async ({ page }) => {
   const [headers, orders, foo] = await page.evaluate(async () => {
     let headers: Record<string, string> = {}
     let orders: number[] = []
-    let { lyla } = window.createLyla<{ foo: string }>({ context: { foo: '' } })
+    let { lyla } = window.createLyla<{ foo: string }>({
+      createContext: () => ({ foo: '' })
+    })
     const { context } = await lyla.post('/api/post-return-headers', {
       headers: {
         'x-foo': 'bar'

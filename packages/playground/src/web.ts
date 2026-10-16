@@ -12,11 +12,11 @@ import { createLyla, LYLA_ERROR } from '@lylajs/web'
 // lyla.connect
 
 const { lyla, isLylaError, isLylaErrorWithRetry } = createLyla({
-  context: {
+  createContext: () => ({
     startTime: -1,
     endTime: -1,
     duration: -1
-  },
+  }),
   hooks: {
     onInit: [
       (options) => {

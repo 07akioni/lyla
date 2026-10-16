@@ -72,6 +72,13 @@ export type LylaRequestOptions<
   onDownloadProgress?: (progress: LylaProgress<C, M>) => void
   context?: C
   /**
+   * Creates the context of the request. Factories from the options and
+   * overrides of `createLyla` and the request options are called in order,
+   * each receiving the context created by the previous one (`null` for the
+   * first one). It can't be used together with `context`.
+   */
+  createContext?: LylaContextFactory<C>
+  /**
    * Whether to allow get request with body. Default is false.
    * It's not recommended to use GET request with body.
    */
@@ -149,6 +156,15 @@ export type LylaRequestOptionsWithContext<
 > = Omit<LylaRequestOptions<C, M>, 'context'> & {
   context: C
 }
+
+export type LylaContextFactory<C = any> = (
+  parent: { context: C } | null
+) => C
+
+export type LylaCreateOptions<
+  C = any,
+  M extends LylaAdapterMeta = LylaAdapterMeta
+> = Omit<LylaRequestOptions<C, M>, 'context'>
 
 export type LylaResponse<
   T = any,

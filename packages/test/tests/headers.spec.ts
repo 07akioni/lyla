@@ -10,7 +10,7 @@ test('`headers` can be merged with different case', async ({ page }) => {
       headers: {
         Key: 'Key'
       },
-      context: null
+      createContext: () => null
     })
     const { headers } = await lyla.post('/api/post-return-headers', {
       headers: {

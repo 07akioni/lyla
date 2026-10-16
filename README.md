@@ -52,7 +52,7 @@ import { createLyla } from '@lylajs/web'
 // it's recommended using `createLyla` to create lyla instance.
 // If you only need the simplest usage, you can use
 // import { lyla } from '@lylajs/web'
-const { lyla } = createLyla({ context: null })
+const { lyla } = createLyla({ createContext: () => null })
 const { json } = await lyla.post('https://example.com', {
   json: { foo: 'bar' }
 })
@@ -72,10 +72,17 @@ const { json } = await lyla.post<MyType>('https://example.com', {
 
 ```ts
 function createLyla<C>(
-  options: LylaRequestOptions<C> & { context: C },
-  ...overrides: LylaRequestOptions<C>[]
+  options: LylaCreateOptions<C> & { createContext: LylaContextFactory<C> },
+  ...overrides: LylaCreateOptions<C>[]
 ): { lyla: Lyla; isLylaError: (e: unknown) => e is LylaError }
+
+// Same as `LylaRequestOptions`, except that `context` isn't allowed
+type LylaCreateOptions<C> = Omit<LylaRequestOptions<C>, 'context'>
+
+type LylaContextFactory<C> = (parent: { context: C } | null) => C
 ```
+
+For how the context of a request is created, see [Context](#context).
 
 ### `lyla<T>(options: LylaRequestOptions): LylaResponse<T>`
 
@@ -235,9 +242,15 @@ type LylaRequestOptions<C = undefined> = {
     >
   }
   /**
-   * Custom context of the request.
+   * Custom context of the request. It's used as is (not cloned). It can't be
+   * used together with `createContext`.
    */
   context?: C
+  /**
+   * Creates the context of the request, based on the context created by
+   * `createContext` of `createLyla`. It can't be used together with `context`.
+   */
+  createContext?: LylaContextFactory<C>
   /**
    * Extra requestion options, these options will be passed to the corresponding
    * request method of the platform. Its type depends on the platform.
@@ -313,7 +326,10 @@ it would override default options' headers. For example:
 ```ts
 import { createLyla } from '@lylajs/web'
 
-const { lyla } = createLyla({ headers: { foo: 'bar' }, context: null })
+const { lyla } = createLyla({
+  headers: { foo: 'bar' },
+  createContext: () => null
+})
 
 // Request won't have the `foo` header
 request.get('http://example.com', { headers: { foo: undefined } })
@@ -324,7 +340,7 @@ request.get('http://example.com', { headers: { foo: undefined } })
 ```ts
 import { createLyla, LYLA_ERROR } from '@lylajs/web'
 
-const { lyla, isLylaError } = createLyla({ context: null })
+const { lyla, isLylaError } = createLyla({ createContext: () => null })
 
 try {
   const { json } = await lyla.get('https://example.com')
@@ -434,7 +450,7 @@ export enum LYLA_ERROR {
 import { createLyla } from '@lylajs/web'
 
 const { lyla } = createLyla({
-  context: null,
+  createContext: () => null,
   hooks: {
     onResponseError(error) {
       switch error.type {
@@ -462,7 +478,7 @@ import { createLyla, LylaAbortController } from '@lylajs/web'
 
 const controller = new LylaAbortController()
 
-const { lyla } = createLyla({ context: null })
+const { lyla } = createLyla({ createContext: () => null })
 
 lyla.get('url', {
   signal: controller.signal
@@ -473,15 +489,16 @@ controller.abort()
 
 ## Context
 
-You can access a context object in hooks, responses & errors.
+You can access a context object in hooks, responses & errors. Context is created
+for each request by `createContext` of `createLyla`.
 
 ```ts
 const { lyla, isLylaError } = createLyla({
-  context: {
+  createContext: () => ({
     startTime: -1,
     endTime: -1,
     duration: -1
-  },
+  }),
   hooks: {
     onInit: [
       (options) => {
@@ -511,6 +528,42 @@ const { lyla, isLylaError } = createLyla({
 lyla.get('/foo').then((response) => {
   console.log(response.context.duration)
 })
+```
+
+The context of a request is resolved in this way:
+
+- If the request passes `context`, it's used as is (not cloned) and no factory
+  is called.
+- Otherwise, `createContext` of `createLyla`'s options and overrides are called
+  in order, followed by the request's `createContext` if it exists. Each factory
+  receives the context created by the previous one as `parent` (`null` for the
+  first one).
+- If the request passes both `context` and `createContext`, it's rejected with a
+  `BAD_REQUEST` error.
+
+```ts
+const { lyla } = createLyla(
+  { createContext: () => ({ tags: ['base'] }) },
+  {
+    createContext: (parent) => ({
+      tags: [...parent!.context.tags, 'override']
+    })
+  }
+)
+
+// `response.context.tags` is `['base', 'override']`
+await lyla.get('/foo')
+
+// `response.context.tags` is `['base', 'override', 'request']`
+await lyla.get('/foo', {
+  createContext: (parent) => ({
+    tags: [...parent!.context.tags, 'request']
+  })
+})
+
+// `response.context` is `context` itself
+const context = { tags: ['custom'] }
+await lyla.get('/foo', { context })
 ```
 
 ## Retry request
@@ -573,7 +626,7 @@ Here is an example of retrying three times:
 ```ts
 import { createLyla } from '@lylajs/*' // * is the platform you need
 
-const { lyla: _lyla } = createLyla({ context: null })
+const { lyla: _lyla } = createLyla({ createContext: () => null })
 
 const lyla = _lyla.withRetry({
   createState: () => ({

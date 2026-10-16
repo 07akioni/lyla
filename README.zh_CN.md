@@ -51,7 +51,7 @@ import { createLyla } from '@lylajs/web'
 // 对于需要默认配置、拦截器或附带上下文的请求，建议使用 createLyla 建立 Lyla 实例
 // 如果你只需要最简单的使用，可以
 // import { lyla } from '@lylajs/web'
-const { lyla } = createLyla({ context: null })
+const { lyla } = createLyla({ createContext: () => null })
 
 const { json } = await lyla.post('https://example.com', {
   json: { foo: 'bar' }
@@ -72,10 +72,17 @@ const { json } = await lyla.post<MyType>('https://example.com', {
 
 ```ts
 function createLyla<C>(
-  options: LylaRequestOptions<C> & { context: C },
-  ...overrides: LylaRequestOptions<C>[]
+  options: LylaCreateOptions<C> & { createContext: LylaContextFactory<C> },
+  ...overrides: LylaCreateOptions<C>[]
 ): { lyla: Lyla; isLylaError: (e: unknown) => e is LylaError }
+
+// 和 `LylaRequestOptions` 相同，但不允许传 `context`
+type LylaCreateOptions<C> = Omit<LylaRequestOptions<C>, 'context'>
+
+type LylaContextFactory<C> = (parent: { context: C } | null) => C
 ```
+
+请求的上下文如何创建，见[上下文](#上下文)。
 
 ### `lyla<T>(options: LylaRequestOptions): LylaResponse<T>`
 
@@ -227,9 +234,14 @@ type LylaRequestOptions<C = undefined> = {
     >
   }
   /**
-   * 请求的自定义上下文
+   * 请求的自定义上下文，会被原样使用（不会被克隆），不能和 `createContext` 同时使用
    */
   context?: C
+  /**
+   * 在 `createLyla` 的 `createContext` 创建的上下文的基础上，创建这个请求的上下文，
+   * 不能和 `context` 同时使用
+   */
+  createContext?: LylaContextFactory<C>
   /**
    * 额外的请求选项，这些选项会被传递给对应平台的 request 请求，类型根据平台而定
    */
@@ -301,7 +313,10 @@ type LylaRequestHeaders = Record<string, string | number | undefined>
 ```ts
 import { createLyla } from '@lylajs/web'
 
-const { lyla } = createLyla({ headers: { foo: 'bar' }, context: null })
+const { lyla } = createLyla({
+  headers: { foo: 'bar' },
+  createContext: () => null
+})
 
 // 请求不会有 `foo` 请求头
 lyla.get('http://example.com', { headers: { foo: undefined } })
@@ -312,7 +327,7 @@ lyla.get('http://example.com', { headers: { foo: undefined } })
 ```ts
 import { createLyla, LYLA_ERROR } from '@lylajs/web'
 
-const { lyla, isLylaError } = createLyla({ context: null })
+const { lyla, isLylaError } = createLyla({ createContext: () => null })
 
 try {
   const { json } = await lyla.get('https://example.com')
@@ -420,7 +435,7 @@ export enum LYLA_ERROR {
 import { createLyla } from '@lylajs/web'
 
 const { lyla } = createLyla({
-  context: null,
+  createContext: () => null,
   hooks: {
     onResponseError(error) {
       switch error.type {
@@ -447,7 +462,7 @@ import { createLyla, LylaAbortController } from '@lylajs/web'
 
 const controller = new LylaAbortController()
 
-const { lyla } = createLyla({ context: null })
+const { lyla } = createLyla({ createContext: () => null })
 
 lyla.get('url', {
   signal: controller.signal
@@ -458,15 +473,15 @@ controller.abort()
 
 ## 上下文
 
-在拦截器、响应和异常中可以获取到一个上下文对象：
+在拦截器、响应和异常中可以获取到一个上下文对象。每个请求的上下文由 `createLyla` 的 `createContext` 创建：
 
 ```ts
 const { lyla, isLylaError } = createLyla({
-  context: {
+  createContext: () => ({
     startTime: -1,
     endTime: -1,
     duration: -1
-  },
+  }),
   hooks: {
     onInit: [
       (options) => {
@@ -496,6 +511,39 @@ const { lyla, isLylaError } = createLyla({
 lyla.get('/foo').then((response) => {
   console.log(response.context.duration)
 })
+```
+
+请求的上下文按如下方式确定：
+
+- 如果请求传了 `context`，会原样使用（不会被克隆），不会调用任何 factory。
+- 否则依次调用 `createLyla` 的 options 和 overrides 中的 `createContext`，如果请求传了
+  `createContext`，最后再调用它。每个 factory 的 `parent` 参数是上一个 factory 创建的上下文（第一个
+  factory 收到 `null`）。
+- 如果请求同时传了 `context` 和 `createContext`，请求会以 `BAD_REQUEST` 错误失败。
+
+```ts
+const { lyla } = createLyla(
+  { createContext: () => ({ tags: ['base'] }) },
+  {
+    createContext: (parent) => ({
+      tags: [...parent!.context.tags, 'override']
+    })
+  }
+)
+
+// `response.context.tags` 为 `['base', 'override']`
+await lyla.get('/foo')
+
+// `response.context.tags` 为 `['base', 'override', 'request']`
+await lyla.get('/foo', {
+  createContext: (parent) => ({
+    tags: [...parent!.context.tags, 'request']
+  })
+})
+
+// `response.context` 就是 `context` 本身
+const context = { tags: ['custom'] }
+await lyla.get('/foo', { context })
 ```
 
 ## 重试请求
@@ -558,7 +606,7 @@ type LylaWithRetryOptions<C, S> = {
 ```ts
 import { createLyla } from '@lylajs/*' // * 是你需要的平台
 
-const { lyla: _lyla } = createLyla({ context: null })
+const { lyla: _lyla } = createLyla({ createContext: () => null })
 
 const lyla = _lyla.withRetry({
   createState: () => ({
