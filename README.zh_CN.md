@@ -451,6 +451,7 @@ export enum LYLA_ERROR {
   /**
    * 使用 `withRetry` 创建的 Lyla 实例抛出了一个意外的错误。
    * 这个错误不是由 `lyla` 实例本身创建的，而是由 `withRetry` 的 `onRejected` 或 `onResolved` 抛出的，或者是用户定义的创建重试请求选项的过程中抛出的。
+   * 它会被传给 `withRetry` 的 `onBrokenRetry`，只有 `onBrokenRetry` 通过 reject action 返回它时才会被抛出。
    *
    * 这个错误不会由未使用 `withRetry` 创建的 `lyla` 实例创建。
    */
@@ -611,7 +612,25 @@ type LylaWithRetryOptions<C, S> = {
     options: LylaRequestOptions
     context: C
     lyla: Lyla
-    error: LylaError
+    // 可能是 Lyla Error，也可能是用户在 hook 中抛出的错误
+    error: unknown
+  }) => Promise<
+    | {
+        action: 'retry'
+        value: () => Promise<LylaRequestOptions> | LylaRequestOptions
+      }
+    | {
+        action: 'reject'
+        value: unknown
+      }
+  >
+  onBrokenRetry: (params: {
+    state: S
+    options: LylaRequestOptions | undefined
+    // 如果错误是在解析重试请求选项时抛出的，它是 `undefined`
+    context: C | undefined
+    lyla: Lyla
+    error: LylaBrokenRetryError
   }) => Promise<
     | {
         action: 'retry'
@@ -626,9 +645,9 @@ type LylaWithRetryOptions<C, S> = {
 }
 ```
 
-`lyla.withRetry` 方法会返回一个新的 lyla 实例，这个 lyla 实例 API 拥有除了 `retry` 之外所有的 lyla 方法，这个实例会在请求失败时根据 `onResolved` 和 `onRejected` 的返回值来决定是重试、继续还是拒绝。
+`lyla.withRetry` 方法会返回一个新的 lyla 实例，这个 lyla 实例 API 拥有除了 `retry` 之外所有的 lyla 方法，这个实例会根据 `onResolved`、`onRejected` 和 `onBrokenRetry` 的返回值来决定是重试、继续还是拒绝。
 
-`createState` 会在每次请求开始时调用，用于创建一个新的状态对象，这个状态对象会在 `onResolved` 和 `onRejected` 中传递，你可以在这个对象中保存一些状态，例如重试次数。
+`createState` 会在每次请求开始时调用，用于创建一个新的状态对象，这个状态对象会在 `onResolved`、`onRejected` 和 `onBrokenRetry` 中传递，你可以在这个对象中保存一些状态，例如重试次数。
 
 下面是一个重试三次的例子：
 
@@ -661,15 +680,21 @@ const lyla = _lyla.withRetry({
         value: () => options
       }
     }
+  },
+  onBrokenRetry: async ({ error }) => {
+    return {
+      action: 'reject',
+      value: error
+    }
   }
 })
 ```
 
-一个通过 `lyla.withRetry` 创建的实例在发送请求时可能会有三类错误：
+一个通过 `lyla.withRetry` 创建的实例在发送请求时可能会有这些错误：
 
-1. 通过 reject action 返回了一个 Lyla Error，这个错误会被直接抛出，不会被包装
-2. 通过 reject action 返回了一个非 Lyla Error（比如 `error1`），这个错误会被直接抛出，不会被包装
-3. `onResolved` 或 `onRejected` 抛出了异常，或者 retry action 的 value 函数抛出了异常，这个错误会被包装成一个 `BROKEN_RETRY` 类型的错误并抛出
+1. 通过 reject action 返回的值，不管是不是 Lyla Error，都会被直接抛出，不会被包装
+2. `onResolved` 或 `onRejected` 抛出了异常，或者 retry action 的 value 函数抛出了异常，这个错误会被包装成一个 `BROKEN_RETRY` 类型的错误并传给 `onBrokenRetry`，由它决定是拒绝（直接抛出它的 `value`）还是重试。如果要抛出 `BROKEN_RETRY` 错误，返回 `{ action: 'reject', value: error }` 即可
+3. `onBrokenRetry` 抛出的异常会被直接抛出，不会被包装
 
 其中 `BROKEN_RETRY`，这种错误不会被任何 hook 捕获，也不会被 `isLylaError` 判定为 `true`。如果你需要判断这种错误，你需要使用 `isLylaErrorWithRetry`，这个函数会判断所有的 Lyla Error。
 

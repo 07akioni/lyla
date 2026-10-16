@@ -467,7 +467,8 @@ export enum LYLA_ERROR {
    * Lyla instance created with `withRetry` throws an unexpected error. This
    * error isn't created by `lyla` instance itself, but thrown by `onRejected`
    * or `onResolved` of `withRetry` or the process of creating retry request options
-   * defined by user.
+   * defined by user. It's passed to `onBrokenRetry` of `withRetry`, and is only
+   * thrown when `onBrokenRetry` returns it by the reject action.
    *
    * The error won't be created by `lyla` instance that not created with `withRetry`.
    */
@@ -633,7 +634,25 @@ type LylaWithRetryOptions<C, S> = {
     options: LylaRequestOptions
     context: C
     lyla: Lyla
-    error: LylaError
+    // It can be a Lyla error, or an error thrown by the user in hooks
+    error: unknown
+  }) => Promise<
+    | {
+        action: 'retry'
+        value: () => Promise<LylaRequestOptions> | LylaRequestOptions
+      }
+    | {
+        action: 'reject'
+        value: unknown
+      }
+  >
+  onBrokenRetry: (params: {
+    state: S
+    options: LylaRequestOptions | undefined
+    // It's `undefined` if the error is thrown when resolving retry options
+    context: C | undefined
+    lyla: Lyla
+    error: LylaBrokenRetryError
   }) => Promise<
     | {
         action: 'retry'
@@ -648,9 +667,9 @@ type LylaWithRetryOptions<C, S> = {
 }
 ```
 
-The `lyla.withRetry` method returns a new lyla instance with all lyla methods except `retry`. This instance will decide whether to retry, continue, or reject based on the return values of `onResolved` and `onRejected`.
+The `lyla.withRetry` method returns a new lyla instance with all lyla methods except `retry`. This instance will decide whether to retry, continue, or reject based on the return values of `onResolved`, `onRejected` and `onBrokenRetry`.
 
-`createState` is called at the beginning of each request to create a new state object, which is passed to `onResolved` and `onRejected`. You can use this object to store some state, such as retry count.
+`createState` is called at the beginning of each request to create a new state object, which is passed to `onResolved`, `onRejected` and `onBrokenRetry`. You can use this object to store some state, such as retry count.
 
 Here is an example of retrying three times:
 
@@ -683,18 +702,23 @@ const lyla = _lyla.withRetry({
         value: () => options
       }
     }
+  },
+  onBrokenRetry: async ({ error }) => {
+    return {
+      action: 'reject',
+      value: error
+    }
   }
 })
 ```
 
-An instance created by `lyla.withRetry` may encounter three types of errors when sending a request:
+An instance created by `lyla.withRetry` may encounter these errors when sending a request:
 
-1. A Lyla Error returned by the reject action, which will be thrown directly without being wrapped.
-2. A non-Lyla Error returned by the reject action, which will be thrown directly without being wrapped.
-3. An exception thrown by `onResolved` or `onRejected`, or an exception thrown by the value function of the retry action, which will be wrapped into a `BROKEN_RETRY` type error and thrown.
+1. A value returned by the reject action, whether it's a Lyla error or not, will be thrown directly without being wrapped.
+2. An exception thrown by `onResolved` or `onRejected`, or an exception thrown by the value function of the retry action, will be wrapped into a `BROKEN_RETRY` type error and passed to `onBrokenRetry`. `onBrokenRetry` decides whether to reject (throw its `value` directly) or retry. To throw the `BROKEN_RETRY` error, return `{ action: 'reject', value: error }`.
+3. An exception thrown by `onBrokenRetry` will be thrown directly without being wrapped.
 
-
-The `BROKEN_RETRY` error, which won't be caught by any hook and won't be judged as `true` by `isLylaError`. If you need to judge the error, you need to use `isLylaErrorWithRetry`, which will judge all Lyla Errors.
+The `BROKEN_RETRY` error won't be caught by any hook and won't be judged as `true` by `isLylaError`. If you need to judge the error, you need to use `isLylaErrorWithRetry`, which will judge all Lyla Errors.
 
 ## FAQ
 
