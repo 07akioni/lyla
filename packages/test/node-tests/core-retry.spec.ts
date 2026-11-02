@@ -24,7 +24,7 @@ function createSequenceAdapter(statuses: number[]) {
     const status = statuses[Math.min(index++, statuses.length - 1)]
     setTimeout(() => {
       if (status === 0) {
-        request.onNetworkError('network error')
+        request.onNetworkError('network error', undefined)
       } else {
         respond(request, { status, body: JSON.stringify({ status }) })
       }

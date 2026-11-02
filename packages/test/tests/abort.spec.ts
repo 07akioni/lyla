@@ -1,51 +1,45 @@
 import { expect, test } from '@playwright/test'
-import { LYLA_ERROR } from '@lylajs/web/src'
-import { beforeEach } from './utils'
+import { beforeEach, trackRequests } from './utils'
 import './types'
 
 beforeEach(test)
-;['native abort', 'lyla abort'].forEach((type, index) => {
-  test('`uploadProgress` & `downloadProgress` ' + type, async ({ page }) => {
+
+for (const native of [true, false]) {
+  test(`cancels an active download with ${native ? 'AbortController' : 'LylaAbortController'}`, async ({ page }) => {
     const client = await page.context().newCDPSession(page)
     await client.send('Network.emulateNetworkConditions', {
       offline: false,
-      uploadThroughput: 2000000,
-      downloadThroughput: 4000000,
-      connectionType: 'wifi',
+      uploadThroughput: -1,
+      downloadThroughput: 100000,
       latency: 0
     })
-    const [errorType, up, dp] = await page.evaluate(async (index) => {
-      const controller = new (
-        index === 0 ? AbortController : window.LylaAbortController
-      )()
-      const up: number[] = []
-      const dp: number[] = []
-      setTimeout(() => {
-        controller.abort()
-      }, 300)
+    const { failed } = trackRequests(page, '/api/post-return-body')
+    const result = await page.evaluate(async (native) => {
+      const controller = native ? new AbortController() : new window.LylaAbortController()
+      const loaded: number[] = []
       try {
         await window.lyla.post('/api/post-return-body', {
-          responseType: 'text',
-          body: Array(200000).fill('xxxx').join(''),
+          body: 'x'.repeat(800000),
           signal: controller.signal,
-          onUploadProgress(e) {
-            up.push(e.percent)
-          },
-          onDownloadProgress(e) {
-            dp.push(e.percent)
+          onDownloadProgress(progress) {
+            loaded.push(progress.loaded)
+            controller.abort()
           }
         })
-      } catch (e) {
-        if (window.isLylaError(e)) {
-          return [e.type, up, dp]
+      } catch (error) {
+        const count = loaded.length
+        await new Promise((resolve) => setTimeout(resolve, 100))
+        return {
+          type: window.isLylaError(error) ? error.type : undefined,
+          loaded,
+          noLaterProgress: loaded.length === count
         }
-        return [undefined, [] as number[], [] as number[]]
       }
-      return [undefined, [], []]
-    }, index)
-    await page.waitForTimeout(2000)
-    expect(errorType).toEqual(LYLA_ERROR.ABORTED)
-    expect(up.includes(100)).toEqual(false)
-    expect(dp.includes(100)).toEqual(false)
+    }, native)
+    expect(result?.type).toBe('ABORTED')
+    expect(result?.loaded.length).toBeGreaterThan(0)
+    expect(result?.loaded.at(-1)).toBeLessThan(800000)
+    expect(result?.noLaterProgress).toBe(true)
+    await expect.poll(() => failed).toEqual(['net::ERR_ABORTED'])
   })
-})
+}

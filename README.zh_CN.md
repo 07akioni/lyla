@@ -3,11 +3,13 @@
 一个类型完善的、表现可预期、错误处理可预期的 HTTP 请求库。
 
 > [!IMPORTANT]  
->  如果你只需要浏览器环境支持，你应该使用 `@lylajs/web` 而不是 `lyla`。
+> 如果只需要浏览器环境支持，请使用 `@lylajs/web`、`@lylajs/web-xhr` 或 `@lylajs/web-fetch`。
 
 | 环境         | 包                | 备注                                           |
 | ------------ | ----------------- | ---------------------------------------------- |
-| web          | `@lylajs/web`     |                                                |
+| web（XHR 或 fetch） | `@lylajs/web`       | 通过 `extraOptions` 选择适配器，默认自动选择。            |
+| web（仅 XHR）       | `@lylajs/web-xhr`   | 使用 XMLHttpRequest，支持上传和下载进度。               |
+| web（仅 fetch）     | `@lylajs/web-fetch` | 使用 fetch，支持下载进度。                              |
 | node         | `@lylajs/node`    |                                                |
 | 头条小程序   | `@lylajs/tt`      |                                                |
 | 微信小程序   | `@lylajs/wx`      |                                                |
@@ -36,6 +38,13 @@
 npm i @lylajs/web # 使用 npm 安装
 pnpm i @lylajs/web # 使用 pnpm 安装
 yarn add @lylajs/web # 使用 yarn 安装
+```
+
+如果只需要 XMLHttpRequest 或 fetch，可以安装对应的独立包：
+
+```bash
+npm i @lylajs/web-xhr   # 仅使用 XMLHttpRequest
+npm i @lylajs/web-fetch # 仅使用 fetch
 ```
 
 ## 使用
@@ -207,7 +216,8 @@ type LylaRequestOptions<C = undefined> = {
     /**
      * 收到 headers 之后的回调
      *
-     * 仅在 @lylajs/web @lylajs/node @lylajs/wx 和 lyla 中可用
+     * 在 @lylajs/web、@lylajs/web-xhr、@lylajs/web-fetch、
+     * @lylajs/node、@lylajs/wx 和 lyla 中可用
      */
     onHeadersReceived?: Array<
       (
@@ -736,6 +746,24 @@ const lyla = _lyla.withRetry({
 4. `onBrokenRetry` 不应该抛出异常，如果抛出了，这个异常会被原样抛出
 
 其中 `BROKEN_RETRY`，这种错误不会被任何 hook 捕获，也不会被 `isLylaError` 判定为 `true`。如果你需要判断这种错误，你需要使用 `isLylaErrorWithRetry`，这个函数会判断所有的 Lyla Error。
+
+## 浏览器适配器
+
+`@lylajs/web` 通过 `extraOptions.api` 选择适配器，默认值为 `'auto'`。
+
+| `api` | 行为 |
+| --- | --- |
+| `'auto'` | 提供 `fetchOptions`（包括 `{}`）或请求体为 `ReadableStream` 时使用 fetch，其余情况使用 XMLHttpRequest。 |
+| `'xhr'` | 使用 XMLHttpRequest。 |
+| `'fetch'` | 使用 fetch。 |
+
+`@lylajs/web-xhr` 固定使用 XMLHttpRequest，`@lylajs/web-fetch` 固定使用 fetch。
+
+- `onUploadProgress` 仅 XHR 支持。使用 fetch 时传入该回调，会在发送前报 `BAD_REQUEST`。
+- `onDownloadProgress` 两个适配器均支持。对于 fetch，响应的 `Content-Length` 缺失、无法读取或无效，或响应使用 gzip、br 等内容编码时，`lengthComputable` 为 `false`，`total` 和 `percent` 为 `0`；`loaded` 仍表示已读取的字节数。
+- `extraOptions.fetchOptions` 用于设置原生 fetch 选项，例如 `cache`、`credentials` 和 `redirect`。`method`、`headers`、`body` 和 `signal` 通过 Lyla 请求参数设置。
+- 显式设置 `api: 'xhr'` 时，传入 `fetchOptions` 或 `ReadableStream` 请求体会在发送前报 `BAD_REQUEST`。
+- `@lylajs/web` 的 `detail` 和 `originalRequest` 使用 `{ adapter, value }`：`adapter` 为 `'xhr'` 或 `'fetch'`，`value` 为原生值。`lyla` 通用包的 `adapter` 还可为 `'node'`。网络错误的 `error` 字段为 `Error | undefined`。
 
 ## FAQ
 

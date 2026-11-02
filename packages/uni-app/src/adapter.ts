@@ -66,7 +66,7 @@ export const adapter: LylaAdapter<LylaAdapterMeta> = ({
     responseType,
     dataType: 'text',
     fail(res) {
-      onNetworkError(res)
+      onNetworkError(res, res instanceof Error ? res : undefined)
     },
     success(res) {
       onResponse(

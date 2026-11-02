@@ -34,9 +34,9 @@ class FakeXMLHttpRequest {
       this.dispatch('loadend')
     })
   }
-  private dispatch(type: string) {
+  protected dispatch(type: string, event: unknown = { type }) {
     for (const listener of [...(this.listeners[type] ?? [])]) {
-      listener({ type })
+      listener(event)
     }
   }
 }
@@ -82,9 +82,9 @@ describe('web adapter response headers', () => {
     })
   })
 
-  it('lower cases names and trims names and values', async () => {
+  it('lower cases names and keeps browser-normalized values', async () => {
     const headers = await resolveHeaders(
-      'Content-Type :  application/json \r\nX-Empty:\r\n'
+      'Content-Type: application/json\r\nX-Empty: \r\n'
     )
     expect(headers).toEqual({
       'content-type': 'application/json',
@@ -103,5 +103,165 @@ describe('web adapter response headers', () => {
 
   it('resolves empty headers', async () => {
     expect(await resolveHeaders('')).toEqual({})
+  })
+})
+
+describe('web xhr routing', () => {
+  beforeEach(() => {
+    vi.stubGlobal('XMLHttpRequest', FakeXMLHttpRequest)
+    vi.stubGlobal('fetch', vi.fn())
+  })
+
+  afterEach(() => {
+    vi.restoreAllMocks()
+    vi.unstubAllGlobals()
+  })
+
+  it.each([
+    undefined,
+    {},
+    { api: 'xhr' as const },
+    { api: 'auto' as const },
+    { fetchOptions: undefined },
+    { api: 'auto' as const, fetchOptions: undefined }
+  ])(
+    'uses xhr for %j', async (extraOptions) => {
+      const { lyla } = createLyla({ createContext: () => undefined })
+      const onHeadersReceived = vi.fn()
+      const response = await lyla.get('/', {
+        extraOptions,
+        hooks: { onHeadersReceived: [onHeadersReceived] }
+      })
+      expect(response.detail).toEqual({ adapter: 'xhr', value: { type: 'loadend' } })
+      expect(onHeadersReceived.mock.calls[0][0].originalRequest.value).toBeInstanceOf(FakeXMLHttpRequest)
+      expect(onHeadersReceived.mock.calls[0][0].originalRequest.adapter).toBe('xhr')
+      expect(fetch).not.toHaveBeenCalled()
+    }
+  )
+
+  const sharedBodies: Array<[string, () => XMLHttpRequestBodyInit]> = [
+    ['string', () => 'body'],
+    ['ArrayBuffer', () => new ArrayBuffer(4)],
+    ['Uint8Array', () => new Uint8Array([1, 2, 3])],
+    ['DataView', () => new DataView(new ArrayBuffer(4))],
+    ['Blob', () => new Blob(['body'])],
+    ['URLSearchParams', () => new URLSearchParams({ key: 'value' })],
+    ['FormData', () => new FormData()]
+  ]
+
+  describe.each([undefined, 'auto'] as const)(
+    'automatic selection with api %s',
+    (api) => {
+      it.each(sharedBodies)(
+        'uses xhr for a shared %s body',
+        async (_, createBody) => {
+          const { lyla } = createLyla({ createContext: () => undefined })
+          const response = await lyla.post('/', {
+            body: createBody(),
+            extraOptions: { api }
+          })
+          expect(response.detail).toEqual({ adapter: 'xhr', value: { type: 'loadend' } })
+          expect(fetch).not.toHaveBeenCalled()
+        }
+      )
+
+      it.each(['text', 'arraybuffer', 'blob'] as const)(
+        'uses xhr for the shared %s response type',
+        async (responseType) => {
+          const { lyla } = createLyla({ createContext: () => undefined })
+          const response = await lyla.get('/', {
+            responseType,
+            extraOptions: { api }
+          })
+          expect(response.detail).toEqual({ adapter: 'xhr', value: { type: 'loadend' } })
+          expect(fetch).not.toHaveBeenCalled()
+        }
+      )
+
+      it('uses xhr for JSON, credentials, headers and download progress', async () => {
+        const { lyla } = createLyla({ createContext: () => undefined })
+        const response = await lyla.post('/', {
+          json: { key: 'value' },
+          headers: { 'X-Custom': 'value' },
+          withCredentials: true,
+          onDownloadProgress() {},
+          extraOptions: { api }
+        })
+        expect(response.detail).toEqual({ adapter: 'xhr', value: { type: 'loadend' } })
+        expect(fetch).not.toHaveBeenCalled()
+      })
+    }
+  )
+
+  it.each([{}, { cache: 'no-store' as const }])(
+    'rejects explicit xhr with fetchOptions %j before sending', async (fetchOptions) => {
+      const open = vi.spyOn(FakeXMLHttpRequest.prototype, 'open')
+      const { lyla } = createLyla({ createContext: () => undefined })
+      await expect(lyla.get('/', {
+        extraOptions: { api: 'xhr', fetchOptions }
+      })).rejects.toMatchObject({
+        type: 'BAD_REQUEST',
+        error: new Error('`fetchOptions` cannot be used with `api: "xhr"`')
+      })
+      expect(open).not.toHaveBeenCalled()
+      expect(fetch).not.toHaveBeenCalled()
+    }
+  )
+
+  it('rejects xhr when instance defaults provide fetchOptions', async () => {
+    const open = vi.spyOn(FakeXMLHttpRequest.prototype, 'open')
+    const { lyla } = createLyla({
+      createContext: () => undefined,
+      extraOptions: { fetchOptions: { cache: 'no-store' } }
+    })
+    await expect(lyla.get('/', {
+      extraOptions: { api: 'xhr' }
+    })).rejects.toMatchObject({ type: 'BAD_REQUEST' })
+    expect(open).not.toHaveBeenCalled()
+    expect(fetch).not.toHaveBeenCalled()
+  })
+
+  it('rejects a stream body with explicit xhr before sending', async () => {
+    const open = vi.spyOn(FakeXMLHttpRequest.prototype, 'open')
+    const { lyla } = createLyla({ createContext: () => undefined })
+    await expect(lyla.post('/', {
+      body: new ReadableStream({ start(controller) { controller.close() } }),
+      extraOptions: { api: 'xhr' }
+    })).rejects.toMatchObject({
+      type: 'BAD_REQUEST',
+      error: new Error('ReadableStream bodies cannot be used with `api: "xhr"`')
+    })
+    expect(open).not.toHaveBeenCalled()
+    expect(fetch).not.toHaveBeenCalled()
+  })
+
+  it('uses xhr for auto with an ordinary body and upload progress', async () => {
+    const open = vi.spyOn(FakeXMLHttpRequest.prototype, 'open')
+    const { lyla } = createLyla({ createContext: () => undefined })
+    await lyla.post('/', {
+      body: 'body',
+      extraOptions: { api: 'auto' },
+      onUploadProgress() {}
+    })
+    expect(open).toHaveBeenCalledOnce()
+    expect(fetch).not.toHaveBeenCalled()
+  })
+
+  it('keeps native xhr details in the standalone xhr package', async () => {
+    const { lyla } = await import('@lylajs/web-xhr')
+    const response = await lyla.get('/')
+    expect(response.detail).toEqual({ type: 'loadend' })
+  })
+
+  it('keeps xhr network events as detail without fabricating an Error', async () => {
+    const detail = { type: 'error' }
+    class FailingXMLHttpRequest extends FakeXMLHttpRequest {
+      send() { setTimeout(() => this.dispatch('error', detail)) }
+    }
+    vi.stubGlobal('XMLHttpRequest', FailingXMLHttpRequest)
+    const { lyla } = createLyla({ createContext: () => undefined })
+    await expect(lyla.get('/')).rejects.toMatchObject({
+      type: 'NETWORK', error: undefined, detail: { adapter: 'xhr', value: detail }
+    })
   })
 })

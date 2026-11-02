@@ -12,25 +12,20 @@ lyla.connect
 lyla
   .get('foo', {
     onDownloadProgress: (progress) => {
-      if (progress.detail.web !== undefined) {
-        const detail: ProgressEvent<XMLHttpRequestEventTarget> =
-          progress.detail.web
-        console.log('在 web 环境', detail)
-      } else {
-        const detail: null = progress.detail.node
-        console.log('在 node 环境', detail)
-      }
-      if (progress.originalRequest.web !== undefined) {
-        const originalRequest: XMLHttpRequest = progress.originalRequest.web
-        console.log('在 web 环境', originalRequest)
-      } else {
-        const originalRequest = progress.originalRequest.node
-        console.log('在 node 环境', originalRequest)
+      switch (progress.detail.adapter) {
+        case 'xhr':
+          console.log('XHR 进度事件', progress.detail.value)
+          break
+        case 'fetch':
+          console.log('fetch 流读取结果', progress.detail.value)
+          break
+        case 'node':
+          console.log('Node 进度详情', progress.detail.value)
+          break
       }
       console.log(
-        '无所谓在什么环境',
-        progress.detail.anyhow,
-        progress.originalRequest.anyhow
+        progress.originalRequest.adapter,
+        progress.originalRequest.value
       )
     }
   })

@@ -14,7 +14,9 @@ beforeEach(test)
 
   test(`${method}, \`responseType\` is set to \`text\``, async ({ page }) => {
     const body = await page.evaluate(async (method) => {
-      const { body } = await window.lyla[method](`/api/${method}-text`)
+      const { body } = await window.lyla[method](`/api/${method}-text`, {
+        responseType: 'text'
+      })
       return body
     }, method)
     expect(body).toEqual('hello world')

@@ -57,6 +57,6 @@ export type LylaErrorWithRetry<C = undefined> = LylaCoreErrorWithRetry<
   LylaAdapterMeta
 >
 
-export type LylaProgress = LylaCoreProgress<LylaAdapterMeta>
+export type LylaProgress<C = undefined> = LylaCoreProgress<C, LylaAdapterMeta>
 
 export { LYLA_ERROR, LylaAbortController } from '@lylajs/core'

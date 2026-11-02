@@ -2,143 +2,101 @@ import type {
   LylaAdapter,
   LylaAdapterMeta as LylaCoreAdapterMeta
 } from '@lylajs/core'
+import { adapter as xhrAdapter } from '@lylajs/web-xhr'
+import type { LylaAdapterMeta as XhrAdapterMeta } from '@lylajs/web-xhr'
+import { adapter as fetchAdapter } from '@lylajs/web-fetch'
+import type { LylaAdapterMeta as FetchAdapterMeta } from '@lylajs/web-fetch'
+
+type Detail<K extends keyof XhrAdapterMeta & keyof FetchAdapterMeta> =
+  | { adapter: 'xhr'; value: XhrAdapterMeta[K] }
+  | { adapter: 'fetch'; value: FetchAdapterMeta[K] }
 
 export interface LylaAdapterMeta extends LylaCoreAdapterMeta {
-  method:
-    | 'get'
-    | 'GET'
-    | 'post'
-    | 'POST'
-    | 'put'
-    | 'PUT'
-    | 'patch'
-    | 'PATCH'
-    | 'head'
-    | 'HEAD'
-    | 'delete'
-    | 'DELETE'
-    | 'options'
-    | 'OPTIONS'
-    | 'connect'
-    | 'CONNECT'
-    | 'trace'
-    | 'TRACE'
-  networkErrorDetail: ProgressEvent<XMLHttpRequestEventTarget>
-  requestBody: XMLHttpRequestBodyInit
-  responseDetail: ProgressEvent<XMLHttpRequestEventTarget>
-  progressDetail: ProgressEvent<XMLHttpRequestEventTarget>
-  responseType: 'arraybuffer' | 'blob' | 'text'
-  originalRequest: XMLHttpRequest
-  extraOptions: never
+  method: XhrAdapterMeta['method']
+  requestBody: XhrAdapterMeta['requestBody'] | FetchAdapterMeta['requestBody']
+  responseBody: XhrAdapterMeta['responseBody'] | FetchAdapterMeta['responseBody']
+  networkErrorDetail: Detail<'networkErrorDetail'>
+  responseDetail: Detail<'responseDetail'>
+  progressDetail: Detail<'progressDetail'>
+  responseType: XhrAdapterMeta['responseType'] | FetchAdapterMeta['responseType']
+  originalRequest: Detail<'originalRequest'>
+  extraOptions: FetchAdapterMeta['extraOptions'] & {
+    /**
+     * Defaults to auto: use fetch for fetchOptions (including {}) or a
+     * ReadableStream body, and XMLHttpRequest for all other options.
+     */
+    api?: 'xhr' | 'fetch' | 'auto'
+  }
 }
 
-// It's possible that the raw http response headers has multiple headers with
-// same name. For example:
-// header1: value1
-// header1: value2
-// However when it's resolved by `xhr.getAllResponseHeaders` or
-// `Response.Headers.entries`, the resolved value in browsers would be
-// `header1: 'value1, value2'`, so there's no need deduplicate the headers
-function createHeaders(headers: string): Record<string, string> {
-  if (!headers) return {}
-
-  const headerMap: Record<string, string> = {}
-
-  // Convert the header string into an array
-  // of individual headers
-  const headerPairs = headers.trim().split(/[\r\n]+/)
-
-  headerPairs.forEach(function (line) {
-    const index = line.indexOf(':')
-    if (index === -1) return
-    const header = line.slice(0, index).trim().toLowerCase()
-    if (!header) return
-    const value = line.slice(index + 1).trim()
-    headerMap[header] = value
-  })
-
-  return headerMap
-}
-
-export const adapter: LylaAdapter<LylaAdapterMeta> = ({
-  url,
-  method,
-  headers,
-  body,
-  responseType,
-  withCredentials,
-  onDownloadProgress,
-  onUploadProgress,
-  onResponse,
-  onNetworkError,
-  onHeadersReceived
-}): {
-  abort: () => void
-} => {
-  const xhr = new XMLHttpRequest()
-  xhr.open(method, url, true)
-  xhr.withCredentials = withCredentials
-  xhr.responseType = responseType
-  for (const [key, value] of Object.entries(headers)) {
-    xhr.setRequestHeader(key, value as string)
+export const adapter: LylaAdapter<LylaAdapterMeta> = (options) => {
+  const {
+    extraOptions,
+    onHeadersReceived,
+    onDownloadProgress,
+    onUploadProgress,
+    onNetworkError,
+    onResponse
+  } = options
+  const requestedApi = extraOptions?.api || 'auto'
+  const hasStreamBody =
+    typeof ReadableStream !== 'undefined' && options.body instanceof ReadableStream
+  if (requestedApi === 'xhr' && extraOptions?.fetchOptions !== undefined) {
+    throw new Error('`fetchOptions` cannot be used with `api: "xhr"`')
   }
-  if (onUploadProgress) {
-    xhr.upload.addEventListener('progress', (e) => {
-      onUploadProgress({
-        lengthComputable: e.lengthComputable,
-        percent: e.lengthComputable ? (e.loaded / e.total) * 100 : 0,
-        loaded: e.loaded,
-        total: e.total,
-        detail: e,
-        originalRequest: xhr
-      })
+  if (requestedApi === 'xhr' && hasStreamBody) {
+    throw new Error('ReadableStream bodies cannot be used with `api: "xhr"`')
+  }
+  const api = requestedApi === 'auto'
+    ? (extraOptions?.fetchOptions !== undefined || hasStreamBody ? 'fetch' : 'xhr')
+    : requestedApi
+
+  if (api === 'fetch') {
+    return fetchAdapter({
+      ...options,
+      onHeadersReceived: onHeadersReceived
+        ? (headers, request) => onHeadersReceived(headers, { adapter: 'fetch', value: request })
+        : undefined,
+      onDownloadProgress: onDownloadProgress
+        ? (progress) => onDownloadProgress({
+          ...progress,
+          detail: { adapter: 'fetch', value: progress.detail },
+          originalRequest: { adapter: 'fetch', value: progress.originalRequest }
+        })
+        : undefined,
+      // The fetch adapter rejects this callback before sending the request.
+      onUploadProgress: onUploadProgress ? () => {} : undefined,
+      onNetworkError: (detail, error) =>
+        onNetworkError({ adapter: 'fetch', value: detail }, error),
+      onResponse: (response, detail) =>
+        onResponse(response, { adapter: 'fetch', value: detail })
     })
   }
-  if (onDownloadProgress) {
-    xhr.addEventListener('progress', (e) => {
-      onDownloadProgress({
-        lengthComputable: e.lengthComputable,
-        percent: e.lengthComputable ? (e.loaded / e.total) * 100 : 0,
-        loaded: e.loaded,
-        total: e.total,
-        detail: e,
-        originalRequest: xhr
+
+  return xhrAdapter({
+    ...options,
+    body: options.body as XhrAdapterMeta['requestBody'],
+    extraOptions: undefined as never,
+    onHeadersReceived: onHeadersReceived
+      ? (headers, request) => onHeadersReceived(headers, { adapter: 'xhr', value: request })
+      : undefined,
+    onDownloadProgress: onDownloadProgress
+      ? (progress) => onDownloadProgress({
+        ...progress,
+        detail: { adapter: 'xhr', value: progress.detail },
+        originalRequest: { adapter: 'xhr', value: progress.originalRequest }
       })
-    })
-  }
-  let responseHeaders: Record<string, string> | null = null
-  let ensureResponseHeaders = (): Record<string, string> => {
-    if (responseHeaders === null) {
-      responseHeaders = createHeaders(xhr.getAllResponseHeaders())
-    }
-    return responseHeaders
-  }
-  xhr.addEventListener('loadend', (e) => {
-    onResponse(
-      {
-        status: xhr.status,
-        headers: ensureResponseHeaders(),
-        body: xhr.response
-      },
-      e
-    )
+      : undefined,
+    onUploadProgress: onUploadProgress
+      ? (progress) => onUploadProgress({
+        ...progress,
+        detail: { adapter: 'xhr', value: progress.detail },
+        originalRequest: { adapter: 'xhr', value: progress.originalRequest }
+      })
+      : undefined,
+    onNetworkError: (detail, error) =>
+      onNetworkError({ adapter: 'xhr', value: detail }, error),
+    onResponse: (response, detail) =>
+      onResponse(response, { adapter: 'xhr', value: detail })
   })
-  const _onHeadersReceived = () => {
-    if (xhr.readyState === xhr.HEADERS_RECEIVED) {
-      if (onHeadersReceived) {
-        onHeadersReceived(ensureResponseHeaders(), xhr)
-      }
-    }
-    xhr.removeEventListener('readystatechange', _onHeadersReceived)
-  }
-  xhr.addEventListener('readystatechange', _onHeadersReceived)
-  xhr.addEventListener('error', (e) => {
-    onNetworkError(e)
-  })
-  xhr.send(body)
-  return {
-    abort() {
-      xhr.abort()
-    }
-  }
 }

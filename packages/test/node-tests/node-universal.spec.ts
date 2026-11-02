@@ -1,8 +1,36 @@
 // @vitest-environment node
-import { lyla, LylaResponse, isLylaError, LYLA_ERROR } from 'lyla'
+import { lyla, createLyla, LylaResponse, isLylaError, LYLA_ERROR } from 'lyla'
+import { ClientRequest } from 'node:http'
 import { describe, expect, it } from 'vitest'
 
 describe('node basic', () => {
+  it.each([
+    ['default', lyla],
+    ['created', createLyla({ createContext: () => undefined }).lyla]
+  ] as const)('wraps node details for the %s instance', async (_, request) => {
+    let originalRequest: unknown
+    const response = await request.get('http://localhost:8091/api/get-text', {
+      hooks: { onHeadersReceived: [({ originalRequest: value }) => {
+        originalRequest = value
+      }] }
+    })
+    expect(response.detail).toEqual({ adapter: 'node', value: null })
+    expect(originalRequest).toEqual({ adapter: 'node', value: expect.any(ClientRequest) })
+  })
+
+  it.each([
+    ['default', lyla],
+    ['created', createLyla({ createContext: () => undefined }).lyla]
+  ] as const)('preserves native network errors for the %s instance', async (_, request) => {
+    const error = await request.get('http://127.0.0.1:0/').catch((error) => error)
+    expect(error).toMatchObject({
+      type: LYLA_ERROR.NETWORK,
+      error: expect.any(Error),
+      detail: { adapter: 'node', value: expect.any(Error) }
+    })
+    expect(error.detail.value).toBe(error.error)
+  })
+
   it('/api/get-text', async () => {
     const resp = await lyla.get('http://localhost:8091/api/get-text')
     expect(resp.status).toBe(200)
@@ -100,6 +128,24 @@ describe('node basic', () => {
 })
 
 describe('node progress', () => {
+  it.each([
+    ['default', lyla],
+    ['created', createLyla({ createContext: () => undefined }).lyla]
+  ] as const)('tags native progress values for the %s instance', async (_, request) => {
+    const events: Array<{ detail: unknown; originalRequest: unknown }> = []
+    const record = (event: { detail: unknown; originalRequest: unknown }) => events.push(event)
+    await request.post('http://localhost:8091/api/post-return-body', {
+      body: 'body',
+      onUploadProgress: record,
+      onDownloadProgress: record
+    })
+    expect(events.length).toBeGreaterThanOrEqual(2)
+    for (const event of events) {
+      expect(event.detail).toEqual({ adapter: 'node', value: null })
+      expect(event.originalRequest).toEqual({ adapter: 'node', value: expect.any(ClientRequest) })
+    }
+  })
+
   it('text `uploadProgress` & `downloadProgress`', async () => {
     const up: number[] = []
     const dp: number[] = []

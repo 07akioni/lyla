@@ -176,18 +176,17 @@ export const adapter: LylaAdapter<LylaAdapterMeta> = ({
         } else {
           // https://nodejs.org/api/http.html#messagecomplete
           // Since data is incomplete, we view it as network error
-          onNetworkError(
-            new Error(
-              'The connection was terminated while the response was still being sent'
-            )
+          const error = new Error(
+            'The connection was terminated while the response was still being sent'
           )
+          onNetworkError(error, error)
         }
       })
     }
   )
 
   clientRequest.on('error', (e) => {
-    onNetworkError(e)
+    onNetworkError(e, e)
   })
 
   const chunkedRequestBodyStream =

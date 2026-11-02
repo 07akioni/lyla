@@ -164,9 +164,13 @@ test('rejects with NETWORK error when server is unreachable', async ({
       await window.lyla.get('http://localhost:8099/api/echo')
     } catch (e) {
       if (window.isLylaError(e) && e.type === window.LYLA_ERROR.NETWORK) {
+        const detail = window.nativeDetail(e.detail)
         return {
           type: e.type,
-          detailType: e.detail.type,
+          nativeDetailMatches: window.browserTarget.api === 'xhr'
+            ? detail instanceof ProgressEvent && detail.type === 'error' &&
+              e.error === undefined
+            : detail instanceof Error && e.error === detail,
           response: e.response
         }
       }
@@ -175,7 +179,7 @@ test('rejects with NETWORK error when server is unreachable', async ({
   })
   expect(result).toEqual({
     type: LYLA_ERROR.NETWORK,
-    detailType: 'error',
+    nativeDetailMatches: true,
     response: undefined
   })
 })
@@ -221,9 +225,12 @@ test('rejects with BAD_REQUEST error when the request can not be sent', async ({
     return results
   })
   await page.waitForTimeout(100)
+  const nativeErrorName = await page.evaluate(() =>
+    window.browserTarget.api === 'xhr' ? 'SyntaxError' : 'TypeError'
+  )
   expect(results).toEqual({
-    'invalid url': [LYLA_ERROR.BAD_REQUEST, 'SyntaxError'],
-    'invalid header value': [LYLA_ERROR.BAD_REQUEST, 'SyntaxError'],
+    'invalid url': [LYLA_ERROR.BAD_REQUEST, nativeErrorName],
+    'invalid header value': [LYLA_ERROR.BAD_REQUEST, nativeErrorName],
     'circular json': [LYLA_ERROR.BAD_REQUEST, 'TypeError']
   })
   expect(sent).toEqual([])

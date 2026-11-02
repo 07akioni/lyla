@@ -93,7 +93,7 @@ const scenarios: Scenario[] = [
     name: 'network error occurs',
     type: LYLA_ERROR.NETWORK,
     handle: (request) => {
-      setTimeout(() => request.onNetworkError('detail'))
+      setTimeout(() => request.onNetworkError('detail', undefined))
     }
   },
   {

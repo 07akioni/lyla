@@ -346,7 +346,11 @@ export interface LylaAdapterOptions<T extends LylaAdapterMeta> {
   responseType: T['responseType']
   withCredentials: boolean
   extraOptions: T['extraOptions']
-  onNetworkError(detail: T['networkErrorDetail']): void
+  /**
+   * Reports a failure of the underlying network API. The adapter supplies the
+   * original Error, or undefined when the API did not provide an Error.
+   */
+  onNetworkError(detail: T['networkErrorDetail'], error: Error | undefined): void
   onUploadProgress:
   | ((progress: Omit<LylaProgress<unknown, T>, 'requestOptions'>) => void)
   | undefined

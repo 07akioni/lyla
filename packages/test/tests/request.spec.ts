@@ -168,33 +168,53 @@ test('resolves arraybuffer and blob body', async ({ page }) => {
   expect(blobText).toBe('hello world')
 })
 
-test('passes XMLHttpRequest to `onHeadersReceived` and response detail', async ({
+test('exposes native request and response details for the selected adapter', async ({
   page
 }) => {
   const result = await page.evaluate(async () => {
-    let isXhr = false
-    let readyState = -1
+    let requestMatches = false
     const response = await window.lyla.get('/api/get-text', {
       hooks: {
         onHeadersReceived: [
           ({ originalRequest }) => {
-            isXhr = originalRequest instanceof XMLHttpRequest
-            readyState = originalRequest.readyState
+            const native = window.nativeDetail(originalRequest)
+            requestMatches = window.browserTarget.api === 'xhr'
+              ? native instanceof XMLHttpRequest && native.readyState === 2
+              : native instanceof Request
           }
         ]
       }
     })
+    const native = window.nativeDetail(response.detail)
     return {
-      isXhr,
-      readyState,
-      detailType: response.detail.type
+      requestMatches,
+      responseMatches: window.browserTarget.api === 'xhr'
+        ? native instanceof ProgressEvent && native.type === 'loadend'
+        : native instanceof Response,
+      detailsMatchPackage: window.browserTarget.module === 'index'
+        ? 'adapter' in response.detail &&
+          response.detail.adapter === window.browserTarget.api &&
+          Object.keys(response.detail).sort().join(',') === 'adapter,value'
+        : response.detail === native
     }
   })
   expect(result).toEqual({
-    isXhr: true,
-    readyState: 2,
-    detailType: 'loadend'
+    requestMatches: true,
+    responseMatches: true,
+    detailsMatchPackage: true
   })
+})
+
+test('created instances use the selected adapter', async ({ page }) => {
+  const matches = await page.evaluate(async () => {
+    const { lyla } = window.createLyla({ createContext: () => undefined })
+    const response = await lyla.get('/api/get-text')
+    const native = window.nativeDetail(response.detail)
+    return window.browserTarget.api === 'xhr'
+      ? native instanceof ProgressEvent
+      : native instanceof Response
+  })
+  expect(matches).toBe(true)
 })
 
 test('context is created for every request and shared by hooks', async ({

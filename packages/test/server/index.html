@@ -3,20 +3,32 @@
   <head></head>
   <body>
     <script type="module">
-      import {
-        lyla,
-        isLylaError,
-        isLylaErrorWithRetry,
-        createLyla,
-        LylaAbortController,
-        LYLA_ERROR
-      } from '/es/index.js'
-      window.createLyla = createLyla
-      window.lyla = lyla
-      window.isLylaError = isLylaError
-      window.isLylaErrorWithRetry = isLylaErrorWithRetry
-      window.LylaAbortController = LylaAbortController
-      window.LYLA_ERROR = LYLA_ERROR
+      import { browserTargets } from '/es/browser-targets.js'
+
+      const name = new URL(location.href).searchParams.get('target') || 'web-auto'
+      const target = browserTargets.find((target) => target.name === name)
+      if (!target) throw new Error(`Unknown browser test target: ${name}`)
+      const module = await import(`/es/${target.module}.js`)
+      window.browserTarget = target
+      window.createLyla = (options, ...overrides) => module.createLyla(
+        target.extraOptions
+          ? {
+              ...options,
+              extraOptions: { ...target.extraOptions, ...options.extraOptions }
+            }
+          : options,
+        ...overrides
+      )
+      window.lyla = target.extraOptions
+        ? window.createLyla({ createContext: () => undefined }).lyla
+        : module.lyla
+      window.isLylaError = module.isLylaError
+      window.isLylaErrorWithRetry = module.isLylaErrorWithRetry
+      window.LylaAbortController = module.LylaAbortController
+      window.LYLA_ERROR = module.LYLA_ERROR
+      window.nativeDetail = (detail) => target.module === 'index'
+        ? detail?.value
+        : detail
     </script>
   </body>
 </html>

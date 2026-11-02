@@ -8,8 +8,9 @@ import type {
 
 export enum LYLA_ERROR {
   /**
-   * Request encountered an error, fired by XHR `onerror` event. It doesn't mean
-   * your network has error, for example CORS error also triggers NETWORK_ERROR.
+   * The underlying network API failed. This also includes policy failures
+   * (such as CORS or integrity checks) and errors while reading the response
+   * body, so it does not necessarily indicate a connection failure.
    */
   NETWORK = 'NETWORK',
   /**
@@ -214,7 +215,7 @@ export interface LylaNetworkError<
   M extends LylaAdapterMeta = LylaAdapterMeta
 > extends Error {
   type: LYLA_ERROR.NETWORK
-  error: undefined
+  error: Error | undefined
   detail: M['networkErrorDetail']
   response: undefined
   context: C

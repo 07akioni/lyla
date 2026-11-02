@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test'
 import { beforeEach } from './utils'
 import './types'
-import { LylaRequestOptions } from '@lylajs/web'
+import type { BrowserRequestOptions as LylaRequestOptions } from './types'
 
 beforeEach(test)
 

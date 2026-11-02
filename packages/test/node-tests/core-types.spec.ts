@@ -340,6 +340,7 @@ describe('error types', () => {
               break
             case LYLA_ERROR.NETWORK:
               expectTypeOf(e.detail).toBeAny()
+              expectTypeOf(e.error).toEqualTypeOf<Error | undefined>()
               break
             case LYLA_ERROR.INVALID_JSON:
               expectTypeOf(e.error).toEqualTypeOf<SyntaxError>()

@@ -575,7 +575,7 @@ export function createLyla<C, M extends LylaAdapterMeta>(
       responseType,
       withCredentials,
       extraOptions: _options.extraOptions,
-      onNetworkError(detail: any) {
+      onNetworkError(detail, error) {
         adapterFinished = true
         if (aborted) return
         hasNetworkError = true
@@ -585,7 +585,7 @@ export function createLyla<C, M extends LylaAdapterMeta>(
             type: LYLA_ERROR.NETWORK,
             message: 'Network error',
             detail,
-            error: undefined,
+            error,
             response: undefined,
             context: _options.context,
             requestOptions: _options
@@ -786,7 +786,7 @@ export function createLyla<C, M extends LylaAdapterMeta>(
         {
           type: LYLA_ERROR.BAD_REQUEST,
           message:
-            'Adapter throws error when sending the request, `options.url` or `options.headers` may be invalid. See `error` for the original error',
+            'The adapter threw synchronously while preparing or starting the request. See `error` for the original error',
           detail: undefined,
           error: e,
           response: undefined,

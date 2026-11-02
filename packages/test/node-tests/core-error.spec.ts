@@ -79,7 +79,7 @@ describe('core response errors', () => {
   it('rejects with `NETWORK` error', async () => {
     const detail = new Error('network detail')
     const { adapter } = createFakeAdapter((request) => {
-      setTimeout(() => request.onNetworkError(detail))
+      setTimeout(() => request.onNetworkError(detail, detail))
     })
     const { hooks, responseErrors, nonResponseErrors } = createErrorHooks()
     const { lyla } = createLyla(adapter, {
@@ -89,16 +89,44 @@ describe('core response errors', () => {
     const error = (await catchError(lyla.get('/'))) as LylaError
     expect(error.type).toBe(LYLA_ERROR.NETWORK)
     expect(error.detail).toBe(detail)
+    expect(error.error).toBe(detail)
     expect(error.response).toBeUndefined()
     expect(error.context).toBe('context')
     expect(responseErrors).toEqual([error])
     expect(nonResponseErrors).toEqual([])
   })
 
+  it.each(['failure', { message: 'failure' }, new Error('detail only'), undefined])(
+    'does not infer an Error from network detail: %s', async (detail) => {
+      const { adapter } = createFakeAdapter((request) => {
+        request.onNetworkError(detail, undefined)
+      })
+      const { lyla } = createLyla(adapter, { createContext: () => undefined })
+      const error = (await catchError(lyla.get('/'))) as LylaError
+      expect(error.type).toBe(LYLA_ERROR.NETWORK)
+      expect(error.detail).toBe(detail)
+      expect(error.error).toBeUndefined()
+    }
+  )
+
+  it('preserves a separately supplied network error when detail wraps it', async () => {
+    const originalError = new Error('network failed')
+    const detail = { native: originalError }
+    const { adapter } = createFakeAdapter((request) => {
+      request.onNetworkError(detail, originalError)
+    })
+    const { lyla } = createLyla(adapter, { createContext: () => undefined })
+    const error = (await catchError(lyla.get('/'))) as LylaError
+    expect(error.type).toBe(LYLA_ERROR.NETWORK)
+    expect(error.error).toBe(originalError)
+    expect(error.detail).toBe(detail)
+    expect(error.spread().error).toBe(originalError)
+  })
+
   it('ignores response after network error', async () => {
     const { adapter } = createFakeAdapter((request) => {
       setTimeout(() => {
-        request.onNetworkError(undefined)
+        request.onNetworkError(undefined, undefined)
         request.onHeadersReceived?.({}, undefined)
         respond(request)
       })
@@ -135,7 +163,7 @@ describe('core response errors', () => {
 
   it('keeps `TIMEOUT` error when abort triggers adapter callbacks', async () => {
     const { adapter } = createFakeAdapter((request) => () => {
-      request.onNetworkError(new Error('aborted'))
+      request.onNetworkError(undefined, new Error('aborted'))
       respond(request, { status: 0 })
     })
     const { lyla } = createLyla(adapter, { createContext: () => undefined })
@@ -239,7 +267,7 @@ describe('core response errors', () => {
       {
         type: LYLA_ERROR.NETWORK,
         handle: (request: FakeRequest) => {
-          setTimeout(() => request.onNetworkError(undefined))
+          setTimeout(() => request.onNetworkError(undefined, undefined))
         }
       },
       {
@@ -340,7 +368,7 @@ describe('core response errors', () => {
       {
         name: 'network error occurs',
         handle: (request: FakeRequest) => {
-          setTimeout(() => request.onNetworkError(undefined))
+          setTimeout(() => request.onNetworkError(undefined, undefined))
         },
         hooks: {}
       },

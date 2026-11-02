@@ -51,7 +51,7 @@ export const adapter: LylaAdapter<LylaAdapterMeta> = ({
     // Docs said if it's not json, response data won't be transformed to json.
     dataType: 'text',
     fail(res) {
-      onNetworkError(res)
+      onNetworkError(res, res instanceof Error ? res : undefined)
     },
     success(res) {
       onResponse(

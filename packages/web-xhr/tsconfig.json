@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "declaration": true,
+    "lib": ["DOM", "ES2017"],
+    "target": "ES2017",
+    "esModuleInterop": true,
+    "moduleResolution": "bundler",
+    "rootDir": "src",
+    "strict": true
+  },
+  "include": ["src"]
+}

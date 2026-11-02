@@ -3,11 +3,13 @@
 A fully typed HTTP client with explicit behavior & error handling.
 
 > [!IMPORTANT]  
-> If you only want to support browser environment, you should use package `@lylajs/web` instead of `lyla`.
+> For browser-only applications, use `@lylajs/web`, `@lylajs/web-xhr` or `@lylajs/web-fetch`.
 
 | Environment          | Package           | Note                                                                                            |
 | -------------------- | ----------------- | ----------------------------------------------------------------------------------------------- |
-| web                  | `@lylajs/web`     |                                                                                                 |
+| web (XHR or fetch)   | `@lylajs/web`       | Selects the adapter through `extraOptions`; defaults to automatic selection.                     |
+| web (XHR only)       | `@lylajs/web-xhr`   | Uses XMLHttpRequest; supports upload and download progress.                                     |
+| web (fetch only)     | `@lylajs/web-fetch` | Uses fetch; supports download progress.                                                         |
 | node                 | `@lylajs/node`    |                                                                                                 |
 | toutiao miniprogram  | `@lylajs/tt`      |                                                                                                 |
 | weixin miniprogram   | `@lylajs/wx`      |                                                                                                 |
@@ -36,6 +38,13 @@ For difference compared with other libs, see [FAQ](#faq).
 npm i @lylajs/web # for npm
 pnpm i @lylajs/web # for pnpm
 yarn add @lylajs/web # for yarn
+```
+
+To use only XMLHttpRequest or only fetch, install the corresponding standalone package:
+
+```bash
+npm i @lylajs/web-xhr   # XMLHttpRequest only
+npm i @lylajs/web-fetch # fetch only
 ```
 
 ## Usage
@@ -212,7 +221,8 @@ type LylaRequestOptions<C = undefined> = {
     /**
      * Callbacks fired after headers are received.
      *
-     * only work in @lylajs/web @lylajs/node @lylajs/wx and lyla.
+     * Supported by @lylajs/web, @lylajs/web-xhr, @lylajs/web-fetch,
+     * @lylajs/node, @lylajs/wx and lyla.
      */
     onHeadersReceived?: Array<
       (
@@ -765,6 +775,25 @@ An instance created by `lyla.withRetry` may encounter these errors when sending 
 4. `onBrokenRetry` should not throw. If it throws, the error will be thrown as is.
 
 The `BROKEN_RETRY` error won't be caught by any hook and won't be judged as `true` by `isLylaError`. If you need to judge the error, you need to use `isLylaErrorWithRetry`, which will judge all Lyla Errors.
+
+## Browser adapters
+
+`@lylajs/web` selects an adapter through `extraOptions.api`, which defaults to
+`'auto'`.
+
+| `api` | Behavior |
+| --- | --- |
+| `'auto'` | Uses fetch when `fetchOptions` is provided (including `{}`) or the body is a `ReadableStream`; uses XMLHttpRequest for all other requests. |
+| `'xhr'` | Uses XMLHttpRequest. |
+| `'fetch'` | Uses fetch. |
+
+`@lylajs/web-xhr` always uses XMLHttpRequest; `@lylajs/web-fetch` always uses fetch.
+
+- Only XHR supports `onUploadProgress`. Supplying this callback when using fetch rejects with `BAD_REQUEST` before sending.
+- Both adapters support `onDownloadProgress`. For fetch, when `Content-Length` is missing, inaccessible or invalid, or the response uses a content encoding such as gzip or br, `lengthComputable` is `false`, and `total` and `percent` are `0`; `loaded` still reports the number of bytes read.
+- `extraOptions.fetchOptions` sets native fetch options such as `cache`, `credentials` and `redirect`. Set `method`, `headers`, `body` and `signal` through Lyla's request options.
+- With an explicit `api: 'xhr'`, supplying `fetchOptions` or a `ReadableStream` body rejects with `BAD_REQUEST` before sending.
+- In `@lylajs/web`, `detail` and `originalRequest` use `{ adapter, value }`: `adapter` is `'xhr'` or `'fetch'`, and `value` is the native value. The universal `lyla` package also supports `'node'`. A network error's `error` field has type `Error | undefined`.
 
 ## FAQ
 

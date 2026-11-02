@@ -15,7 +15,9 @@
   "module": "es/index.js",
   "sideEffects": false,
   "dependencies": {
-    "@lylajs/core": "workspace:*"
+    "@lylajs/core": "workspace:*",
+    "@lylajs/web-xhr": "workspace:*",
+    "@lylajs/web-fetch": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^7.0.2"

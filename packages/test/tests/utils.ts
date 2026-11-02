@@ -1,9 +1,14 @@
 import { test } from '@playwright/test'
 import type { Page } from '@playwright/test'
 
-export function beforeEach(t: typeof test) {
-  t.beforeEach(async ({ page }) => {
-    await page.goto('http://localhost:8091')
+export function beforeEach(
+  t: typeof test,
+  origin: () => string = () => 'http://localhost:8091'
+) {
+  t.beforeEach(async ({ page }, testInfo) => {
+    const target = testInfo.project.metadata.target ?? 'web-auto'
+    await page.goto(`${origin()}/?target=${target}`)
+    await page.waitForFunction(() => Boolean(window.lyla))
   })
 }
 
